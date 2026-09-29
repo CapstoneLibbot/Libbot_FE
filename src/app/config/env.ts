@@ -1,0 +1,4 @@
+export const env = {
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? '/api',
+  signalRUrl: import.meta.env.VITE_SIGNALR_URL ?? 'https://localhost:5001/hub/robot'
+};
