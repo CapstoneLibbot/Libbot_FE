@@ -2,6 +2,11 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft, X } from 'lucide-react'
 import MapDetailPanel from '../../components/map/MapDetailPanel'
+import {
+  initialAisles,
+  initialEndpointGroupMembers,
+  initialEndpointGroups,
+} from '../../lib/mapData'
 import MapViewer, {
   type MapEndpoint,
   type MapZone,
@@ -36,144 +41,250 @@ const sampleMap: MapInfo = {
   status: 1,
 }
 
-const initialEndpoints: MapEndpoint[] = [
+const endpointSeeds: Omit<MapEndpoint, 'endpoint_groups'>[] = [
   {
     id: 101,
     map_id: 1,
     code: 'EP-101',
-    name: 'Main Entrance',
-    description: 'Main entrance navigation point.',
-    position_x: 5.88,
-    position_y: 25.29,
+    name: 'Shelf A-01',
+    description: 'Endpoint assigned to Shelf A-01.',
+    position_x: 5.880,
+    position_y: 25.290,
     is_active: true,
-    location: {
-      kind: 'FACILITY',
-      id: 1,
-      name: 'Main Entrance',
-    },
-    group: {
-      id: 1,
-      name: 'Library Navigation',
-      description: 'Common navigation points used by the robot.',
-    },
+    linked_object: { kind: 'SHELF', id: 1, name: 'Shelf A-01' },
   },
   {
     id: 102,
     map_id: 1,
     code: 'EP-102',
-    name: 'Circulation Desk',
-    description: 'Navigation point near the circulation desk.',
-    position_x: -9,
-    position_y: -4,
+    name: 'Shelf A-02',
+    description: 'Endpoint assigned to Shelf A-02.',
+    position_x: 11.100,
+    position_y: 9.040,
     is_active: true,
-    location: {
-      kind: 'FACILITY',
-      id: 2,
-      name: 'Circulation Desk',
-    },
-    group: {
-      id: 1,
-      name: 'Library Navigation',
-      description: 'Common navigation points used by the robot.',
-    },
+    linked_object: { kind: 'SHELF', id: 2, name: 'Shelf A-02' },
   },
   {
     id: 103,
     map_id: 1,
     code: 'EP-103',
-    name: 'Fiction Aisle A',
-    description: 'Navigation point at the beginning of Fiction Aisle A.',
-    position_x: -13,
-    position_y: 6,
+    name: 'Desk of Librarian',
+    description: 'Endpoint assigned to Desk of Librarian.',
+    position_x: 28.740,
+    position_y: 6.350,
     is_active: true,
-    location: {
-      kind: 'AISLE',
-      id: 1,
-      name: 'Fiction Aisle A',
-    },
-    group: {
-      id: 2,
-      name: 'Collection Navigation',
-      description: 'Navigation points associated with collection areas.',
-    },
+    linked_object: { kind: 'AREA', id: 1, name: 'Desk of Librarian' },
   },
   {
     id: 104,
     map_id: 1,
     code: 'EP-104',
-    name: 'Shelf A-04',
-    description: 'Navigation point near shelf A-04.',
-    position_x: 3,
+    name: 'Reading desk area A',
+    description: 'Endpoint assigned to Reading desk area A.',
+    position_x: 40,
     position_y: 7,
     is_active: true,
-    location: {
-      kind: 'SHELF',
-      id: 4,
-      name: 'Shelf A-04',
-    },
-    group: {
-      id: 2,
-      name: 'Collection Navigation',
-      description: 'Navigation points associated with collection areas.',
-    },
+    linked_object: { kind: 'AREA', id: 2, name: 'Reading desk area A' },
   },
   {
     id: 105,
     map_id: 1,
     code: 'EP-105',
-    name: 'Children Area',
-    description: 'Navigation point for the children reading area.',
-    position_x: 14,
-    position_y: -4,
+    name: 'Reading desk area B',
+    description: 'Endpoint assigned to Reading desk area B.',
+    position_x: 54,
+    position_y: 7,
     is_active: true,
-    location: {
-      kind: 'FACILITY',
-      id: 5,
-      name: 'Children Reading Area',
-    },
-    group: {
-      id: 1,
-      name: 'Library Navigation',
-      description: 'Common navigation points used by the robot.',
-    },
+    linked_object: { kind: 'AREA', id: 3, name: 'Reading desk area B' },
   },
   {
     id: 106,
     map_id: 1,
     code: 'EP-106',
-    name: 'Return Station',
-    description: 'Book return robot station.',
-    position_x: -15,
-    position_y: -11,
+    name: 'Shelf A-03',
+    description: 'Endpoint assigned to Shelf A-03.',
+    position_x: 24.5,
+    position_y: 23,
     is_active: true,
-    location: {
-      kind: 'FACILITY',
-      id: 6,
-      name: 'Return Station',
-    },
-    group: {
-      id: 3,
-      name: 'Robot Station',
-      description: 'Navigation points related to robot stations.',
-    },
+    linked_object: { kind: 'SHELF', id: 3, name: 'Shelf A-03' },
   },
   {
     id: 107,
     map_id: 1,
     code: 'EP-107',
-    name: 'Elevator',
-    description: 'Elevator navigation point.',
-    position_x: 17,
-    position_y: 9,
+    name: 'Shelf A-04',
+    description: 'Endpoint assigned to Shelf A-04.',
+    position_x: 28.5,
+    position_y: 23,
     is_active: true,
-    location: null,
-    group: {
-      id: 1,
-      name: 'Library Navigation',
-      description: 'Common navigation points used by the robot.',
-    },
+    linked_object: { kind: 'SHELF', id: 4, name: 'Shelf A-04' },
+  },
+  {
+    id: 108,
+    map_id: 1,
+    code: 'EP-108',
+    name: 'Shelf A-05',
+    description: 'Endpoint assigned to Shelf A-05.',
+    position_x: 31.5,
+    position_y: 23,
+    is_active: true,
+    linked_object: { kind: 'SHELF', id: 5, name: 'Shelf A-05' },
+  },
+  {
+    id: 109,
+    map_id: 1,
+    code: 'EP-109',
+    name: 'Shelf A-06',
+    description: 'Endpoint assigned to Shelf A-06.',
+    position_x: 35,
+    position_y: 23,
+    is_active: true,
+    linked_object: { kind: 'SHELF', id: 6, name: 'Shelf A-06' },
+  },
+  {
+    id: 110,
+    map_id: 1,
+    code: 'EP-110',
+    name: 'Shelf A-07',
+    description: 'Endpoint assigned to Shelf A-07.',
+    position_x: 38.5,
+    position_y: 23,
+    is_active: true,
+    linked_object: { kind: 'SHELF', id: 7, name: 'Shelf A-07' },
+  },
+  {
+    id: 111,
+    map_id: 1,
+    code: 'EP-111',
+    name: 'Shelf A-08',
+    description: 'Endpoint assigned to Shelf A-08.',
+    position_x: 42,
+    position_y: 23,
+    is_active: true,
+    linked_object: { kind: 'SHELF', id: 8, name: 'Shelf A-08' },
+  },
+  {
+    id: 112,
+    map_id: 1,
+    code: 'EP-112',
+    name: 'Shelf A-09',
+    description: 'Endpoint assigned to Shelf A-09.',
+    position_x: 45.5,
+    position_y: 23,
+    is_active: true,
+    linked_object: { kind: 'SHELF', id: 9, name: 'Shelf A-09' },
+  },
+  {
+    id: 113,
+    map_id: 1,
+    code: 'EP-113',
+    name: 'Shelf A-10',
+    description: 'Endpoint assigned to Shelf A-10.',
+    position_x: 49,
+    position_y: 23,
+    is_active: true,
+    linked_object: { kind: 'SHELF', id: 10, name: 'Shelf A-10' },
+  },
+  {
+    id: 114,
+    map_id: 1,
+    code: 'EP-114',
+    name: 'Aisle A Start',
+    description: 'Start endpoint for Aisle A.',
+    position_x: 26.5,
+    position_y: 28,
+    is_active: true,
+    linked_object: { kind: 'AISLE', id: 1, name: 'Aisle A' },
+  },
+  {
+    id: 115,
+    map_id: 1,
+    code: 'EP-115',
+    name: 'Aisle A End',
+    description: 'End endpoint for Aisle A.',
+    position_x: 26.5,
+    position_y: 16.5,
+    is_active: true,
+    linked_object: { kind: 'AISLE', id: 1, name: 'Aisle A' },
+  },
+  {
+    id: 116,
+    map_id: 1,
+    code: 'EP-116',
+    name: 'Aisle B Start',
+    description: 'Start endpoint for Aisle B.',
+    position_x: 33.3,
+    position_y: 28,
+    is_active: true,
+    linked_object: { kind: 'AISLE', id: 2, name: 'Aisle B' },
+  },
+  {
+    id: 117,
+    map_id: 1,
+    code: 'EP-117',
+    name: 'Aisle B End',
+    description: 'End endpoint for Aisle B.',
+    position_x: 33.3,
+    position_y: 16.5,
+    is_active: true,
+    linked_object: { kind: 'AISLE', id: 2, name: 'Aisle B' },
+  },
+  {
+    id: 118,
+    map_id: 1,
+    code: 'EP-118',
+    name: 'Aisle C Start',
+    description: 'Start endpoint for Aisle C.',
+    position_x: 40,
+    position_y: 28,
+    is_active: true,
+    linked_object: { kind: 'AISLE', id: 3, name: 'Aisle C' },
+  },
+  {
+    id: 119,
+    map_id: 1,
+    code: 'EP-119',
+    name: 'Aisle C End',
+    description: 'End endpoint for Aisle C.',
+    position_x: 40,
+    position_y: 16.5,
+    is_active: true,
+    linked_object: { kind: 'AISLE', id: 3, name: 'Aisle C' },
+  },
+  {
+    id: 120,
+    map_id: 1,
+    code: 'EP-120',
+    name: 'Aisle D Start',
+    description: 'Start endpoint for Aisle D.',
+    position_x: 47,
+    position_y: 28,
+    is_active: true,
+    linked_object: { kind: 'AISLE', id: 4, name: 'Aisle D' },
+  },
+  {
+    id: 121,
+    map_id: 1,
+    code: 'EP-121',
+    name: 'Aisle D End',
+    description: 'End endpoint for Aisle D.',
+    position_x: 47,
+    position_y: 16.5,
+    is_active: true,
+    linked_object: { kind: 'AISLE', id: 4, name: 'Aisle D' },
   },
 ]
+
+const initialEndpoints: MapEndpoint[] = endpointSeeds.map((endpoint) => ({
+  ...endpoint,
+  endpoint_groups: initialEndpointGroups.filter((group) =>
+    initialEndpointGroupMembers.some(
+      (member) =>
+        member.endpoint_id === endpoint.id &&
+        member.endpoint_group_id === group.id,
+    ),
+  ),
+}))
 
 const initialZones: MapZone[] = [
   {
@@ -263,6 +374,9 @@ function MapDetail() {
   const [selectedZoneId, setSelectedZoneId] =
     useState<number | null>(null)
 
+  const [endpointGroupFilterId, setEndpointGroupFilterId] =
+    useState<number | null>(null)
+
   const [zoneDrawMode, setZoneDrawMode] = useState(false)
 
   const [createEndpointPosition, setCreateEndpointPosition] =
@@ -291,6 +405,18 @@ function MapDetail() {
     () =>
       zones.find((zone) => zone.id === selectedZoneId) ?? null,
     [zones, selectedZoneId],
+  )
+
+  const filteredEndpoints = useMemo(
+    () =>
+      endpointGroupFilterId === null
+        ? endpoints
+        : endpoints.filter((endpoint) =>
+            endpoint.endpoint_groups.some(
+              (group) => group.id === endpointGroupFilterId,
+            ),
+          ),
+    [endpoints, endpointGroupFilterId],
   )
 
   const handleEndpointSelect = (endpointId: number) => {
@@ -331,6 +457,8 @@ function MapDetail() {
 
   const handleCreateEndpoint = () => {
     setActiveTab('endpoint')
+    setEndpointGroupFilterId(null)
+    setSelectedEndpointId(null)
 
     setCreateEndpointPosition({
       x: 0,
@@ -367,8 +495,8 @@ function MapDetail() {
       position_x: positionX,
       position_y: positionY,
       is_active: formData.get('is_active') === 'on',
-      location: null,
-      group: null,
+      linked_object: null,
+      endpoint_groups: [],
     }
 
     setEndpoints((current) => [...current, newEndpoint])
@@ -472,7 +600,8 @@ function MapDetail() {
         <main className="min-h-[280px] min-w-0 flex-1">
           <MapViewer
             yamlUrl="/maps/floor1_library_v1.yaml"
-            endpoints={endpoints}
+            endpoints={filteredEndpoints}
+            aisles={initialAisles}
             zones={zones}
             selectedEndpointId={selectedEndpointId}
             selectedZoneId={selectedZoneId}
@@ -489,7 +618,9 @@ function MapDetail() {
         <MapDetailPanel
           map={map}
           activeTab={activeTab}
-          endpoints={endpoints}
+          endpoints={filteredEndpoints}
+          endpointGroups={initialEndpointGroups}
+          endpointGroupFilterId={endpointGroupFilterId}
           zones={zones}
           selectedEndpoint={selectedEndpoint}
           selectedZone={selectedZone}
@@ -506,6 +637,11 @@ function MapDetail() {
             }
           }}
           onEndpointSelect={handleEndpointSelect}
+          onEndpointBack={() => setSelectedEndpointId(null)}
+          onEndpointGroupFilterChange={(groupId) => {
+            setEndpointGroupFilterId(groupId)
+            setSelectedEndpointId(null)
+          }}
           onZoneSelect={handleZoneSelect}
           onCreateEndpoint={handleCreateEndpoint}
           onDrawZone={() => {
@@ -592,9 +728,9 @@ function MapDetail() {
                 <input
                   name="position_x"
                   type="number"
-                  step="0.01"
+                  step="0.001"
                   defaultValue={createEndpointPosition.x.toFixed(
-                    2,
+                    3,
                   )}
                   className="mt-1.5 h-9 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none focus:border-primary"
                 />
@@ -605,9 +741,9 @@ function MapDetail() {
                 <input
                   name="position_y"
                   type="number"
-                  step="0.01"
+                  step="0.001"
                   defaultValue={createEndpointPosition.y.toFixed(
-                    2,
+                    3,
                   )}
                   className="mt-1.5 h-9 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none focus:border-primary"
                 />

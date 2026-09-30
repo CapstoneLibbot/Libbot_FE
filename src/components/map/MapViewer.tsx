@@ -5,30 +5,23 @@ import {
 } from 'react'
 import { Minus, Plus, RotateCcw } from 'lucide-react'
 import { load } from 'js-yaml'
+import type {
+  EndpointGroup,
+  EndpointLinkedObject,
+  MapAisle,
+} from '../../types/map'
 
 export type MapEndpoint = {
   id: number
   map_id: number
   code: string
   name: string
-  description: string
+  description: string | null
   position_x: number
   position_y: number
   is_active: boolean
-  location:
-    | {
-        kind: 'AISLE' | 'SHELF' | 'FACILITY'
-        id: number
-        name: string
-      }
-    | null
-  group:
-    | {
-        id: number
-        name: string
-        description: string
-      }
-    | null
+  linked_object: EndpointLinkedObject
+  endpoint_groups: EndpointGroup[]
 }
 
 export type MapZone = {
@@ -57,6 +50,7 @@ type Point = {
 type MapViewerProps = {
   yamlUrl: string
   endpoints: MapEndpoint[]
+  aisles: MapAisle[]
   zones: MapZone[]
   selectedEndpointId: number | null
   selectedZoneId: number | null
@@ -274,6 +268,7 @@ function getZoneStroke(zoneType: MapZone['zone_type']) {
 function MapViewer({
   yamlUrl,
   endpoints,
+  aisles,
   zones,
   selectedEndpointId,
   selectedZoneId,
@@ -314,6 +309,8 @@ function MapViewer({
     start: Point
     end: Point
   } | null>(null)
+  const [clickedPosition, setClickedPosition] =
+    useState<Point | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -557,6 +554,58 @@ function MapViewer({
       }
 
       if (showEndpoints) {
+        for (const aisle of aisles) {
+          const endpointA = endpoints.find(
+            (endpoint) => endpoint.id === aisle.endpointA_id,
+          )
+          const endpointB = endpoints.find(
+            (endpoint) => endpoint.id === aisle.endpointB_id,
+          )
+
+          if (!endpointA || !endpointB) {
+            continue
+          }
+
+          const pointA = worldToPixel(
+            { x: endpointA.position_x, y: endpointA.position_y },
+            config,
+            imageData.width,
+            imageData.height,
+          )
+          const pointB = worldToPixel(
+            { x: endpointB.position_x, y: endpointB.position_y },
+            config,
+            imageData.width,
+            imageData.height,
+          )
+          const screenAX = offsetX + pointA.x * scale
+          const screenAY = offsetY + pointA.y * scale
+          const screenBX = offsetX + pointB.x * scale
+          const screenBY = offsetY + pointB.y * scale
+          const midpointX = (screenAX + screenBX) / 2
+          const midpointY = (screenAY + screenBY) / 2
+
+          context.beginPath()
+          context.moveTo(screenAX, screenAY)
+          context.lineTo(screenBX, screenBY)
+          context.lineCap = 'round'
+          context.strokeStyle = 'rgba(15, 23, 42, 0.9)'
+          context.lineWidth = 7
+          context.stroke()
+          context.strokeStyle = aisle.status.toUpperCase() === 'ACTIVE'
+            ? '#f59e0b'
+            : '#9ca3af'
+          context.lineWidth = 3
+          context.stroke()
+
+          context.font = '600 11px Inter, sans-serif'
+          context.lineWidth = 4
+          context.strokeStyle = 'rgba(15, 23, 42, 0.95)'
+          context.strokeText(aisle.code, midpointX + 5, midpointY - 5)
+          context.fillStyle = '#fef3c7'
+          context.fillText(aisle.code, midpointX + 5, midpointY - 5)
+        }
+
         for (const endpoint of endpoints) {
           const pixel = worldToPixel(
             {
@@ -614,7 +663,7 @@ function MapViewer({
           context.fillStyle = '#111827'
           context.font = '600 11px Inter, sans-serif'
           context.fillText(
-            endpoint.location?.name || endpoint.code,
+            endpoint.name || endpoint.code,
             screenX + 10,
             screenY - 10,
             220,
@@ -637,6 +686,7 @@ function MapViewer({
     }
   }, [
     endpoints,
+    aisles,
     zones,
     selectedEndpointId,
     selectedZoneId,
@@ -935,6 +985,8 @@ function MapViewer({
       return
     }
 
+    setClickedPosition(world)
+
     const config = configRef.current
     const imageData = imageDataRef.current
 
@@ -1040,12 +1092,17 @@ function MapViewer({
         onPointerCancel={handlePointerUp}
       />
 
-      <div className="pointer-events-none absolute bottom-4 left-4 rounded-lg border border-white/10 bg-black/60 px-3 py-2 text-xs text-white/60 backdrop-blur">
+      <div className="pointer-events-none absolute left-4 top-4 rounded-md border border-white/10 bg-black/60 px-3 py-2 text-xs text-white/60 backdrop-blur">
         {zoneDrawMode
           ? 'Drag on the map to draw a zone'
           : showEndpoints
             ? 'Double-click an empty location to create an endpoint'
             : 'Map view'}
+      </div>
+
+      <div className="pointer-events-none absolute bottom-4 left-4 w-[204px] rounded-md border border-white/15 bg-[#17181d]/90 px-3 py-2 font-mono text-xs leading-5 text-white/70 shadow-xl backdrop-blur">
+        <p>X: {clickedPosition ? `${clickedPosition.x.toFixed(3)} m` : '--'}</p>
+        <p>Y: {clickedPosition ? `${clickedPosition.y.toFixed(3)} m` : '--'}</p>
       </div>
 
       <div className="absolute bottom-4 right-4 flex items-center gap-1 rounded-md border border-white/10 bg-black/60 p-1 backdrop-blur">

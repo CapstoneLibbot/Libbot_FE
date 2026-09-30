@@ -7,9 +7,11 @@ import {
 } from 'react-router'
 
 import Sidebar from '../components/layout/Sidebar'
-import FacilityDetail from '../pages/facilities/FacilityDetail'
+import AreaDetail from '../pages/AreaDetail'
+import AisleDetail from '../pages/aisles/AisleDetail'
 import ListMap from '../pages/maps/ListMap'
 import MapDetail from '../pages/maps/MapDetail'
+import ShelfDetail from '../pages/shelves/ShelfDetail'
 
 function PlaceholderPage({
   title,
@@ -60,13 +62,13 @@ function AppRouter() {
           />
 
           <Route
-            path="/facilities"
-            element={<FacilityDetail />}
+            path="/areas"
+            element={<AreaDetail />}
           />
 
           <Route
-            path="/facilities/:id"
-            element={<FacilityDetail />}
+            path="/areas/:id"
+            element={<AreaDetail />}
           />
 
           <Route
@@ -76,12 +78,12 @@ function AppRouter() {
 
           <Route
             path="/aisles/:id"
-            element={<PlaceholderPage title="Aisle Detail" />}
+            element={<AisleDetail />}
           />
 
           <Route
             path="/shelves/:id"
-            element={<PlaceholderPage title="Shelf Detail" />}
+            element={<ShelfDetail />}
           />
 
           <Route

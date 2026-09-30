@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import {
+  ArrowLeft,
   Check,
   ChevronRight,
   MapPin,
@@ -10,7 +11,7 @@ import type {
   MapEndpoint,
   MapZone,
 } from './MapViewer'
-
+import type { EndpointGroup } from '../../types/map'
 type MapInfo = {
   id: number
   floor_id: number
@@ -26,22 +27,26 @@ type MapInfo = {
 
 type Tab = 'detail' | 'endpoint' | 'zone'
 
-const locationPathByKind = {
+const linkedObjectPath = {
+  AREA: 'areas',
   AISLE: 'aisles',
   SHELF: 'shelves',
-  FACILITY: 'facilities',
 } as const
 
 type MapDetailPanelProps = {
   map: MapInfo
   activeTab: Tab
   endpoints: MapEndpoint[]
+  endpointGroups: EndpointGroup[]
+  endpointGroupFilterId: number | null
   zones: MapZone[]
   selectedEndpoint: MapEndpoint | null
   selectedZone: MapZone | null
   zoneDrawMode: boolean
   onTabChange: (tab: Tab) => void
   onEndpointSelect: (id: number) => void
+  onEndpointBack: () => void
+  onEndpointGroupFilterChange: (groupId: number | null) => void
   onZoneSelect: (id: number) => void
   onCreateEndpoint: () => void
   onDrawZone: () => void
@@ -104,12 +109,16 @@ function MapDetailPanel({
   map,
   activeTab,
   endpoints,
+  endpointGroups,
+  endpointGroupFilterId,
   zones,
   selectedEndpoint,
   selectedZone,
   zoneDrawMode,
   onTabChange,
   onEndpointSelect,
+  onEndpointBack,
+  onEndpointGroupFilterChange,
   onZoneSelect,
   onCreateEndpoint,
   onDrawZone,
@@ -216,71 +225,17 @@ function MapDetailPanel({
 
         {activeTab === 'endpoint' && (
           <div>
-            <div className="border-b border-white/10 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-white/35">
-                    Endpoints
-                  </p>
-                  <p className="mt-1 text-xs text-white/40">
-                    {endpoints.length} endpoint
-                    {endpoints.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-
+            {selectedEndpoint ? (
+              <div className="px-4 pb-6">
                 <button
                   type="button"
-                  onClick={onCreateEndpoint}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-2 text-xs font-medium text-white hover:opacity-90"
+                  onClick={onEndpointBack}
+                  className="mb-3 inline-flex items-center gap-1.5 text-xs text-white/55 hover:text-white"
                 >
-                  <Plus className="h-3.5 w-3.5" />
-                  Create
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Back to endpoints
                 </button>
-              </div>
-            </div>
 
-            <div className="border-b border-white/10">
-              {endpoints.map((endpoint) => {
-                const selected =
-                  endpoint.id === selectedEndpoint?.id
-
-                return (
-                  <button
-                    key={endpoint.id}
-                    type="button"
-                    onClick={() => onEndpointSelect(endpoint.id)}
-                    className={`flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left transition last:border-0 ${
-                      selected
-                        ? 'bg-primary/15'
-                        : 'hover:bg-white/4'
-                    }`}
-                  >
-                    <MapPin
-                      className={`h-4 w-4 shrink-0 ${
-                        selected
-                          ? 'text-primary'
-                          : 'text-emerald-400'
-                      }`}
-                    />
-
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-white/85">
-                        {endpoint.code}
-                      </p>
-
-                      <p className="truncate text-xs text-white/40">
-                        {endpoint.name}
-                      </p>
-                    </div>
-
-                    <StatusPill active={endpoint.is_active} />
-                  </button>
-                )
-              })}
-            </div>
-
-            {selectedEndpoint && (
-              <div className="px-4 pb-6">
                 <div className="border-b border-white/10 py-4">
                   <p className="text-xs font-medium uppercase tracking-wider text-white/35">
                     Selected Endpoint
@@ -315,65 +270,140 @@ function MapDetailPanel({
 
                 <Field
                   label="Position X"
-                  value={selectedEndpoint.position_x.toFixed(2)}
+                  value={selectedEndpoint.position_x.toFixed(3)}
                 />
 
                 <Field
                   label="Position Y"
-                  value={selectedEndpoint.position_y.toFixed(2)}
+                  value={selectedEndpoint.position_y.toFixed(3)}
                 />
 
                 <Field
                   label="Is Active"
-                  value={
-                    <StatusPill
-                      active={selectedEndpoint.is_active}
-                    />
-                  }
+                  value={<StatusPill active={selectedEndpoint.is_active} />}
                 />
 
                 <Field
-                  label="Linked Entity"
+                  label="Endpoint Groups"
                   value={
-                    selectedEndpoint.location ? (
-                      <Link
-                        to={`/${locationPathByKind[selectedEndpoint.location.kind]}/${selectedEndpoint.location.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {selectedEndpoint.location.name}
-                      </Link>
-                    ) : (
-                      <span className="text-white/35">
-                        None
-                      </span>
-                    )
-                  }
-                />
-
-                <Field
-                  label="Endpoint Group"
-                  value={
-                    selectedEndpoint.group ? (
-                      <div>
-                        <p>{selectedEndpoint.group.name}</p>
-                        <p className="mt-1 text-xs text-white/40">
-                          {selectedEndpoint.group.description}
-                        </p>
+                    selectedEndpoint.endpoint_groups.length > 0 ? (
+                      <div className="space-y-1">
+                        {selectedEndpoint.endpoint_groups.map((group) => (
+                          <p key={group.id}>{group.name}</p>
+                        ))}
                       </div>
                     ) : (
-                      <span className="text-white/35">
-                        None
-                      </span>
+                      <span className="text-white/35">None</span>
+                    )
+                  }
+                />
+
+                <Field
+                  label="Linked Object"
+                  value={
+                    selectedEndpoint.linked_object ? (
+                      <Link
+                        to={`/${linkedObjectPath[selectedEndpoint.linked_object.kind]}/${selectedEndpoint.linked_object.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {selectedEndpoint.linked_object.name}
+                      </Link>
+                    ) : (
+                      <span className="text-white/35">None</span>
                     )
                   }
                 />
               </div>
-            )}
+            ) : (
+              <>
+                <div className="border-b border-white/10 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-white/35">
+                    Endpoints
+                  </p>
+                  <p className="mt-1 text-xs text-white/40">
+                    {endpoints.length} endpoint
+                    {endpoints.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
 
-            {!selectedEndpoint && (
-              <div className="px-4 py-8 text-center text-xs text-white/35">
-                Select an endpoint on the map or from the list.
+                <button
+                  type="button"
+                  onClick={onCreateEndpoint}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-2 text-xs font-medium text-white hover:opacity-90"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Create
+                </button>
               </div>
+                </div>
+
+                <label className="block border-b border-white/10 px-4 py-3 text-xs text-white/55">
+                  Filter by endpoint group
+                  <select
+                    value={endpointGroupFilterId ?? ''}
+                    onChange={(event) =>
+                      onEndpointGroupFilterChange(
+                        event.target.value
+                          ? Number(event.target.value)
+                          : null,
+                      )
+                    }
+                    className="mt-1.5 h-9 w-full rounded-md border border-white/10 bg-[#17181d] px-3 text-sm text-white outline-none focus:border-primary"
+                  >
+                    <option value="">All groups</option>
+                    {endpointGroups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+            <div className="border-b border-white/10">
+              {endpoints.map((endpoint) => {
+                return (
+                  <button
+                    key={endpoint.id}
+                    type="button"
+                    onClick={() => onEndpointSelect(endpoint.id)}
+                    className="flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left transition last:border-0 hover:bg-white/4"
+                  >
+                    <MapPin className="h-4 w-4 shrink-0 text-emerald-400" />
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-white/85">
+                        {endpoint.code}
+                      </p>
+
+                      <p className="truncate text-xs text-white/40">
+                        {endpoint.name}
+                      </p>
+
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {endpoint.endpoint_groups.map((group) => (
+                          <span
+                            key={group.id}
+                            className="rounded bg-white/8 px-1.5 py-0.5 text-[10px] text-white/55"
+                          >
+                            {group.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <StatusPill active={endpoint.is_active} />
+                  </button>
+                )
+              })}
+            </div>
+                {endpoints.length === 0 && (
+                  <div className="px-4 py-8 text-center text-xs text-white/35">
+                    No endpoints belong to this group.
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
