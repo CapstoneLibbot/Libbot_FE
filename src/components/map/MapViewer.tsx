@@ -1,0 +1,1084 @@
+import {
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
+import { Minus, Plus, RotateCcw } from 'lucide-react'
+import { load } from 'js-yaml'
+
+export type MapEndpoint = {
+  id: number
+  map_id: number
+  code: string
+  name: string
+  description: string
+  position_x: number
+  position_y: number
+  is_active: boolean
+  location:
+    | {
+        kind: 'AISLE' | 'SHELF' | 'FACILITY'
+        id: number
+        name: string
+      }
+    | null
+  group:
+    | {
+        id: number
+        name: string
+        description: string
+      }
+    | null
+}
+
+export type MapZone = {
+  id: number
+  map_id: number
+  code: string
+  name: string
+  zone_type: 1 | 2 | 3 | 4
+  max_speed: number
+  preferred_direction: string
+  corridor_width: number
+  allow_turnaround: boolean
+  description: string
+  min_x: number
+  min_y: number
+  max_x: number
+  max_y: number
+  is_active: boolean
+}
+
+type Point = {
+  x: number
+  y: number
+}
+
+type MapViewerProps = {
+  yamlUrl: string
+  endpoints: MapEndpoint[]
+  zones: MapZone[]
+  selectedEndpointId: number | null
+  selectedZoneId: number | null
+  showEndpoints: boolean
+  showZones: boolean
+  zoneDrawMode: boolean
+  onEndpointSelect: (endpointId: number) => void
+  onZoneSelect: (zoneId: number) => void
+  onMapClick: (point: {
+    x: number
+    y: number
+    screenX: number
+    screenY: number
+  }) => void
+  onZoneDrawComplete: (rect: {
+    min_x: number
+    min_y: number
+    max_x: number
+    max_y: number
+  }) => void
+}
+
+type MapConfig = {
+  image: string
+  resolution: number
+  origin: [number, number, number]
+}
+
+type RenderTransform = {
+  scale: number
+  offsetX: number
+  offsetY: number
+}
+
+function parseYaml(text: string): MapConfig {
+  const parsed = load(text)
+
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error('Map YAML must contain a configuration object.')
+  }
+
+  const config = parsed as Record<string, unknown>
+  const image = config.image
+  const resolution = Number(config.resolution)
+  const origin = config.origin
+
+  if (typeof image !== 'string' || !image.trim()) {
+    throw new Error('Map YAML must specify an image filename.')
+  }
+
+  if (!Number.isFinite(resolution) || resolution <= 0) {
+    throw new Error('Map YAML must specify a positive resolution.')
+  }
+
+  if (
+    !Array.isArray(origin) ||
+    origin.length < 3 ||
+    !origin.slice(0, 3).every((value) => Number.isFinite(Number(value)))
+  ) {
+    throw new Error('Map YAML must specify a three-value origin.')
+  }
+
+  return {
+    image,
+    resolution,
+    origin: [
+      Number(origin[0]),
+      Number(origin[1]),
+      Number(origin[2]),
+    ],
+  }
+}
+
+function readToken(
+  bytes: Uint8Array,
+  start: number,
+): { token: string; next: number } {
+  let index = start
+
+  while (index < bytes.length) {
+    const char = bytes[index]
+
+    if (char === 35) {
+      while (index < bytes.length && bytes[index] !== 10) {
+        index += 1
+      }
+    } else if (char <= 32) {
+      index += 1
+    } else {
+      break
+    }
+  }
+
+  const tokenStart = index
+
+  while (index < bytes.length && bytes[index] > 32) {
+    index += 1
+  }
+
+  return {
+    token: new TextDecoder().decode(bytes.slice(tokenStart, index)),
+    next: index,
+  }
+}
+
+function parsePgm(buffer: ArrayBuffer): ImageData {
+  const bytes = new Uint8Array(buffer)
+
+  const magic = readToken(bytes, 0)
+  const width = readToken(bytes, magic.next)
+  const height = readToken(bytes, width.next)
+  const maxValue = readToken(bytes, height.next)
+
+  if (magic.token !== 'P5') {
+    throw new Error('Only binary PGM (P5) files are supported.')
+  }
+
+  const imageWidth = Number(width.token)
+  const imageHeight = Number(height.token)
+  const max = Number(maxValue.token)
+
+  let pixelStart = maxValue.next
+
+  if (bytes[pixelStart] === 13 && bytes[pixelStart + 1] === 10) {
+    pixelStart += 2
+  } else if (bytes[pixelStart] <= 32) {
+    pixelStart += 1
+  } else {
+    throw new Error('PGM header is missing its pixel-data separator.')
+  }
+
+  if (
+    !Number.isInteger(imageWidth) ||
+    !Number.isInteger(imageHeight) ||
+    imageWidth <= 0 ||
+    imageHeight <= 0 ||
+    max !== 255 ||
+    bytes.length - pixelStart < imageWidth * imageHeight
+  ) {
+    throw new Error('PGM dimensions or pixel data are invalid.')
+  }
+
+  const imageData = new ImageData(imageWidth, imageHeight)
+
+  for (let i = 0; i < imageWidth * imageHeight; i += 1) {
+    const value = bytes[pixelStart + i] ?? 255
+    const normalized =
+      max === 255 ? value : Math.round((value / max) * 255)
+
+    const offset = i * 4
+
+    imageData.data[offset] = normalized
+    imageData.data[offset + 1] = normalized
+    imageData.data[offset + 2] = normalized
+    imageData.data[offset + 3] = 255
+  }
+
+  return imageData
+}
+
+function worldToPixel(
+  point: Point,
+  config: MapConfig,
+  _imageWidth: number,
+  imageHeight: number,
+): Point {
+  return {
+    x: (point.x - config.origin[0]) / config.resolution,
+    y:
+      imageHeight -
+      (point.y - config.origin[1]) / config.resolution,
+  }
+}
+
+function pixelToWorld(
+  point: Point,
+  config: MapConfig,
+  _imageWidth: number,
+  imageHeight: number,
+): Point {
+  return {
+    x: config.origin[0] + point.x * config.resolution,
+    y:
+      config.origin[1] +
+      (imageHeight - point.y) * config.resolution,
+  }
+}
+
+function getZoneFill(zoneType: MapZone['zone_type']) {
+  switch (zoneType) {
+    case 1:
+      return 'rgba(220, 38, 38, 0.28)'
+    case 2:
+      return 'rgba(234, 179, 8, 0.25)'
+    case 3:
+      return 'rgba(37, 99, 235, 0.24)'
+    case 4:
+      return 'rgba(124, 58, 237, 0.28)'
+  }
+}
+
+function getZoneStroke(zoneType: MapZone['zone_type']) {
+  switch (zoneType) {
+    case 1:
+      return '#ef4444'
+    case 2:
+      return '#eab308'
+    case 3:
+      return '#3b82f6'
+    case 4:
+      return '#8b5cf6'
+  }
+}
+
+function MapViewer({
+  yamlUrl,
+  endpoints,
+  zones,
+  selectedEndpointId,
+  selectedZoneId,
+  showEndpoints,
+  showZones,
+  zoneDrawMode,
+  onEndpointSelect,
+  onZoneSelect,
+  onMapClick,
+  onZoneDrawComplete,
+}: MapViewerProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+
+  const imageDataRef = useRef<ImageData | null>(null)
+  const configRef = useRef<MapConfig | null>(null)
+  const transformRef = useRef<RenderTransform>({
+    scale: 1,
+    offsetX: 0,
+    offsetY: 0,
+  })
+  const viewRef = useRef({ zoom: 1, panX: 0, panY: 0 })
+  const drawRef = useRef<(() => void) | null>(null)
+
+  const dragStartRef = useRef<Point | null>(null)
+  const panStartRef = useRef<{
+    x: number
+    y: number
+    panX: number
+    panY: number
+  } | null>(null)
+  const draggingRef = useRef(false)
+  const suppressClickRef = useRef(false)
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [previewRect, setPreviewRect] = useState<{
+    start: Point
+    end: Point
+  } | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadMap() {
+      try {
+        setLoading(true)
+        setError(null)
+
+        const yamlResponse = await fetch(yamlUrl)
+
+        if (!yamlResponse.ok) {
+          throw new Error('Unable to load map YAML.')
+        }
+
+        const yamlText = await yamlResponse.text()
+        const config = parseYaml(yamlText)
+
+        const imageUrl = new URL(
+          config.image,
+          new URL(yamlUrl, window.location.origin),
+        ).toString()
+
+        const pgmResponse = await fetch(imageUrl)
+
+        if (!pgmResponse.ok) {
+          throw new Error('Unable to load map PGM.')
+        }
+
+        const buffer = await pgmResponse.arrayBuffer()
+        const parsedImage = parsePgm(buffer)
+
+        if (cancelled) {
+          return
+        }
+
+        configRef.current = config
+        imageDataRef.current = parsedImage
+        viewRef.current = { zoom: 1, panX: 0, panY: 0 }
+
+        setLoading(false)
+      } catch (err) {
+        if (cancelled) {
+          return
+        }
+
+        setLoading(false)
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Unable to load map.',
+        )
+      }
+    }
+
+    void loadMap()
+
+    return () => {
+      cancelled = true
+    }
+  }, [yamlUrl])
+
+  useEffect(() => {
+    const container = containerRef.current
+    const canvas = canvasRef.current
+
+    if (!container || !canvas) {
+      return
+    }
+
+    const context = canvas.getContext('2d')
+
+    if (!context) {
+      return
+    }
+
+    const draw = () => {
+      const imageData = imageDataRef.current
+      const config = configRef.current
+
+      if (!imageData || !config) {
+        return
+      }
+
+      const width = container.clientWidth
+      const height = container.clientHeight
+
+      if (!width || !height) {
+        return
+      }
+
+      const devicePixelRatio = window.devicePixelRatio || 1
+
+      canvas.width = Math.floor(width * devicePixelRatio)
+      canvas.height = Math.floor(height * devicePixelRatio)
+      canvas.style.width = `${width}px`
+      canvas.style.height = `${height}px`
+
+      context.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0)
+
+      context.fillStyle = '#0c0d10'
+      context.fillRect(0, 0, width, height)
+
+      const fitScale = Math.min(
+        width / imageData.width,
+        height / imageData.height,
+      )
+      const scale = fitScale * viewRef.current.zoom
+
+      const drawWidth = imageData.width * scale
+      const drawHeight = imageData.height * scale
+
+      const offsetX =
+        (width - drawWidth) / 2 + viewRef.current.panX
+      const offsetY =
+        (height - drawHeight) / 2 + viewRef.current.panY
+
+      transformRef.current = {
+        scale,
+        offsetX,
+        offsetY,
+      }
+
+      const bitmapCanvas = document.createElement('canvas')
+      bitmapCanvas.width = imageData.width
+      bitmapCanvas.height = imageData.height
+
+      const bitmapContext = bitmapCanvas.getContext('2d')
+
+      if (!bitmapContext) {
+        return
+      }
+
+      bitmapContext.putImageData(imageData, 0, 0)
+
+      context.imageSmoothingEnabled = false
+
+      context.drawImage(
+        bitmapCanvas,
+        offsetX,
+        offsetY,
+        drawWidth,
+        drawHeight,
+      )
+
+      context.strokeStyle = 'rgba(0, 0, 0, 0.12)'
+      context.lineWidth = 1
+
+      const gridSize = 50 * scale
+
+      if (gridSize > 8) {
+        for (
+          let x = offsetX % gridSize;
+          x < width;
+          x += gridSize
+        ) {
+          context.beginPath()
+          context.moveTo(x, offsetY)
+          context.lineTo(x, offsetY + drawHeight)
+          context.stroke()
+        }
+
+        for (
+          let y = offsetY % gridSize;
+          y < height;
+          y += gridSize
+        ) {
+          context.beginPath()
+          context.moveTo(offsetX, y)
+          context.lineTo(offsetX + drawWidth, y)
+          context.stroke()
+        }
+      }
+
+      if (showZones) {
+        for (const zone of zones) {
+          const topLeft = worldToPixel(
+            { x: zone.min_x, y: zone.max_y },
+            config,
+            imageData.width,
+            imageData.height,
+          )
+
+          const bottomRight = worldToPixel(
+            { x: zone.max_x, y: zone.min_y },
+            config,
+            imageData.width,
+            imageData.height,
+          )
+
+          const x = offsetX + topLeft.x * scale
+          const y = offsetY + topLeft.y * scale
+          const zoneWidth = (bottomRight.x - topLeft.x) * scale
+          const zoneHeight = (bottomRight.y - topLeft.y) * scale
+
+          context.fillStyle = getZoneFill(zone.zone_type)
+          context.strokeStyle =
+            selectedZoneId === zone.id
+              ? '#ffffff'
+              : getZoneStroke(zone.zone_type)
+
+          context.lineWidth =
+            selectedZoneId === zone.id ? 3 : 2
+
+          context.fillRect(x, y, zoneWidth, zoneHeight)
+          context.strokeRect(x, y, zoneWidth, zoneHeight)
+
+          context.fillStyle = '#111827'
+          context.font = '600 12px Inter, sans-serif'
+          context.fillText(zone.code, x + 6, y + 16)
+        }
+      }
+
+      if (previewRect) {
+        const start = worldToPixel(
+          previewRect.start,
+          config,
+          imageData.width,
+          imageData.height,
+        )
+
+        const end = worldToPixel(
+          previewRect.end,
+          config,
+          imageData.width,
+          imageData.height,
+        )
+
+        const x = offsetX + Math.min(start.x, end.x) * scale
+        const y = offsetY + Math.min(start.y, end.y) * scale
+        const rectWidth = Math.abs(end.x - start.x) * scale
+        const rectHeight = Math.abs(end.y - start.y) * scale
+
+        context.fillStyle = 'rgba(0, 86, 210, 0.2)'
+        context.strokeStyle = '#0056d2'
+        context.lineWidth = 2
+        context.setLineDash([6, 4])
+        context.fillRect(x, y, rectWidth, rectHeight)
+        context.strokeRect(x, y, rectWidth, rectHeight)
+        context.setLineDash([])
+      }
+
+      if (showEndpoints) {
+        for (const endpoint of endpoints) {
+          const pixel = worldToPixel(
+            {
+              x: endpoint.position_x,
+              y: endpoint.position_y,
+            },
+            config,
+            imageData.width,
+            imageData.height,
+          )
+
+          const screenX = offsetX + pixel.x * scale
+          const screenY = offsetY + pixel.y * scale
+
+          const selected =
+            endpoint.id === selectedEndpointId
+
+          context.beginPath()
+          context.arc(
+            screenX,
+            screenY,
+            selected ? 9 : 7,
+            0,
+            Math.PI * 2,
+          )
+
+          context.fillStyle = endpoint.is_active
+            ? '#22c55e'
+            : '#6b7280'
+
+          context.fill()
+
+          context.lineWidth = selected ? 3 : 2
+          context.strokeStyle = selected
+            ? '#ffffff'
+            : '#111827'
+
+          context.stroke()
+
+          if (selected) {
+            context.beginPath()
+            context.arc(
+              screenX,
+              screenY,
+              14,
+              0,
+              Math.PI * 2,
+            )
+
+            context.strokeStyle = 'rgba(0, 86, 210, 0.8)'
+            context.lineWidth = 2
+            context.stroke()
+          }
+
+          context.fillStyle = '#111827'
+          context.font = '600 11px Inter, sans-serif'
+          context.fillText(
+            endpoint.location?.name || endpoint.code,
+            screenX + 10,
+            screenY - 10,
+            220,
+          )
+        }
+      }
+    }
+
+    drawRef.current = draw
+    draw()
+
+    const observer = new ResizeObserver(draw)
+    observer.observe(container)
+
+    return () => {
+      observer.disconnect()
+      if (drawRef.current === draw) {
+        drawRef.current = null
+      }
+    }
+  }, [
+    endpoints,
+    zones,
+    selectedEndpointId,
+    selectedZoneId,
+    showEndpoints,
+    showZones,
+    previewRect,
+    loading,
+  ])
+
+  const screenToWorld = (
+    screenX: number,
+    screenY: number,
+  ): Point | null => {
+    const imageData = imageDataRef.current
+    const config = configRef.current
+
+    if (!imageData || !config) {
+      return null
+    }
+
+    const { scale, offsetX, offsetY } = transformRef.current
+
+    const pixelX = (screenX - offsetX) / scale
+    const pixelY = (screenY - offsetY) / scale
+
+    if (
+      pixelX < 0 ||
+      pixelY < 0 ||
+      pixelX > imageData.width ||
+      pixelY > imageData.height
+    ) {
+      return null
+    }
+
+    return pixelToWorld(
+      {
+        x: pixelX,
+        y: pixelY,
+      },
+      config,
+      imageData.width,
+      imageData.height,
+    )
+  }
+
+  const getEndpointAt = (screenX: number, screenY: number) => {
+    const imageData = imageDataRef.current
+    const config = configRef.current
+
+    if (!imageData || !config) {
+      return undefined
+    }
+
+    const { scale, offsetX, offsetY } = transformRef.current
+
+    return endpoints.find((endpoint) => {
+      const pixel = worldToPixel(
+        {
+          x: endpoint.position_x,
+          y: endpoint.position_y,
+        },
+        config,
+        imageData.width,
+        imageData.height,
+      )
+
+      const endpointX = offsetX + pixel.x * scale
+      const endpointY = offsetY + pixel.y * scale
+      const distance = Math.hypot(
+        screenX - endpointX,
+        screenY - endpointY,
+      )
+
+      return distance <= 16
+    })
+  }
+
+  const zoomAt = (
+    factor: number,
+    requestedX?: number,
+    requestedY?: number,
+  ) => {
+    const container = containerRef.current
+    const imageData = imageDataRef.current
+
+    if (!container || !imageData) {
+      return
+    }
+
+    const centerX = container.clientWidth / 2
+    const centerY = container.clientHeight / 2
+    const screenX = requestedX ?? centerX
+    const screenY = requestedY ?? centerY
+    const currentZoom = viewRef.current.zoom
+    const nextZoom = Math.min(8, Math.max(1, currentZoom * factor))
+
+    if (nextZoom === currentZoom) {
+      return
+    }
+
+    const ratio = nextZoom / currentZoom
+    const currentTransform = transformRef.current
+    const nextScale = currentTransform.scale * ratio
+    const nextOffsetX =
+      screenX - (screenX - currentTransform.offsetX) * ratio
+    const nextOffsetY =
+      screenY - (screenY - currentTransform.offsetY) * ratio
+
+    viewRef.current = {
+      zoom: nextZoom,
+      panX:
+        nextZoom === 1
+          ? 0
+          : nextOffsetX -
+            (container.clientWidth - imageData.width * nextScale) / 2,
+      panY:
+        nextZoom === 1
+          ? 0
+          : nextOffsetY -
+            (container.clientHeight - imageData.height * nextScale) / 2,
+    }
+
+    drawRef.current?.()
+  }
+
+  const resetView = () => {
+    viewRef.current = { zoom: 1, panX: 0, panY: 0 }
+    drawRef.current?.()
+  }
+
+  const handleWheel = (event: React.WheelEvent<HTMLCanvasElement>) => {
+    event.preventDefault()
+    const rect = event.currentTarget.getBoundingClientRect()
+    zoomAt(
+      event.deltaY < 0 ? 1.15 : 1 / 1.15,
+      event.clientX - rect.left,
+      event.clientY - rect.top,
+    )
+  }
+
+  const handlePointerDown = (
+    event: React.PointerEvent<HTMLCanvasElement>,
+  ) => {
+    if (zoneDrawMode) {
+      const rect = event.currentTarget.getBoundingClientRect()
+
+      const x = event.clientX - rect.left
+      const y = event.clientY - rect.top
+
+      const world = screenToWorld(x, y)
+
+      if (!world) {
+        return
+      }
+
+      dragStartRef.current = world
+      draggingRef.current = true
+
+      event.currentTarget.setPointerCapture(event.pointerId)
+      return
+    }
+
+    if (viewRef.current.zoom <= 1) {
+      return
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect()
+    panStartRef.current = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      panX: viewRef.current.panX,
+      panY: viewRef.current.panY,
+    }
+    draggingRef.current = false
+    event.currentTarget.style.cursor = 'grabbing'
+
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+
+  const handlePointerMove = (
+    event: React.PointerEvent<HTMLCanvasElement>,
+  ) => {
+    if (zoneDrawMode && draggingRef.current) {
+      const rect = event.currentTarget.getBoundingClientRect()
+
+      const x = event.clientX - rect.left
+      const y = event.clientY - rect.top
+
+      const world = screenToWorld(x, y)
+
+      if (!world || !dragStartRef.current) {
+        return
+      }
+
+      setPreviewRect({
+        start: dragStartRef.current,
+        end: world,
+      })
+      return
+    }
+
+    if (!panStartRef.current) {
+      return
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+    const deltaX = x - panStartRef.current.x
+    const deltaY = y - panStartRef.current.y
+
+    if (Math.hypot(deltaX, deltaY) > 3) {
+      draggingRef.current = true
+      viewRef.current.panX = panStartRef.current.panX + deltaX
+      viewRef.current.panY = panStartRef.current.panY + deltaY
+      drawRef.current?.()
+    }
+  }
+
+  const handlePointerUp = (
+    event: React.PointerEvent<HTMLCanvasElement>,
+  ) => {
+    if (!zoneDrawMode) {
+      panStartRef.current = null
+      if (draggingRef.current) {
+        suppressClickRef.current = true
+        draggingRef.current = false
+      }
+      event.currentTarget.style.cursor =
+        viewRef.current.zoom > 1 ? 'grab' : 'pointer'
+      return
+    }
+
+    if (!draggingRef.current) {
+      return
+    }
+
+    draggingRef.current = false
+
+    const rect = event.currentTarget.getBoundingClientRect()
+
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+
+    const world = screenToWorld(x, y)
+
+    if (!world || !dragStartRef.current) {
+      dragStartRef.current = null
+      setPreviewRect(null)
+      return
+    }
+
+    const start = dragStartRef.current
+
+    const min_x = Math.min(start.x, world.x)
+    const max_x = Math.max(start.x, world.x)
+    const min_y = Math.min(start.y, world.y)
+    const max_y = Math.max(start.y, world.y)
+
+    if (
+      Math.abs(max_x - min_x) > 0.2 &&
+      Math.abs(max_y - min_y) > 0.2
+    ) {
+      onZoneDrawComplete({
+        min_x,
+        min_y,
+        max_x,
+        max_y,
+      })
+    }
+
+    dragStartRef.current = null
+    setPreviewRect(null)
+  }
+
+  const handleCanvasClick = (
+    event: React.MouseEvent<HTMLCanvasElement>,
+  ) => {
+    if (zoneDrawMode) {
+      return
+    }
+
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false
+      return
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect()
+
+    const screenX = event.clientX - rect.left
+    const screenY = event.clientY - rect.top
+
+    const world = screenToWorld(screenX, screenY)
+
+    if (!world) {
+      return
+    }
+
+    const config = configRef.current
+    const imageData = imageDataRef.current
+
+    if (!config || !imageData) {
+      return
+    }
+
+    if (showEndpoints) {
+      const hitEndpoint = getEndpointAt(screenX, screenY)
+
+      if (hitEndpoint) {
+        onEndpointSelect(hitEndpoint.id)
+        return
+      }
+    }
+
+    if (showZones) {
+      const hitZone = zones.find(
+        (zone) =>
+          world.x >= zone.min_x &&
+          world.x <= zone.max_x &&
+          world.y >= zone.min_y &&
+          world.y <= zone.max_y,
+      )
+
+      if (hitZone) {
+        onZoneSelect(hitZone.id)
+        return
+      }
+    }
+
+    if (showZones) {
+      onMapClick({
+        x: world.x,
+        y: world.y,
+        screenX,
+        screenY,
+      })
+    }
+  }
+
+  const handleCanvasDoubleClick = (
+    event: React.MouseEvent<HTMLCanvasElement>,
+  ) => {
+    if (!showEndpoints || zoneDrawMode || suppressClickRef.current) {
+      return
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect()
+    const screenX = event.clientX - rect.left
+    const screenY = event.clientY - rect.top
+    const world = screenToWorld(screenX, screenY)
+
+    if (!world || getEndpointAt(screenX, screenY)) {
+      return
+    }
+
+    onMapClick({
+      x: world.x,
+      y: world.y,
+      screenX,
+      screenY,
+    })
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center bg-[#0c0d10] text-sm text-white/60">
+        Loading library map...
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-full items-center justify-center bg-[#0c0d10] p-6 text-center">
+        <div>
+          <p className="text-sm font-medium text-red-400">
+            Unable to load map
+          </p>
+          <p className="mt-1 text-xs text-white/50">{error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative h-full w-full overflow-hidden bg-[#0c0d10]"
+    >
+      <canvas
+        ref={canvasRef}
+        className={`block h-full w-full ${
+          zoneDrawMode ? 'cursor-crosshair' : 'cursor-pointer'
+        }`}
+        onClick={handleCanvasClick}
+        onDoubleClick={handleCanvasDoubleClick}
+        onWheel={handleWheel}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      />
+
+      <div className="pointer-events-none absolute bottom-4 left-4 rounded-lg border border-white/10 bg-black/60 px-3 py-2 text-xs text-white/60 backdrop-blur">
+        {zoneDrawMode
+          ? 'Drag on the map to draw a zone'
+          : showEndpoints
+            ? 'Double-click an empty location to create an endpoint'
+            : 'Map view'}
+      </div>
+
+      <div className="absolute bottom-4 right-4 flex items-center gap-1 rounded-md border border-white/10 bg-black/60 p-1 backdrop-blur">
+        <button
+          type="button"
+          onClick={() => zoomAt(1.25)}
+          title="Zoom in"
+          aria-label="Zoom in"
+          className="flex h-8 w-8 items-center justify-center rounded text-white/75 hover:bg-white/10 hover:text-white"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => zoomAt(0.8)}
+          title="Zoom out"
+          aria-label="Zoom out"
+          className="flex h-8 w-8 items-center justify-center rounded text-white/75 hover:bg-white/10 hover:text-white"
+        >
+          <Minus className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={resetView}
+          title="Reset map view"
+          aria-label="Reset map view"
+          className="flex h-8 w-8 items-center justify-center rounded text-white/75 hover:bg-white/10 hover:text-white"
+        >
+          <RotateCcw className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default MapViewer
