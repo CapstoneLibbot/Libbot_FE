@@ -1,21 +1,8 @@
 import { useMemo, useState } from 'react'
-import { Activity, ChevronDown, Search, X } from 'lucide-react'
+import { Activity, ChevronDown, Plus, Search, X } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import { getWorkflows } from '@/lib/workflowData'
 import { WorkflowStatus } from '@/types/workflow'
-
-type Workflow = {
-  id: number
-  name: string
-  status: WorkflowStatus
-}
-
-const sampleWorkflows: Workflow[] = [
-  { id: 1, name: 'Book Retrieval', status: WorkflowStatus.Active },
-  { id: 2, name: 'Book Return', status: WorkflowStatus.Active },
-  { id: 3, name: 'Shelf Inventory', status: WorkflowStatus.Inactive },
-  { id: 4, name: 'New Arrival Processing', status: WorkflowStatus.Draft },
-  { id: 5, name: 'Reading Room Delivery', status: WorkflowStatus.Inactive },
-  { id: 6, name: 'Inter-floor Transfer', status: WorkflowStatus.Active },
-]
 
 const statusStyles: Record<WorkflowStatus, string> = {
   [WorkflowStatus.Draft]: 'bg-[#fff4df] text-[#946200]',
@@ -30,13 +17,15 @@ const statusLabels: Record<WorkflowStatus, string> = {
 }
 
 function WorkflowList() {
+  const navigate = useNavigate()
+  const [workflows] = useState(getWorkflows)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<'All' | WorkflowStatus>('All')
 
   const filteredWorkflows = useMemo(() => {
     const searchValue = search.trim().toLowerCase()
 
-    return sampleWorkflows.filter((workflow) => {
+    return workflows.filter((workflow) => {
       const matchesSearch =
         !searchValue ||
         workflow.id.toString().includes(searchValue) ||
@@ -44,7 +33,7 @@ function WorkflowList() {
 
       return matchesSearch && (status === 'All' || workflow.status === status)
     })
-  }, [search, status])
+  }, [search, status, workflows])
 
   const hasFilters = search !== '' || status !== 'All'
 
@@ -56,19 +45,30 @@ function WorkflowList() {
   return (
     <div className="min-h-full bg-[#f9f7fd] p-8">
       <div className="space-y-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
-            <Activity className="h-5 w-5 text-primary" />
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
+              <Activity className="h-5 w-5 text-primary" />
+            </div>
+
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-[#17181c]">
+                Workflows
+              </h1>
+              <p className="mt-0.5 text-sm text-[#596174]">
+                Manage and monitor library workflows.
+              </p>
+            </div>
           </div>
 
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#17181c]">
-              Workflows
-            </h1>
-            <p className="mt-0.5 text-sm text-[#596174]">
-              Manage and monitor library workflows.
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/workflows/create')}
+            className="inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            Create Workflow
+          </button>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -114,7 +114,7 @@ function WorkflowList() {
         </div>
 
         <div className="text-xs text-[#687386]" aria-live="polite">
-          Showing {filteredWorkflows.length} of {sampleWorkflows.length} workflows
+          Showing {filteredWorkflows.length} of {workflows.length} workflows
         </div>
 
         <div className="overflow-hidden border border-[#d9dce5] bg-white">
@@ -138,7 +138,14 @@ function WorkflowList() {
                   filteredWorkflows.map((workflow) => (
                     <tr
                       key={workflow.id}
-                      className="border-b border-[#d9dce5] last:border-b-0 hover:bg-[#faf9fc]"
+                      onClick={() => navigate(`/workflows/${workflow.id}`)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') navigate(`/workflows/${workflow.id}`)
+                      }}
+                      role="link"
+                      tabIndex={0}
+                      aria-label={`View ${workflow.name}`}
+                      className="cursor-pointer border-b border-[#d9dce5] last:border-b-0 transition hover:bg-[#faf9fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                     >
                       <td className="px-4 py-4 font-mono text-xs font-semibold text-primary">
                         {workflow.id}

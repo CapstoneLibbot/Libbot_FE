@@ -113,7 +113,9 @@ Luồng khởi chạy:
 | `/floors/:id` | `PlaceholderPage` | Chưa dùng `FloorDetail.tsx` (file rỗng) |
 | `/aisles/:id` | `AisleDetail` | Chi tiết Aisle; component cũng có nhánh danh sách nhưng route danh sách `/aisles` chưa khai báo |
 | `/shelves/:id` | `ShelfDetail` | Chi tiết Shelf; component cũng có nhánh danh sách nhưng route danh sách `/shelves` chưa khai báo |
-| `/workflows` | `WorkflowList` | Danh sách mock gồm ID, tên, trạng thái; hỗ trợ tìm kiếm và lọc theo enum `Draft=1`, `Active=2`, `Inactive=3` |
+| `/workflows` | `WorkflowList` | Danh sách workflow mock gồm ID, tên, trạng thái; hỗ trợ tìm kiếm, lọc trạng thái và tạo mới |
+| `/workflows/create` | `WorkflowCreate` | Tạo workflow cùng task/step theo thứ tự và StepType; chỉ lưu định nghĩa, chưa gán tham số runtime; lưu mock trong `localStorage` |
+| `/workflows/:id` | `WorkflowDetail` | Xem thông tin workflow cùng danh sách task/step theo thứ tự; không hiển thị tham số runtime |
 | `/tasks`, `/iii-row`, `/book`, `/inventory`, `/inventory-results`, `/alerts`, `/history`, `/reports`, `/settings` | `PlaceholderPage` | Chưa triển khai nghiệp vụ |
 
 Sidebar được khai báo riêng trong `src/components/layout/Sidebar.tsx`. Mục Shelf hiện trỏ tới `/shelf`, trong khi route chi tiết đang là `/shelves/:id`; `/shelf` hiện không khớp route và sẽ redirect về `/`. Khi làm tiếp Shelf, cần thống nhất URL và cập nhật cả Sidebar lẫn router.
