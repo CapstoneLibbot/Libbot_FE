@@ -192,6 +192,40 @@ aside nav a:hover {
   transform: translateX(2px);
 }
 
+.map-detail-panel [class~="text-white"] {
+  color: #252933 !important;
+}
+
+.map-detail-panel [class*="text-white/"] {
+  color: #596174 !important;
+}
+
+.map-detail-panel .bg-primary {
+  color: #ffffff !important;
+}
+
+.map-detail-panel [class*="border-white"] {
+  border-color: #e0e3e9 !important;
+}
+
+.map-detail-panel [class*="bg-white/"] {
+  background-color: #f1f3f6 !important;
+}
+
+.map-detail-panel [class*="bg-white/30"] {
+  background-color: #a3a8b2 !important;
+}
+
+.map-detail-panel [class*="hover:bg-white/"]:hover {
+  background-color: #e9edf3 !important;
+}
+
+.map-detail-panel select {
+  border-color: #d9dce5;
+  background-color: #ffffff;
+  color: #252933;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

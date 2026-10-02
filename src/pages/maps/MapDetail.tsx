@@ -377,6 +377,9 @@ function MapDetail() {
   const [endpointGroupFilterId, setEndpointGroupFilterId] =
     useState<number | null>(null)
 
+  const [zoneTypeFilter, setZoneTypeFilter] =
+    useState<MapZone['zone_type'] | null>(null)
+
   const [zoneDrawMode, setZoneDrawMode] = useState(false)
 
   const [createEndpointPosition, setCreateEndpointPosition] =
@@ -417,6 +420,14 @@ function MapDetail() {
             ),
           ),
     [endpoints, endpointGroupFilterId],
+  )
+
+  const filteredZones = useMemo(
+    () =>
+      zoneTypeFilter === null
+        ? zones
+        : zones.filter((zone) => zone.zone_type === zoneTypeFilter),
+    [zones, zoneTypeFilter],
   )
 
   const handleEndpointSelect = (endpointId: number) => {
@@ -602,7 +613,7 @@ function MapDetail() {
             yamlUrl="/maps/floor1_library_v1.yaml"
             endpoints={filteredEndpoints}
             aisles={initialAisles}
-            zones={zones}
+            zones={filteredZones}
             selectedEndpointId={selectedEndpointId}
             selectedZoneId={selectedZoneId}
             showEndpoints={activeTab === 'endpoint'}
@@ -621,7 +632,8 @@ function MapDetail() {
           endpoints={filteredEndpoints}
           endpointGroups={initialEndpointGroups}
           endpointGroupFilterId={endpointGroupFilterId}
-          zones={zones}
+          zones={filteredZones}
+          zoneTypeFilter={zoneTypeFilter}
           selectedEndpoint={selectedEndpoint}
           selectedZone={selectedZone}
           zoneDrawMode={zoneDrawMode}
@@ -643,11 +655,17 @@ function MapDetail() {
             setSelectedEndpointId(null)
           }}
           onZoneSelect={handleZoneSelect}
+          onZoneBack={() => setSelectedZoneId(null)}
+          onZoneTypeFilterChange={(zoneType) => {
+            setZoneTypeFilter(zoneType)
+            setSelectedZoneId(null)
+          }}
           onCreateEndpoint={handleCreateEndpoint}
           onDrawZone={() => {
             setActiveTab('zone')
             setSelectedEndpointId(null)
             setSelectedZoneId(null)
+            setZoneTypeFilter(null)
             setZoneDrawMode((current) => !current)
           }}
         />

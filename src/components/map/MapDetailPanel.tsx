@@ -40,6 +40,7 @@ type MapDetailPanelProps = {
   endpointGroups: EndpointGroup[]
   endpointGroupFilterId: number | null
   zones: MapZone[]
+  zoneTypeFilter: MapZone['zone_type'] | null
   selectedEndpoint: MapEndpoint | null
   selectedZone: MapZone | null
   zoneDrawMode: boolean
@@ -48,6 +49,8 @@ type MapDetailPanelProps = {
   onEndpointBack: () => void
   onEndpointGroupFilterChange: (groupId: number | null) => void
   onZoneSelect: (id: number) => void
+  onZoneBack: () => void
+  onZoneTypeFilterChange: (zoneType: MapZone['zone_type'] | null) => void
   onCreateEndpoint: () => void
   onDrawZone: () => void
 }
@@ -112,6 +115,7 @@ function MapDetailPanel({
   endpointGroups,
   endpointGroupFilterId,
   zones,
+  zoneTypeFilter,
   selectedEndpoint,
   selectedZone,
   zoneDrawMode,
@@ -120,11 +124,13 @@ function MapDetailPanel({
   onEndpointBack,
   onEndpointGroupFilterChange,
   onZoneSelect,
+  onZoneBack,
+  onZoneTypeFilterChange,
   onCreateEndpoint,
   onDrawZone,
 }: MapDetailPanelProps) {
   return (
-    <aside className="flex h-[240px] w-full shrink-0 flex-col border-t border-white/10 bg-[#17181d] text-white xl:h-full xl:w-[360px] xl:border-l xl:border-t-0">
+    <aside className="map-detail-panel flex h-[240px] w-full shrink-0 flex-col border-t border-[#e0e3e9] bg-white text-[#252933] xl:h-full xl:w-[360px] xl:border-l xl:border-t-0">
       <div className="flex h-14 shrink-0 items-center border-b border-white/10 px-3">
         {[
           ['detail', 'Detail'],
@@ -410,67 +416,16 @@ function MapDetailPanel({
 
         {activeTab === 'zone' && (
           <div>
-            <div className="border-b border-white/10 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-white/35">
-                    Zones
-                  </p>
-                  <p className="mt-1 text-xs text-white/40">
-                    {zones.length} zone{zones.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-
+            {selectedZone ? (
+              <div className="px-4 pb-6">
                 <button
                   type="button"
-                  onClick={onDrawZone}
-                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-2 text-xs font-medium transition ${
-                    zoneDrawMode
-                      ? 'bg-primary text-white'
-                      : 'bg-white/8 text-white/80 hover:bg-white/12'
-                  }`}
+                  onClick={onZoneBack}
+                  className="mb-3 inline-flex items-center gap-1.5 text-xs text-[#596174] hover:text-primary"
                 >
-                  <SquareDashed className="h-3.5 w-3.5" />
-                  {zoneDrawMode ? 'Drawing...' : 'Draw Zone'}
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Back to zones
                 </button>
-              </div>
-            </div>
-
-            <div className="border-b border-white/10">
-              {zones.map((zone) => {
-                const selected = zone.id === selectedZone?.id
-
-                return (
-                  <button
-                    key={zone.id}
-                    type="button"
-                    onClick={() => onZoneSelect(zone.id)}
-                    className={`flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left last:border-0 ${
-                      selected
-                        ? 'bg-primary/15'
-                        : 'hover:bg-white/4'
-                    }`}
-                  >
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white/8">
-                      <SquareDashed className="h-3.5 w-3.5 text-white/60" />
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-white/85">
-                        {zone.code}
-                      </p>
-
-                      <p className="truncate text-xs text-white/40">
-                        {zone.name}
-                      </p>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-
-            {selectedZone && (
-              <div className="px-4 pb-6">
                 <div className="border-b border-white/10 py-4">
                   <p className="text-xs font-medium uppercase tracking-wider text-white/35">
                     Selected Zone
@@ -568,12 +523,90 @@ function MapDetailPanel({
                   }
                 />
               </div>
-            )}
+            ) : (
+              <>
+                <div className="border-b border-white/10 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wider text-white/35">
+                        Zones
+                      </p>
+                      <p className="mt-1 text-xs text-white/40">
+                        {zones.length} zone{zones.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
 
-            {!selectedZone && (
-              <div className="px-4 py-8 text-center text-xs text-white/35">
-                Select a zone on the map or from the list.
-              </div>
+                    <button
+                      type="button"
+                      onClick={onDrawZone}
+                      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-2 text-xs font-medium transition ${
+                        zoneDrawMode
+                          ? 'bg-primary text-white'
+                          : 'bg-white/8 text-white/80 hover:bg-white/12'
+                      }`}
+                    >
+                      <SquareDashed className="h-3.5 w-3.5" />
+                      {zoneDrawMode ? 'Drawing...' : 'Draw Zone'}
+                    </button>
+                  </div>
+                </div>
+
+                <label className="block border-b border-white/10 px-4 py-3 text-xs text-white/55">
+                  Filter by zone type
+                  <select
+                    value={zoneTypeFilter ?? ''}
+                    onChange={(event) =>
+                      onZoneTypeFilterChange(
+                        event.target.value
+                          ? Number(event.target.value) as MapZone['zone_type']
+                          : null,
+                      )
+                    }
+                    className="mt-1.5 h-9 w-full rounded-md border border-white/10 bg-white px-3 text-sm text-[#252933] outline-none focus:border-primary"
+                  >
+                    <option value="">All types</option>
+                    <option value={1}>EXCLUSION</option>
+                    <option value={2}>SPEED_LIMIT</option>
+                    <option value={3}>PREFERRED_DIRECTION</option>
+                    <option value={4}>NARROW_CORRIDOR</option>
+                  </select>
+                </label>
+
+                <div className="border-b border-white/10">
+                  {zones.map((zone) => (
+                    <button
+                      key={zone.id}
+                      type="button"
+                      onClick={() => onZoneSelect(zone.id)}
+                      className="flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left last:border-0 hover:bg-white/4"
+                    >
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white/8">
+                        <SquareDashed className="h-3.5 w-3.5 text-white/60" />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-white/85">
+                          {zone.code}
+                        </p>
+
+                        <p className="truncate text-xs text-white/40">
+                          {zone.name}
+                        </p>
+                      </div>
+
+                      <span className="rounded bg-white/8 px-1.5 py-0.5 text-[10px] text-white/55">
+                        {zoneTypeLabel(zone.zone_type)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {zones.length === 0 && (
+                  <div className="px-4 py-8 text-center text-xs text-white/35">
+                    No zones match this type.
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
