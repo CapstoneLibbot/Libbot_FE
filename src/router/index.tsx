@@ -12,6 +12,7 @@ import AisleDetail from '../pages/aisles/AisleDetail'
 import ListMap from '../pages/maps/ListMap'
 import MapDetail from '../pages/maps/MapDetail'
 import ShelfDetail from '../pages/shelves/ShelfDetail'
+import TaskList from '../pages/tasks/TaskList'
 import WorkflowCreate from '../pages/workflows/WorkflowCreate'
 import WorkflowDetail from '../pages/workflows/WorkflowDetail'
 import WorkflowList from '../pages/workflows/WorkflowList'
@@ -91,7 +92,7 @@ function AppRouter() {
 
           <Route
             path="/tasks"
-            element={<PlaceholderPage title="Tasks" />}
+            element={<TaskList />}
           />
 
           <Route
