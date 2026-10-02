@@ -122,10 +122,10 @@ function ListMap() {
     search !== '' || status !== 'All' || version !== 'All'
 
   return (
-    <div className="min-h-full bg-[#f9f7fd]">
+    <div className="min-h-full bg-[#f9f7fd] p-5 sm:p-8">
       <div className="space-y-5">
         {/* Page Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
@@ -154,7 +154,7 @@ function ListMap() {
         </div>
 
         {/* Search & Filter */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="relative w-full max-w-[350px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#687386]" />
 

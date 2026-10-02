@@ -38,6 +38,7 @@ function TaskList() {
   const [workflowId, setWorkflowId] = useState('All')
   const [status, setStatus] = useState<'All' | JobStatusValue>('All')
   const [priority, setPriority] = useState('All')
+  const [currentPage, setCurrentPage] = useState(1)
 
   const filteredJobs = useMemo(() => {
     const searchValue = search.trim().toLowerCase()
@@ -55,6 +56,11 @@ function TaskList() {
     })
   }, [jobs, priority, search, status, workflowId])
 
+  const pageSize = 5
+  const pageCount = Math.max(1, Math.ceil(filteredJobs.length / pageSize))
+  const visiblePage = Math.min(currentPage, pageCount)
+  const paginatedJobs = filteredJobs.slice((visiblePage - 1) * pageSize, visiblePage * pageSize)
+
   const hasFilters =
     search !== '' || workflowId !== 'All' || status !== 'All' || priority !== 'All'
 
@@ -63,6 +69,7 @@ function TaskList() {
     setWorkflowId('All')
     setStatus('All')
     setPriority('All')
+    setCurrentPage(1)
   }
 
   const workflowNames = new Map(workflows.map((workflow) => [workflow.id, workflow.name]))
@@ -72,24 +79,24 @@ function TaskList() {
   return (
     <div className="min-h-full bg-[#f9f7fd] p-5 sm:p-8">
       <div className="space-y-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
-            <CheckSquare className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
+              <CheckSquare className="h-5 w-5 text-primary" />
+            </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-[#17181c]">Tasks</h1>
               <p className="mt-0.5 text-sm text-[#596174]">Manage robot tasks and their workflow assignments.</p>
             </div>
-            <button
-              type="button"
-              onClick={() => navigate('/tasks/create')}
-              className="inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4" />
-              Create Task
-            </button>
           </div>
+          <button
+            type="button"
+            onClick={() => navigate('/tasks/create')}
+            className="ml-auto inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            Create Task
+          </button>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_190px_170px_150px_auto]">
@@ -98,7 +105,10 @@ function TaskList() {
             <input
               type="search"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value)
+                setCurrentPage(1)
+              }}
               placeholder="Search tasks by ID or name..."
               aria-label="Search tasks by ID or name"
               className="h-10 w-full border border-[#d7d9e2] bg-white pl-9 pr-3 text-sm text-[#17181c] outline-none transition placeholder:text-[#7b8190] focus:border-primary"
@@ -108,7 +118,10 @@ function TaskList() {
           <div className="relative">
             <select
               value={workflowId}
-              onChange={(event) => setWorkflowId(event.target.value)}
+              onChange={(event) => {
+                setWorkflowId(event.target.value)
+                setCurrentPage(1)
+              }}
               aria-label="Filter tasks by workflow"
               className={selectClassName}
             >
@@ -123,7 +136,10 @@ function TaskList() {
           <div className="relative">
             <select
               value={status}
-              onChange={(event) => setStatus(event.target.value as 'All' | JobStatusValue)}
+              onChange={(event) => {
+                setStatus(event.target.value as 'All' | JobStatusValue)
+                setCurrentPage(1)
+              }}
               aria-label="Filter tasks by status"
               className={selectClassName}
             >
@@ -138,7 +154,10 @@ function TaskList() {
           <div className="relative">
             <select
               value={priority}
-              onChange={(event) => setPriority(event.target.value)}
+              onChange={(event) => {
+                setPriority(event.target.value)
+                setCurrentPage(1)
+              }}
               aria-label="Filter tasks by priority"
               className={selectClassName}
             >
@@ -161,10 +180,6 @@ function TaskList() {
           </button>
         </div>
 
-        <div className="text-xs text-[#687386]" aria-live="polite">
-          Showing {filteredJobs.length} of {jobs.length} tasks
-        </div>
-
         <div className="overflow-hidden border border-[#d9dce5] bg-white">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1050px] text-sm">
@@ -180,7 +195,7 @@ function TaskList() {
                 </tr>
               </thead>
               <tbody>
-                {filteredJobs.length > 0 ? filteredJobs.map((job) => (
+                {paginatedJobs.length > 0 ? paginatedJobs.map((job) => (
                   <tr
                     key={job.id}
                     onClick={() => navigate(`/tasks/${job.id}`)}
@@ -219,6 +234,45 @@ function TaskList() {
                 )}
               </tbody>
             </table>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#d9dce5] px-4 py-3">
+            <p className="text-xs text-[#687386]" aria-live="polite">
+              Showing {filteredJobs.length} of {jobs.length} tasks
+            </p>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setCurrentPage(visiblePage - 1)}
+                disabled={visiblePage === 1}
+                aria-label="Previous page"
+                className="flex h-7 w-7 items-center justify-center text-[#a3a8b2] disabled:cursor-not-allowed enabled:hover:bg-[#f1eff5]"
+              >
+                ‹
+              </button>
+              {Array.from({ length: pageCount }, (_, index) => index + 1).map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => setCurrentPage(page)}
+                  aria-label={`Page ${page}`}
+                  aria-current={page === visiblePage ? 'page' : undefined}
+                  className={page === visiblePage
+                    ? 'flex h-7 min-w-7 items-center justify-center bg-primary px-2 text-xs font-medium text-white'
+                    : 'flex h-7 min-w-7 items-center justify-center px-2 text-xs font-medium text-[#596174] hover:bg-[#f1eff5]'}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setCurrentPage(visiblePage + 1)}
+                disabled={visiblePage === pageCount}
+                aria-label="Next page"
+                className="flex h-7 w-7 items-center justify-center text-[#a3a8b2] disabled:cursor-not-allowed enabled:hover:bg-[#f1eff5]"
+              >
+                ›
+              </button>
+            </div>
           </div>
         </div>
       </div>

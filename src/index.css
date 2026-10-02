@@ -112,3 +112,19 @@ button {
 button:disabled {
   cursor: not-allowed;
 }
+
+main button:not([class~="rounded-full"]) {
+  border-radius: var(--radius);
+}
+
+main input:not([type="checkbox"]):not([type="radio"]),
+main select,
+main textarea {
+  border-radius: var(--radius);
+}
+
+main :is(section, article, div, dl)[class~="border"][class~="bg-white"],
+main [class~="overflow-hidden"][class~="border"] {
+  border-radius: 0.625rem;
+  box-shadow: 0 1px 3px rgb(23 24 28 / 6%);
+}

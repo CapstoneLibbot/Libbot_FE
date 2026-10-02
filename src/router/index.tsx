@@ -37,10 +37,10 @@ function PlaceholderPage({
 
 function AppLayout() {
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
 
-      <main className="min-w-0 flex-1">
+      <main className="h-full min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
         <Outlet />
       </main>
     </div>

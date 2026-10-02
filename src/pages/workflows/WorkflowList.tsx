@@ -21,6 +21,7 @@ function WorkflowList() {
   const [workflows] = useState(getWorkflows)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<'All' | WorkflowStatus>('All')
+  const [currentPage, setCurrentPage] = useState(1)
 
   const filteredWorkflows = useMemo(() => {
     const searchValue = search.trim().toLowerCase()
@@ -35,11 +36,17 @@ function WorkflowList() {
     })
   }, [search, status, workflows])
 
+  const pageSize = 5
+  const pageCount = Math.max(1, Math.ceil(filteredWorkflows.length / pageSize))
+  const visiblePage = Math.min(currentPage, pageCount)
+  const paginatedWorkflows = filteredWorkflows.slice((visiblePage - 1) * pageSize, visiblePage * pageSize)
+
   const hasFilters = search !== '' || status !== 'All'
 
   const clearFilters = () => {
     setSearch('')
     setStatus('All')
+    setCurrentPage(1)
   }
 
   return (
@@ -77,7 +84,10 @@ function WorkflowList() {
             <input
               type="search"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value)
+                setCurrentPage(1)
+              }}
               placeholder="Search workflows by ID or name..."
               aria-label="Search workflows by ID or name"
               className="h-10 w-full rounded-none border border-[#d7d9e2] bg-white pl-9 pr-3 text-sm text-[#17181c] outline-none transition placeholder:text-[#7b8190] focus:border-primary"
@@ -90,6 +100,7 @@ function WorkflowList() {
               onChange={(event) => {
                 const value = event.target.value
                 setStatus(value === 'All' ? 'All' : Number(value) as WorkflowStatus)
+                setCurrentPage(1)
               }}
               aria-label="Filter workflows by status"
               className="h-10 w-full appearance-none rounded-none border border-[#d7d9e2] bg-white px-3 pr-9 text-sm text-[#17181c] outline-none transition focus:border-primary"
@@ -113,10 +124,6 @@ function WorkflowList() {
           </button>
         </div>
 
-        <div className="text-xs text-[#687386]" aria-live="polite">
-          Showing {filteredWorkflows.length} of {workflows.length} workflows
-        </div>
-
         <div className="overflow-hidden border border-[#d9dce5] bg-white">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[520px] text-sm">
@@ -135,7 +142,7 @@ function WorkflowList() {
               </thead>
               <tbody>
                 {filteredWorkflows.length > 0 ? (
-                  filteredWorkflows.map((workflow) => (
+                  paginatedWorkflows.map((workflow) => (
                     <tr
                       key={workflow.id}
                       onClick={() => navigate(`/workflows/${workflow.id}`)}
@@ -169,6 +176,45 @@ function WorkflowList() {
                 )}
               </tbody>
             </table>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#d9dce5] px-4 py-3">
+            <p className="text-xs text-[#687386]" aria-live="polite">
+              Showing {filteredWorkflows.length} of {workflows.length} workflows
+            </p>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setCurrentPage(visiblePage - 1)}
+                disabled={visiblePage === 1}
+                aria-label="Previous page"
+                className="flex h-7 w-7 items-center justify-center text-[#a3a8b2] disabled:cursor-not-allowed enabled:hover:bg-[#f1eff5]"
+              >
+                ‹
+              </button>
+              {Array.from({ length: pageCount }, (_, index) => index + 1).map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => setCurrentPage(page)}
+                  aria-label={`Page ${page}`}
+                  aria-current={page === visiblePage ? 'page' : undefined}
+                  className={page === visiblePage
+                    ? 'flex h-7 min-w-7 items-center justify-center bg-primary px-2 text-xs font-medium text-white'
+                    : 'flex h-7 min-w-7 items-center justify-center px-2 text-xs font-medium text-[#596174] hover:bg-[#f1eff5]'}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setCurrentPage(visiblePage + 1)}
+                disabled={visiblePage === pageCount}
+                aria-label="Next page"
+                className="flex h-7 w-7 items-center justify-center text-[#a3a8b2] disabled:cursor-not-allowed enabled:hover:bg-[#f1eff5]"
+              >
+                ›
+              </button>
+            </div>
           </div>
         </div>
       </div>

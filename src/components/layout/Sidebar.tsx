@@ -90,7 +90,7 @@ const menuItems = [
 
 function Sidebar() {
   return (
-    <aside className="flex h-screen w-[280px] shrink-0 flex-col border-r border-[#d9dce5] bg-[#f7f7fc]">
+    <aside className="flex h-full w-[280px] shrink-0 flex-col border-r border-[#d9dce5] bg-[#f7f7fc]">
       {/* Brand */}
       <div className="flex h-[70px] items-center border-b border-[#d9dce5] px-6">
         <div>
