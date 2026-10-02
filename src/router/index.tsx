@@ -12,6 +12,7 @@ import AisleDetail from '../pages/aisles/AisleDetail'
 import ListMap from '../pages/maps/ListMap'
 import MapDetail from '../pages/maps/MapDetail'
 import ShelfDetail from '../pages/shelves/ShelfDetail'
+import WorkflowList from '../pages/workflows/WorkflowList'
 
 function PlaceholderPage({
   title,
@@ -93,7 +94,7 @@ function AppRouter() {
 
           <Route
             path="/workflows"
-            element={<PlaceholderPage title="Workflows" />}
+            element={<WorkflowList />}
           />
 
           <Route
