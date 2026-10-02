@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { CheckSquare, ChevronDown, Search, X } from 'lucide-react'
-import { sampleJobs } from '@/lib/jobData'
+import { CheckSquare, ChevronDown, Plus, Search, X } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import { getJobs } from '@/lib/jobData'
 import { getWorkflows } from '@/lib/workflowData'
 import { JobPriority, JobStatus } from '@/types/job'
 import type { JobPriority as JobPriorityValue, JobStatus as JobStatusValue } from '@/types/job'
@@ -30,7 +31,9 @@ const priorityLabels: Record<JobPriorityValue, string> = {
 const selectClassName = 'h-10 w-full appearance-none border border-[#d7d9e2] bg-white px-3 pr-9 text-sm text-[#17181c] outline-none transition focus:border-primary'
 
 function TaskList() {
+  const navigate = useNavigate()
   const workflows = useMemo(() => getWorkflows(), [])
+  const [jobs] = useState(getJobs)
   const [search, setSearch] = useState('')
   const [workflowId, setWorkflowId] = useState('All')
   const [status, setStatus] = useState<'All' | JobStatusValue>('All')
@@ -39,7 +42,7 @@ function TaskList() {
   const filteredJobs = useMemo(() => {
     const searchValue = search.trim().toLowerCase()
 
-    return sampleJobs.filter((job) => {
+    return jobs.filter((job) => {
       const matchesSearch =
         !searchValue ||
         job.id.toString().includes(searchValue) ||
@@ -50,7 +53,7 @@ function TaskList() {
 
       return matchesSearch && matchesWorkflow && matchesStatus && matchesPriority
     })
-  }, [priority, search, status, workflowId])
+  }, [jobs, priority, search, status, workflowId])
 
   const hasFilters =
     search !== '' || workflowId !== 'All' || status !== 'All' || priority !== 'All'
@@ -73,9 +76,19 @@ function TaskList() {
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
             <CheckSquare className="h-5 w-5 text-primary" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#17181c]">Tasks</h1>
-            <p className="mt-0.5 text-sm text-[#596174]">Manage robot tasks and their workflow assignments.</p>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-[#17181c]">Tasks</h1>
+              <p className="mt-0.5 text-sm text-[#596174]">Manage robot tasks and their workflow assignments.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/tasks/create')}
+              className="inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4" />
+              Create Task
+            </button>
           </div>
         </div>
 
@@ -149,7 +162,7 @@ function TaskList() {
         </div>
 
         <div className="text-xs text-[#687386]" aria-live="polite">
-          Showing {filteredJobs.length} of {sampleJobs.length} tasks
+          Showing {filteredJobs.length} of {jobs.length} tasks
         </div>
 
         <div className="overflow-hidden border border-[#d9dce5] bg-white">
@@ -168,7 +181,17 @@ function TaskList() {
               </thead>
               <tbody>
                 {filteredJobs.length > 0 ? filteredJobs.map((job) => (
-                  <tr key={job.id} className="border-b border-[#d9dce5] last:border-b-0 hover:bg-[#faf9fc]">
+                  <tr
+                    key={job.id}
+                    onClick={() => navigate(`/tasks/${job.id}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') navigate(`/tasks/${job.id}`)
+                    }}
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`View task ${job.name}`}
+                    className="cursor-pointer border-b border-[#d9dce5] last:border-b-0 transition hover:bg-[#faf9fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  >
                     <td className="px-4 py-4 font-mono text-xs font-semibold text-primary">{job.id}</td>
                     <td className="px-4 py-4 font-mono text-xs text-[#414856]">
                       <span title={workflowNames.get(job.workflowId) ?? 'Workflow not found'}>{job.workflowId}</span>

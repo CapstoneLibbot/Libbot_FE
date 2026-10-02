@@ -3,7 +3,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Minus, Plus, RotateCcw } from 'lucide-react'
+import { Bot, Minus, Plus, RotateCcw } from 'lucide-react'
 import { load } from 'js-yaml'
 import type {
   EndpointGroup,
@@ -47,6 +47,8 @@ type Point = {
   y: number
 }
 
+export type MapRoutePoint = Point
+
 type MapViewerProps = {
   yamlUrl: string
   endpoints: MapEndpoint[]
@@ -57,6 +59,11 @@ type MapViewerProps = {
   showEndpoints: boolean
   showZones: boolean
   zoneDrawMode: boolean
+  routePoints?: MapRoutePoint[]
+  routeProgressRatio?: number
+  routeLabel?: string
+  animateRoute?: boolean
+  showEndpointLabels?: boolean
   onEndpointSelect: (endpointId: number) => void
   onZoneSelect: (zoneId: number) => void
   onMapClick: (point: {
@@ -275,6 +282,11 @@ function MapViewer({
   showEndpoints,
   showZones,
   zoneDrawMode,
+  routePoints = [],
+  routeProgressRatio,
+  routeLabel,
+  animateRoute = false,
+  showEndpointLabels = true,
   onEndpointSelect,
   onZoneSelect,
   onMapClick,
@@ -311,6 +323,11 @@ function MapViewer({
   } | null>(null)
   const [clickedPosition, setClickedPosition] =
     useState<Point | null>(null)
+  const [robotPosition, setRobotPosition] = useState<{
+    x: number
+    y: number
+    angle: number
+  } | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -606,6 +623,113 @@ function MapViewer({
           context.fillText(aisle.code, midpointX + 5, midpointY - 5)
         }
 
+        if (routePoints.length > 1) {
+          const routePixels = routePoints.map((point) => {
+            const pixel = worldToPixel(point, config, imageData.width, imageData.height)
+            return { x: offsetX + pixel.x * scale, y: offsetY + pixel.y * scale }
+          })
+          const progressRatio = Math.max(0, Math.min(1, routeProgressRatio ?? 1))
+          const totalLength = routePixels.slice(1).reduce((total, point, index) =>
+            total + Math.hypot(point.x - routePixels[index].x, point.y - routePixels[index].y), 0,
+          )
+          const splitDistance = totalLength * progressRatio
+          const completedPixels = [routePixels[0]]
+          const upcomingPixels: Point[] = []
+          let traversedDistance = 0
+
+          for (let index = 0; index < routePixels.length - 1; index += 1) {
+            const start = routePixels[index]
+            const end = routePixels[index + 1]
+            const segmentLength = Math.hypot(end.x - start.x, end.y - start.y)
+            if (traversedDistance + segmentLength <= splitDistance) {
+              completedPixels.push(end)
+              traversedDistance += segmentLength
+              continue
+            }
+
+            const segmentProgress = segmentLength === 0
+              ? 0
+              : Math.max(0, (splitDistance - traversedDistance) / segmentLength)
+            const splitPoint = {
+              x: start.x + (end.x - start.x) * segmentProgress,
+              y: start.y + (end.y - start.y) * segmentProgress,
+            }
+            if (segmentProgress > 0) completedPixels.push(splitPoint)
+            upcomingPixels.push(splitPoint, end, ...routePixels.slice(index + 2))
+            break
+          }
+
+          const strokeRoute = (points: Point[], dashed: boolean, color: string) => {
+            if (points.length < 2) return
+            context.beginPath()
+            context.moveTo(points[0].x, points[0].y)
+            points.slice(1).forEach((point) => context.lineTo(point.x, point.y))
+            context.lineJoin = 'round'
+            context.lineCap = 'round'
+            context.setLineDash(dashed ? [9, 8] : [])
+            context.strokeStyle = 'rgba(255, 255, 255, 0.95)'
+            context.lineWidth = 10
+            context.stroke()
+            context.strokeStyle = color
+            context.lineWidth = 5
+            context.stroke()
+            context.setLineDash([])
+          }
+
+          context.save()
+          strokeRoute(completedPixels, false, '#ea580c')
+          strokeRoute(upcomingPixels, true, '#f59e0b')
+
+          let distanceSinceArrow = 0
+          for (let index = 0; index < routePixels.length - 1; index += 1) {
+            const start = routePixels[index]
+            const end = routePixels[index + 1]
+            const deltaX = end.x - start.x
+            const deltaY = end.y - start.y
+            const segmentLength = Math.hypot(deltaX, deltaY)
+            distanceSinceArrow += segmentLength
+
+            if (distanceSinceArrow < 58 && index < routePixels.length - 2) continue
+            distanceSinceArrow = 0
+
+            const midpointX = (start.x + end.x) / 2
+            const midpointY = (start.y + end.y) / 2
+            context.save()
+            context.translate(midpointX, midpointY)
+            context.rotate(Math.atan2(deltaY, deltaX))
+            context.beginPath()
+            context.moveTo(9, 0)
+            context.lineTo(-7, -7)
+            context.lineTo(-4, 0)
+            context.lineTo(-7, 7)
+            context.closePath()
+            context.fillStyle = '#c2410c'
+            context.strokeStyle = '#ffffff'
+            context.lineWidth = 1.5
+            context.fill()
+            context.stroke()
+            context.restore()
+          }
+
+          const routeStart = routePixels[0]
+          const routeEnd = routePixels[routePixels.length - 1]
+          context.beginPath()
+          context.arc(routeStart.x, routeStart.y, 8, 0, Math.PI * 2)
+          context.fillStyle = '#16a34a'
+          context.fill()
+          context.lineWidth = 2
+          context.strokeStyle = '#ffffff'
+          context.stroke()
+          context.beginPath()
+          context.arc(routeEnd.x, routeEnd.y, 9, 0, Math.PI * 2)
+          context.fillStyle = '#ea580c'
+          context.fill()
+          context.lineWidth = 2
+          context.strokeStyle = '#ffffff'
+          context.stroke()
+          context.restore()
+        }
+
         for (const endpoint of endpoints) {
           const pixel = worldToPixel(
             {
@@ -660,14 +784,16 @@ function MapViewer({
             context.stroke()
           }
 
-          context.fillStyle = '#111827'
-          context.font = '600 11px Inter, sans-serif'
-          context.fillText(
-            endpoint.name || endpoint.code,
-            screenX + 10,
-            screenY - 10,
-            220,
-          )
+          if (showEndpointLabels) {
+            context.fillStyle = '#111827'
+            context.font = '600 11px Inter, sans-serif'
+            context.fillText(
+              endpoint.name || endpoint.code,
+              screenX + 10,
+              screenY - 10,
+              220,
+            )
+          }
         }
       }
     }
@@ -688,13 +814,91 @@ function MapViewer({
     endpoints,
     aisles,
     zones,
+    routePoints,
+    routeProgressRatio,
     selectedEndpointId,
     selectedZoneId,
+    showEndpointLabels,
     showEndpoints,
     showZones,
     previewRect,
     loading,
   ])
+
+  useEffect(() => {
+    if ((!animateRoute && routeProgressRatio === undefined) || loading || routePoints.length < 2) {
+      setRobotPosition(null)
+      return
+    }
+
+    const imageData = imageDataRef.current
+    const config = configRef.current
+    const container = containerRef.current
+    if (!imageData || !config || !container) return
+
+    const segmentLengths = routePoints.slice(1).map((point, index) =>
+      Math.hypot(point.x - routePoints[index].x, point.y - routePoints[index].y),
+    )
+    const totalLength = segmentLengths.reduce((total, length) => total + length, 0)
+    if (totalLength === 0) return
+
+    const placeRobotAtProgress = (progressRatio: number) => {
+      let distance = Math.max(0, Math.min(1, progressRatio)) * totalLength
+      let segmentIndex = 0
+      while (segmentIndex < segmentLengths.length - 1 && distance > segmentLengths[segmentIndex]) {
+        distance -= segmentLengths[segmentIndex]
+        segmentIndex += 1
+      }
+      const start = routePoints[segmentIndex]
+      const end = routePoints[segmentIndex + 1]
+      const segmentLength = segmentLengths[segmentIndex]
+      const progress = segmentLength ? distance / segmentLength : 0
+      const point = {
+        x: start.x + (end.x - start.x) * progress,
+        y: start.y + (end.y - start.y) * progress,
+      }
+      const pixel = worldToPixel(point, config, imageData.width, imageData.height)
+      const transform = transformRef.current
+      setRobotPosition({
+        x: transform.offsetX + pixel.x * transform.scale,
+        y: transform.offsetY + pixel.y * transform.scale,
+        angle: Math.atan2(-(end.y - start.y), end.x - start.x) * 180 / Math.PI + 90,
+      })
+    }
+
+    if (!animateRoute) {
+      let frameId = requestAnimationFrame(() => placeRobotAtProgress(routeProgressRatio ?? 0))
+      const observer = new ResizeObserver(() => {
+        cancelAnimationFrame(frameId)
+        frameId = requestAnimationFrame(() => placeRobotAtProgress(routeProgressRatio ?? 0))
+      })
+      observer.observe(container)
+      return () => {
+        observer.disconnect()
+        cancelAnimationFrame(frameId)
+      }
+    }
+
+    let frameId = 0
+    let lastUpdate = 0
+    const startedAt = performance.now()
+    const durationMs = 18_000
+
+    const animate = (timestamp: number) => {
+      if (timestamp - lastUpdate >= 40) {
+        lastUpdate = timestamp
+        placeRobotAtProgress(((timestamp - startedAt) % durationMs) / durationMs)
+      }
+
+      frameId = requestAnimationFrame(animate)
+    }
+
+    frameId = requestAnimationFrame(animate)
+    return () => {
+      cancelAnimationFrame(frameId)
+      setRobotPosition(null)
+    }
+  }, [animateRoute, loading, routePoints, routeProgressRatio])
 
   const screenToWorld = (
     screenX: number,
@@ -1092,20 +1296,38 @@ function MapViewer({
         onPointerCancel={handlePointerUp}
       />
 
+      {robotPosition && (
+        <div
+          aria-label={animateRoute ? 'Robot moving along completed route' : 'Robot current position'}
+          className="pointer-events-none absolute z-20 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-[#ea580c] text-white shadow-[0_2px_12px_rgba(0,0,0,0.7)]"
+          style={{
+            left: robotPosition.x,
+            top: robotPosition.y,
+            transform: `translate(-50%, -50%) rotate(${robotPosition.angle}deg)`,
+          }}
+        >
+          <Bot className="h-5 w-5" strokeWidth={2.5} />
+        </div>
+      )}
+
       <div className="pointer-events-none absolute left-4 top-4 rounded-md border border-white/10 bg-black/60 px-3 py-2 text-xs text-white/60 backdrop-blur">
-        {zoneDrawMode
+        {routeLabel
+          ? `${animateRoute ? 'Completed route' : routeProgressRatio !== undefined ? 'Live route' : 'Planned route'} · ${routeLabel}`
+          : zoneDrawMode
           ? 'Drag on the map to draw a zone'
           : showEndpoints
             ? 'Double-click an empty location to create an endpoint'
             : 'Map view'}
       </div>
 
-      <div className="pointer-events-none absolute bottom-4 left-4 w-[204px] rounded-md border border-white/15 bg-[#17181d]/90 px-3 py-2 font-mono text-xs leading-5 text-white/70 shadow-xl backdrop-blur">
-        <p>X: {clickedPosition ? `${clickedPosition.x.toFixed(3)} m` : '--'}</p>
-        <p>Y: {clickedPosition ? `${clickedPosition.y.toFixed(3)} m` : '--'}</p>
-      </div>
+      {routePoints.length < 2 && (
+        <div className="pointer-events-none absolute bottom-4 left-4 w-[204px] rounded-md border border-white/15 bg-[#17181d]/90 px-3 py-2 font-mono text-xs leading-5 text-white/70 shadow-xl backdrop-blur">
+          <p>X: {clickedPosition ? `${clickedPosition.x.toFixed(3)} m` : '--'}</p>
+          <p>Y: {clickedPosition ? `${clickedPosition.y.toFixed(3)} m` : '--'}</p>
+        </div>
+      )}
 
-      <div className="absolute bottom-4 right-4 flex items-center gap-1 rounded-md border border-white/10 bg-black/60 p-1 backdrop-blur">
+      <div className={`absolute right-4 flex items-center gap-1 rounded-md border border-white/10 bg-black/60 p-1 backdrop-blur ${routePoints.length > 1 ? 'top-4' : 'bottom-4'}`}>
         <button
           type="button"
           onClick={() => zoomAt(1.25)}

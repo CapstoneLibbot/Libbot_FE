@@ -14,7 +14,7 @@ import MapViewer, {
 
 type Tab = 'detail' | 'endpoint' | 'zone'
 
-type MapInfo = {
+export type MapInfo = {
   id: number
   floor_id: number
   floor_name: string
@@ -27,7 +27,7 @@ type MapInfo = {
   status: 1 | 2
 }
 
-const sampleMap: MapInfo = {
+export const sampleMap: MapInfo = {
   id: 1,
   floor_id: 1,
   floor_name: 'Floor 1',
@@ -275,7 +275,7 @@ const endpointSeeds: Omit<MapEndpoint, 'endpoint_groups'>[] = [
   },
 ]
 
-const initialEndpoints: MapEndpoint[] = endpointSeeds.map((endpoint) => ({
+export const initialEndpoints: MapEndpoint[] = endpointSeeds.map((endpoint) => ({
   ...endpoint,
   endpoint_groups: initialEndpointGroups.filter((group) =>
     initialEndpointGroupMembers.some(
@@ -286,7 +286,7 @@ const initialEndpoints: MapEndpoint[] = endpointSeeds.map((endpoint) => ({
   ),
 }))
 
-const initialZones: MapZone[] = [
+export const initialZones: MapZone[] = [
   {
     id: 1,
     map_id: 1,
