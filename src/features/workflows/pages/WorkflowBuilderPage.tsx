@@ -4,13 +4,20 @@ import { Button } from '../../../components/common/Button/Button';
 import { PageContainer } from '../../../components/layout/PageContainer';
 import { LibrarianLayout } from '../../../layouts/LibrarianLayout';
 import { WorkflowStepType } from '../types/workflow.types';
+import { useParams } from 'react-router-dom';
+import { useWorkflow } from '../hooks/useWorkflow';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function WorkflowBuilderPage() {
-  const { workflow, validation, updateWorkflow, addStep, removeStep, updateStep, reorderStep, saveWorkflow } = useWorkflowBuilder();
+  const { id } = useParams();
+  const queryClient = useQueryClient();
+  const { data: initialWorkflow } = useWorkflow(id);
+  const { workflow, validation, updateWorkflow, addStep, removeStep, updateStep, reorderStep, saveWorkflow } = useWorkflowBuilder(initialWorkflow ?? undefined);
 
   const handleSave = async () => {
     const result = await saveWorkflow();
     if (result.ok) {
+      await queryClient.invalidateQueries({ queryKey: ['workflows'] });
       alert('Workflow saved successfully');
     } else {
       alert(result.errors.join('\n'));

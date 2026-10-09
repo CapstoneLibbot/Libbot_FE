@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { createWorkflow } from '../api/workflowApi';
+import { useEffect, useMemo, useState } from 'react';
+import { createWorkflow, updateWorkflow as updateWorkflowApi } from '../api/workflowApi';
 import { Workflow, WorkflowStep, WorkflowStepType } from '../types/workflow.types';
 import { validateWorkflow } from '../utils/workflowValidation';
 
@@ -18,6 +18,10 @@ const defaultWorkflow = (): Workflow => ({
 
 export function useWorkflowBuilder(initialWorkflow?: Workflow) {
   const [workflow, setWorkflow] = useState<Workflow>(initialWorkflow ?? defaultWorkflow());
+
+  useEffect(() => {
+    if (initialWorkflow) setWorkflow(initialWorkflow);
+  }, [initialWorkflow]);
 
   const validation = useMemo(() => validateWorkflow(workflow), [workflow]);
 
@@ -75,14 +79,15 @@ export function useWorkflowBuilder(initialWorkflow?: Workflow) {
       return { ok: false, errors: result.errors };
     }
 
-    const created = await createWorkflow({
+    const payload = {
       name: workflow.name,
       description: workflow.description,
       type: workflow.type,
       steps: workflow.steps
-    });
+    };
+    const saved = workflow.id ? await updateWorkflowApi(workflow.id, payload) : await createWorkflow(payload);
 
-    return { ok: true, workflow: created, errors: [] as string[] };
+    return { ok: true, workflow: saved, errors: [] as string[] };
   };
 
   return {

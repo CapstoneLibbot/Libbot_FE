@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { MapCanvas } from '../../../components/map/MapCanvas';
 import { MapBackground } from '../../../components/map/MapBackground';
 import { MapControls } from '../../../components/map/MapControls';
@@ -13,7 +14,7 @@ import { WaypointMarker } from '../../../components/map/WaypointMarker';
 import { Button } from '../../../components/common/Button/Button';
 import { PageContainer } from '../../../components/layout/PageContainer';
 import { LibrarianLayout } from '../../../layouts/LibrarianLayout';
-import { mockMaps, mockRobots, mockWorkflows } from '../../../mockData';
+import { getMaps, getRobots } from '../api/dispatchApi';
 import { useDispatchPreview } from '../hooks/useDispatchPreview';
 import { useDispatchWorkflow } from '../hooks/useDispatchWorkflow';
 import { DispatchPanel } from '../components/DispatchPanel';
@@ -21,25 +22,35 @@ import { MissionTimeline } from '../../missions/components/MissionTimeline';
 import { useWorkflows } from '../../workflows/hooks/useWorkflows';
 
 export function DispatchPreviewPage() {
-  const { data: workflows = mockWorkflows } = useWorkflows();
+  const { data: workflows = [] } = useWorkflows();
+  const { data: robots = [] } = useQuery({ queryKey: ['robots'], queryFn: getRobots });
+  const { data: maps = [] } = useQuery({ queryKey: ['maps'], queryFn: getMaps });
   const { generatePreview, dispatch } = useDispatchWorkflow();
-  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>(workflows[0]?.id ?? 'workflow-001');
-  const [selectedRobotId, setSelectedRobotId] = useState<string>(mockRobots[0]?.id ?? 'robot-001');
-  const [selectedMapId, setSelectedMapId] = useState('map-floor-1');
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState('');
+  const [selectedRobotId, setSelectedRobotId] = useState('');
+  const [selectedMapId, setSelectedMapId] = useState('');
   const [mode, setMode] = useState<'SIMULATION' | 'LIVE'>('SIMULATION');
   const [previewPath, setPreviewPath] = useState<Array<{ x: number; y: number }>>([]);
   const [estimatedDistance, setEstimatedDistance] = useState(32.4);
   const [estimatedDuration, setEstimatedDuration] = useState(155);
 
-  const selectedMap = useMemo(() => mockMaps.find((map) => map.id === selectedMapId) ?? mockMaps[0], [selectedMapId]);
-  const selectedWorkflow = useMemo(() => workflows.find((workflow) => workflow.id === selectedWorkflowId) ?? workflows[0], [selectedWorkflowId, workflows]);
-  const selectedRobot = useMemo(() => mockRobots.find((robot) => robot.id === selectedRobotId) ?? mockRobots[0], [selectedRobotId]);
+  const selectedMap = useMemo(() => maps.find((map) => map.id === selectedMapId) ?? maps[0], [maps, selectedMapId]);
+  const selectedWorkflow = useMemo(() => workflows.find((workflow) => workflow.id === selectedWorkflowId), [selectedWorkflowId, workflows]);
+  const selectedRobot = useMemo(() => robots.find((robot) => robot.id === selectedRobotId), [robots, selectedRobotId]);
 
   const simulation = useDispatchPreview(previewPath);
 
   useEffect(() => {
-    setSelectedWorkflowId(workflows[0]?.id ?? 'workflow-001');
+    if (!selectedWorkflowId && workflows[0]) setSelectedWorkflowId(workflows[0].id);
   }, [workflows]);
+
+  useEffect(() => {
+    if (!selectedRobotId && robots[0]) setSelectedRobotId(robots[0].id);
+  }, [robots]);
+
+  useEffect(() => {
+    if (!selectedMapId && maps[0]) setSelectedMapId(maps[0].id);
+  }, [maps]);
 
   const handleGeneratePreview = async () => {
     const preview = await generatePreview(selectedWorkflowId, selectedRobotId, selectedMapId);
@@ -50,7 +61,7 @@ export function DispatchPreviewPage() {
   };
 
   const handleDispatch = async () => {
-    await dispatch({ workflowId: selectedWorkflowId, robotId: selectedRobotId, priority: 'HIGH' });
+    await dispatch({ workflowId: selectedWorkflowId, robotId: selectedRobotId || undefined, priority: 'HIGH' });
     setMode('LIVE');
   };
 
@@ -64,7 +75,7 @@ export function DispatchPreviewPage() {
                 <span className="panel-title">Workflow</span>
               </div>
               <div className="panel-body">
-                <h3>{selectedWorkflow?.name ?? 'Library Patrol'}</h3>
+                <h3>{selectedWorkflow?.name ?? 'Select a workflow'}</h3>
                 <div className="status-badge info" style={{ marginBottom: 12 }}>{mode}</div>
                 {selectedWorkflow?.steps.map((step) => (
                   <div key={step.id} className="workflow-step">
@@ -100,12 +111,12 @@ export function DispatchPreviewPage() {
                 <span className="panel-title">Robot</span>
               </div>
               <div className="panel-body">
-                <h3>{selectedRobot.name}</h3>
+                <h3>{selectedRobot?.name ?? 'No robot selected'}</h3>
                 <div className="status-badge success">Available</div>
                 <div style={{ marginTop: 16 }} className="metric-grid">
                   <div className="metric-card">
                     <div className="metric-label">Battery</div>
-                    <div className="metric-value">{selectedRobot.battery}%</div>
+                    <div className="metric-value">{selectedRobot?.battery ?? '--'}%</div>
                   </div>
                   <div className="metric-card">
                     <div className="metric-label">Estimated Distance</div>
@@ -124,12 +135,12 @@ export function DispatchPreviewPage() {
             <div className="controls-row" style={{ justifyContent: 'space-between' }}>
               <div className="controls-row">
                 <select className="field-select" value={selectedMapId} onChange={(event) => setSelectedMapId(event.target.value)}>
-                  {mockMaps.map((map) => (
+                  {maps.map((map) => (
                     <option key={map.id} value={map.id}>{map.name}</option>
                   ))}
                 </select>
                 <select className="field-select" value={selectedRobotId} onChange={(event) => setSelectedRobotId(event.target.value)}>
-                  {mockRobots.map((robot) => (
+                  {robots.map((robot) => (
                     <option key={robot.id} value={robot.id}>{robot.name}</option>
                   ))}
                 </select>
@@ -144,7 +155,7 @@ export function DispatchPreviewPage() {
                 <Button variant="ghost" onClick={simulation.reset}>Reset</Button>
                 <Button variant="primary" onClick={simulation.play}>▶ Preview</Button>
                 <Button variant="ghost" onClick={simulation.pause}>⏸ Pause</Button>
-                <Button variant="success" onClick={handleDispatch}>Dispatch Mission</Button>
+                <Button variant="success" onClick={handleDispatch} disabled={!selectedWorkflow}>Dispatch Mission</Button>
               </div>
             </div>
 
@@ -154,7 +165,7 @@ export function DispatchPreviewPage() {
                   {value}x
                 </button>
               ))}
-              <Button variant="primary" onClick={handleGeneratePreview}>Generate Preview</Button>
+              <Button variant="primary" onClick={handleGeneratePreview} disabled={!selectedWorkflow}>Generate Preview</Button>
             </div>
 
             <div style={{ marginTop: 16 }}>
@@ -165,7 +176,7 @@ export function DispatchPreviewPage() {
           <div className="panel" style={{ padding: 16 }}>
             <DispatchPanel
               workflows={workflows}
-              robots={mockRobots}
+              robots={robots}
               workflowId={selectedWorkflowId}
               robotId={selectedRobotId}
               onWorkflowChange={setSelectedWorkflowId}

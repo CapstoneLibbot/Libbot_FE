@@ -12,6 +12,7 @@ export const appRoutes: RouteObject[] = [
   { path: routePaths.workflows, element: <WorkflowListPage /> },
   { path: routePaths.workflowDetail, element: <WorkflowDetailPage /> },
   { path: routePaths.workflowBuilder, element: <WorkflowBuilderPage /> },
+  { path: '/workflows/builder/:id', element: <WorkflowBuilderPage /> },
   { path: routePaths.missions, element: <MissionQueuePage /> },
   { path: routePaths.missionDetail, element: <MissionDetailPage /> },
   { path: routePaths.dispatch, element: <DispatchPreviewPage /> },
