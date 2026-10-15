@@ -68,6 +68,7 @@ export function MapDemoPage() {
   const telemetry = runtime?.telemetry;
   const localized = telemetry?.localizationState === 'LOCALIZED';
   const isReal = runtime?.kind === 'REAL';
+  const isSim = runtime?.kind === 'SIM';
   const isNavigating = ['SENDING', 'NAVIGATING', 'CANCELING'].includes(telemetry?.navigationState ?? '');
   const canSelect = Boolean(map && runtime?.connected && !runtime.stale && !busy);
   const canSendGoal = Boolean(canSelect && localized && draft && (!isReal || (runtime?.armed && leaseId)) && !isNavigating);
@@ -84,6 +85,7 @@ export function MapDemoPage() {
       try { await disarmRuntime(runtime.id); } catch { /* stale disarm is safe to ignore */ }
     }
     setRuntimeId(nextId);
+    if (runtimes.find((item) => item.id === nextId)?.kind === 'SIM') setMode('GOAL');
     setLeaseId(null);
     setDraft(null);
     setNotice(null);
@@ -169,8 +171,8 @@ export function MapDemoPage() {
               </div>}
 
               <div className="control-card"><h3>Công cụ bản đồ</h3>
-                <div className="mode-switch"><button className={mode === 'INITIAL_POSE' ? 'active' : ''} onClick={() => { setMode('INITIAL_POSE'); setDraft(null); }}>Đặt vị trí đầu</button><button className={mode === 'GOAL' ? 'active' : ''} onClick={() => { setMode('GOAL'); setDraft(null); }}>Chọn điểm đến</button></div>
-                <p className="helper-text">Bấm để chọn vị trí, kéo chuột để đặt hướng robot.</p>
+                <div className="mode-switch"><button disabled={isSim} title={isSim ? 'SIM lấy vị trí trực tiếp từ Gazebo.' : undefined} className={mode === 'INITIAL_POSE' ? 'active' : ''} onClick={() => { setMode('INITIAL_POSE'); setDraft(null); }}>Đặt vị trí đầu</button><button className={mode === 'GOAL' ? 'active' : ''} onClick={() => { setMode('GOAL'); setDraft(null); }}>Chọn điểm đến</button></div>
+                <p className="helper-text">{isSim ? 'SIM tự lấy vị trí thật từ Gazebo. Chỉ cần chọn điểm đến.' : 'Bấm để chọn vị trí, kéo chuột để đặt hướng robot.'}</p>
                 {draft && <div className="draft-pose"><strong>Điểm đã chọn</strong><span>X {draft.x.toFixed(2)} m</span><span>Y {draft.y.toFixed(2)} m</span><span>Yaw {(draft.yaw * 180 / Math.PI).toFixed(0)}°</span></div>}
                 <Button variant="primary" disabled={mode === 'GOAL' ? !canSendGoal : !canSelect || !draft || (isReal && (!runtime?.armed || !leaseId))} onClick={() => void confirmDraft()}>{mode === 'GOAL' ? 'Xác nhận di chuyển' : 'Xác nhận initial pose'}</Button>
               </div>
