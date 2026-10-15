@@ -10,7 +10,8 @@ export type SignalREventName =
   | 'RobotTelemetryUpdated'
   | 'NavigationStatusChanged'
   | 'PlannedPathUpdated'
-  | 'RuntimeConnectionChanged';
+  | 'RuntimeConnectionChanged'
+  | 'RobotMapUpdated';
 
 export type SignalREventHandler<T> = (payload: T) => void;
 
@@ -42,6 +43,7 @@ class SignalRClient {
       this.connection.on('NavigationStatusChanged', (payload) => this.emit('NavigationStatusChanged', payload));
       this.connection.on('PlannedPathUpdated', (payload) => this.emit('PlannedPathUpdated', payload));
       this.connection.on('RuntimeConnectionChanged', (payload) => this.emit('RuntimeConnectionChanged', payload));
+      this.connection.on('RobotMapUpdated', (payload) => this.emit('RobotMapUpdated', payload));
       this.connection.onreconnected(() => {
         this.runtimeSubscriptions.forEach((runtimeId) => {
           void this.connection?.invoke('SubscribeRuntime', runtimeId);

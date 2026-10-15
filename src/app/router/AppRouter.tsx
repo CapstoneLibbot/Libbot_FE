@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { DispatchPreviewPage } from '../../features/dispatch/pages/DispatchPreviewPage';
 import { MapDemoPage } from '../../features/maps/pages/MapDemoPage';
+import { RobotMappingPage } from '../../features/maps/pages/RobotMappingPage';
 import { MissionDetailPage } from '../../features/missions/pages/MissionDetailPage';
 import { MissionQueuePage } from '../../features/missions/pages/MissionQueuePage';
 import { WorkflowBuilderPage } from '../../features/workflows/pages/WorkflowBuilderPage';
@@ -21,6 +22,7 @@ export function AppRouter() {
       <Route path={routePaths.dispatch} element={<DispatchPreviewPage />} />
       <Route path={routePaths.dispatchPreview} element={<DispatchPreviewPage />} />
       <Route path={routePaths.mapDemo} element={<MapDemoPage />} />
+      <Route path={routePaths.robotMapping} element={<RobotMappingPage />} />
       <Route path={routePaths.notFound} element={<div>Page not found</div>} />
     </Routes>
   );

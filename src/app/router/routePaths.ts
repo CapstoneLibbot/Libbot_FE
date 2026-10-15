@@ -8,6 +8,7 @@ export const routePaths = {
   dispatch: '/dispatch',
   dispatchPreview: '/dispatch/preview',
   mapDemo: '/map-demo',
+  robotMapping: '/robot-mapping',
   robots: '/robots',
   maps: '/maps',
   reports: '/reports',

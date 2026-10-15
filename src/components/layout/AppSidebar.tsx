@@ -8,6 +8,7 @@ const menuItems = [
   { label: 'Mission Queue', to: routePaths.missions, icon: ClipboardList },
   { label: 'Dispatch', to: routePaths.dispatchPreview, icon: Map },
   { label: 'Map Demo', to: routePaths.mapDemo, icon: Map },
+  { label: 'Robot mapping', to: routePaths.robotMapping, icon: Map },
   { label: 'Admin', to: routePaths.admin, icon: ShieldCheck }
 ];
 

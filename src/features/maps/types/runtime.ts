@@ -32,6 +32,8 @@ export interface RobotTelemetry {
   activeGoalId?: string | null;
   plannedPath?: PathPoint2D[] | null;
   error?: string | null;
+  mappingActive?: boolean;
+  navigationActive?: boolean;
 }
 
 export interface RobotRuntime {
@@ -41,8 +43,30 @@ export interface RobotRuntime {
   connected: boolean;
   stale: boolean;
   armed: boolean;
+  mappingActive: boolean;
+  navigationActive: boolean;
   armExpiresAt?: string | null;
   lastTelemetryAt?: string | null;
   telemetry?: RobotTelemetry | null;
+}
+
+export interface LiveOccupancyGrid {
+  timestamp: string;
+  width: number;
+  height: number;
+  resolution: number;
+  originX: number;
+  originY: number;
+  originYaw: number;
+  data: number[];
+}
+
+export interface SavedMap {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  version: string;
+  data?: { format?: string } | null;
 }
 
