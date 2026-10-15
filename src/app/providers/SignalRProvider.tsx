@@ -3,9 +3,13 @@ import { signalRClient } from '../../services/realtime/signalRClient';
 
 export function SignalRProvider({ children }: PropsWithChildren) {
   useEffect(() => {
-    signalRClient.start();
+    void signalRClient.start();
+    const reconnectTimer = window.setInterval(() => {
+      void signalRClient.start();
+    }, 5000);
     return () => {
-      signalRClient.stop();
+      window.clearInterval(reconnectTimer);
+      void signalRClient.stop();
     };
   }, []);
 

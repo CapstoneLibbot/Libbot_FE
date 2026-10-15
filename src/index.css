@@ -453,3 +453,38 @@ img, svg {
     grid-template-columns: 1fr;
   }
 }
+
+.operations-page { display: grid; gap: 14px; color: #dce8ec; }
+.operations-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 22px 26px; border-radius: 18px; background: linear-gradient(135deg, #102129, #142f39); border: 1px solid #294852; }
+.operations-header h1 { margin: 2px 0 5px; font-size: clamp(1.6rem, 3vw, 2.5rem); color: white; }
+.operations-header p { margin: 0; color: #91a8b0; }
+.operations-header .eyebrow { color: #23c2df; font-size: .7rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+.status-light { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; }
+.operations-toolbar { display: flex; justify-content: space-between; gap: 12px; padding: 9px; background: #102129; border: 1px solid #294852; border-radius: 14px; }
+.runtime-tabs, .view-tabs, .mode-switch { display: flex; gap: 6px; }
+.runtime-tabs button, .view-tabs button, .mode-switch button { border: 1px solid #304a54; border-radius: 9px; background: #14272f; color: #9fb1b8; padding: 8px 12px; cursor: pointer; }
+.runtime-tabs button { display: flex; gap: 8px; align-items: center; }
+.runtime-tabs button span { font-size: .65rem; color: #22c8e5; font-weight: 800; }
+.runtime-tabs button.active, .view-tabs button.active, .mode-switch button.active { color: white; background: #087f9a; border-color: #22c8e5; }
+.operations-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 14px; }
+.operations-sidebar { display: flex; flex-direction: column; gap: 12px; }
+.control-card { padding: 15px; border-radius: 14px; background: #102129; border: 1px solid #294852; }
+.control-card h3 { margin: 0 0 12px; color: white; font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; }
+.control-card p, .helper-text { color: #8da3ab; font-size: .78rem; }
+.safety-card { border-color: #7a5b25; background: linear-gradient(145deg, #211e17, #102129); }
+.telemetry-list { display: grid; gap: 8px; margin: 0; }
+.telemetry-list div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid #263c44; padding-bottom: 7px; }
+.telemetry-list dt { color: #80959d; font-size: .75rem; }.telemetry-list dd { margin: 0; color: #e9f3f6; font: 600 .75rem ui-monospace, monospace; }
+.mode-switch { display: grid; grid-template-columns: 1fr 1fr; }.mode-switch button { padding: 8px 6px; font-size: .72rem; }
+.draft-pose { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 12px 0; padding: 10px; border-radius: 9px; background: #172d36; font: .74rem ui-monospace, monospace; }
+.draft-pose strong { grid-column: 1 / -1; color: #faad37; }
+.stop-button { width: 100%; border: 1px solid #ff6c6c; border-radius: 12px; padding: 14px; background: #b4232d; color: white; font-weight: 800; cursor: pointer; }
+.stop-button:disabled { opacity: .4; cursor: not-allowed; }.safety-note { margin: -5px 0 0; text-align: center; color: #8da3ab; font-size: .68rem; }
+.visualization-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; min-width: 0; }.visualization-grid.view-2d, .visualization-grid.view-3d { grid-template-columns: 1fr; }
+.visual-panel { min-width: 0; overflow: hidden; border-radius: 15px; background: #0a151a; border: 1px solid #294852; }
+.visual-title { display: flex; justify-content: space-between; padding: 11px 14px; border-bottom: 1px solid #294852; color: white; font-size: .82rem; font-weight: 700; }.visual-title small { color: #81979f; font-weight: 400; }
+.operations-map { width: 100%; height: min(65vh, 640px); min-height: 430px; touch-action: none; cursor: crosshair; }
+.robot-scene { width: 100%; height: min(65vh, 640px); min-height: 430px; }.visual-loading { min-height: 430px; display: grid; place-items: center; color: #82979f; }
+.operations-notice, .operations-error { position: fixed; right: 22px; bottom: 22px; z-index: 20; max-width: 460px; padding: 12px 16px; border-radius: 10px; background: #173b46; border: 1px solid #20b8d8; color: #e5faff; box-shadow: 0 12px 35px #0008; }.operations-error { bottom: 78px; background: #471c22; border-color: #ef6a74; }
+@media (max-width: 1250px) { .operations-layout { grid-template-columns: 220px minmax(0,1fr); }.visualization-grid { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .operations-layout { grid-template-columns: 1fr; }.operations-header, .operations-toolbar { align-items: stretch; flex-direction: column; }.runtime-tabs { overflow-x: auto; }.operations-map, .robot-scene { min-height: 350px; height: 52vh; } }

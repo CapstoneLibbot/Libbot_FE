@@ -1,0 +1,644 @@
+{
+  "imageWidth": 90,
+  "imageHeight": 49,
+  "resolution": 0.05,
+  "origin": [
+    -2.613,
+    -1.949,
+    0.0
+  ],
+  "widthMeters": 4.5,
+  "heightMeters": 2.45,
+  "obstacles": [
+    {
+      "pixelX": 42,
+      "pixelY": 0,
+      "pixelWidth": 11,
+      "pixelHeight": 1,
+      "worldX": -0.238,
+      "worldY": 0.4760000000000002,
+      "worldWidth": 0.55,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 27,
+      "pixelY": 1,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": -1.238,
+      "worldY": 0.42599999999999993,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 30,
+      "pixelY": 1,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": -1.063,
+      "worldY": 0.42599999999999993,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 33,
+      "pixelY": 1,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": -0.938,
+      "worldY": 0.42599999999999993,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 35,
+      "pixelY": 1,
+      "pixelWidth": 7,
+      "pixelHeight": 1,
+      "worldX": -0.688,
+      "worldY": 0.42599999999999993,
+      "worldWidth": 0.35000000000000003,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 89,
+      "pixelY": 0,
+      "pixelWidth": 1,
+      "pixelHeight": 2,
+      "worldX": 1.8620000000000005,
+      "worldY": 0.4510000000000003,
+      "worldWidth": 0.05,
+      "worldHeight": 0.1
+    },
+    {
+      "pixelX": 16,
+      "pixelY": 2,
+      "pixelWidth": 12,
+      "pixelHeight": 1,
+      "worldX": -1.513,
+      "worldY": 0.3760000000000001,
+      "worldWidth": 0.6000000000000001,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 33,
+      "pixelY": 2,
+      "pixelWidth": 3,
+      "pixelHeight": 1,
+      "worldX": -0.8879999999999999,
+      "worldY": 0.3760000000000001,
+      "worldWidth": 0.15000000000000002,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 55,
+      "pixelY": 2,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": 0.16200000000000037,
+      "worldY": 0.3760000000000001,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 61,
+      "pixelY": 0,
+      "pixelWidth": 1,
+      "pixelHeight": 3,
+      "worldX": 0.4620000000000002,
+      "worldY": 0.42599999999999993,
+      "worldWidth": 0.05,
+      "worldHeight": 0.15000000000000002
+    },
+    {
+      "pixelX": 88,
+      "pixelY": 2,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": 1.8370000000000002,
+      "worldY": 0.3760000000000001,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 13,
+      "pixelY": 3,
+      "pixelWidth": 3,
+      "pixelHeight": 1,
+      "worldX": -1.888,
+      "worldY": 0.32599999999999985,
+      "worldWidth": 0.15000000000000002,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 62,
+      "pixelY": 3,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": 0.512,
+      "worldY": 0.32599999999999985,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 88,
+      "pixelY": 3,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": 1.8119999999999998,
+      "worldY": 0.32599999999999985,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 60,
+      "pixelY": 4,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": 0.4370000000000003,
+      "worldY": 0.276,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 63,
+      "pixelY": 4,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": 0.5620000000000003,
+      "worldY": 0.276,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 2,
+      "pixelY": 5,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": -2.488,
+      "worldY": 0.2260000000000002,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 62,
+      "pixelY": 5,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": 0.512,
+      "worldY": 0.2260000000000002,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 88,
+      "pixelY": 4,
+      "pixelWidth": 2,
+      "pixelHeight": 2,
+      "worldX": 1.8370000000000002,
+      "worldY": 0.2510000000000001,
+      "worldWidth": 0.1,
+      "worldHeight": 0.1
+    },
+    {
+      "pixelX": 50,
+      "pixelY": 7,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": -0.06299999999999972,
+      "worldY": 0.1260000000000001,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 60,
+      "pixelY": 5,
+      "pixelWidth": 1,
+      "pixelHeight": 3,
+      "worldX": 0.41200000000000037,
+      "worldY": 0.17599999999999993,
+      "worldWidth": 0.05,
+      "worldHeight": 0.15000000000000002
+    },
+    {
+      "pixelX": 48,
+      "pixelY": 11,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": -0.1629999999999998,
+      "worldY": -0.07400000000000007,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 0,
+      "pixelY": 6,
+      "pixelWidth": 1,
+      "pixelHeight": 7,
+      "worldX": -2.588,
+      "worldY": 0.026000000000000023,
+      "worldWidth": 0.05,
+      "worldHeight": 0.35000000000000003
+    },
+    {
+      "pixelX": 51,
+      "pixelY": 13,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": -0.03799999999999981,
+      "worldY": -0.17399999999999993,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 50,
+      "pixelY": 14,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": -0.06299999999999972,
+      "worldY": -0.22399999999999998,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 75,
+      "pixelY": 13,
+      "pixelWidth": 1,
+      "pixelHeight": 2,
+      "worldX": 1.1620000000000004,
+      "worldY": -0.19900000000000007,
+      "worldWidth": 0.05,
+      "worldHeight": 0.1
+    },
+    {
+      "pixelX": 74,
+      "pixelY": 15,
+      "pixelWidth": 4,
+      "pixelHeight": 1,
+      "worldX": 1.1870000000000003,
+      "worldY": -0.274,
+      "worldWidth": 0.2,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 89,
+      "pixelY": 13,
+      "pixelWidth": 1,
+      "pixelHeight": 3,
+      "worldX": 1.8620000000000005,
+      "worldY": -0.22399999999999998,
+      "worldWidth": 0.05,
+      "worldHeight": 0.15000000000000002
+    },
+    {
+      "pixelX": 49,
+      "pixelY": 15,
+      "pixelWidth": 2,
+      "pixelHeight": 2,
+      "worldX": -0.11299999999999999,
+      "worldY": -0.29899999999999993,
+      "worldWidth": 0.1,
+      "worldHeight": 0.1
+    },
+    {
+      "pixelX": 69,
+      "pixelY": 15,
+      "pixelWidth": 1,
+      "pixelHeight": 2,
+      "worldX": 0.8620000000000001,
+      "worldY": -0.29899999999999993,
+      "worldWidth": 0.05,
+      "worldHeight": 0.1
+    },
+    {
+      "pixelX": 73,
+      "pixelY": 16,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": 1.0620000000000003,
+      "worldY": -0.32400000000000007,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 50,
+      "pixelY": 17,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": -0.06299999999999972,
+      "worldY": -0.3739999999999999,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 49,
+      "pixelY": 18,
+      "pixelWidth": 3,
+      "pixelHeight": 1,
+      "worldX": -0.08799999999999963,
+      "worldY": -0.42399999999999993,
+      "worldWidth": 0.15000000000000002,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 50,
+      "pixelY": 19,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": -0.06299999999999972,
+      "worldY": -0.474,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 70,
+      "pixelY": 17,
+      "pixelWidth": 1,
+      "pixelHeight": 5,
+      "worldX": 0.9120000000000004,
+      "worldY": -0.474,
+      "worldWidth": 0.05,
+      "worldHeight": 0.25
+    },
+    {
+      "pixelX": 70,
+      "pixelY": 22,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": 0.9370000000000003,
+      "worldY": -0.6239999999999999,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 71,
+      "pixelY": 23,
+      "pixelWidth": 1,
+      "pixelHeight": 3,
+      "worldX": 0.9620000000000002,
+      "worldY": -0.724,
+      "worldWidth": 0.05,
+      "worldHeight": 0.15000000000000002
+    },
+    {
+      "pixelX": 1,
+      "pixelY": 13,
+      "pixelWidth": 1,
+      "pixelHeight": 16,
+      "worldX": -2.538,
+      "worldY": -0.5489999999999999,
+      "worldWidth": 0.05,
+      "worldHeight": 0.8
+    },
+    {
+      "pixelX": 68,
+      "pixelY": 28,
+      "pixelWidth": 3,
+      "pixelHeight": 2,
+      "worldX": 0.8620000000000001,
+      "worldY": -0.9490000000000001,
+      "worldWidth": 0.15000000000000002,
+      "worldHeight": 0.1
+    },
+    {
+      "pixelX": 49,
+      "pixelY": 31,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": -0.11299999999999999,
+      "worldY": -1.074,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 57,
+      "pixelY": 31,
+      "pixelWidth": 3,
+      "pixelHeight": 1,
+      "worldX": 0.3120000000000003,
+      "worldY": -1.074,
+      "worldWidth": 0.15000000000000002,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 63,
+      "pixelY": 31,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": 0.5870000000000002,
+      "worldY": -1.074,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 69,
+      "pixelY": 31,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": 0.8620000000000001,
+      "worldY": -1.074,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 58,
+      "pixelY": 32,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": 0.3120000000000003,
+      "worldY": -1.124,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 63,
+      "pixelY": 32,
+      "pixelWidth": 3,
+      "pixelHeight": 1,
+      "worldX": 0.6120000000000001,
+      "worldY": -1.124,
+      "worldWidth": 0.15000000000000002,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 69,
+      "pixelY": 32,
+      "pixelWidth": 2,
+      "pixelHeight": 2,
+      "worldX": 0.887,
+      "worldY": -1.149,
+      "worldWidth": 0.1,
+      "worldHeight": 0.1
+    },
+    {
+      "pixelX": 80,
+      "pixelY": 32,
+      "pixelWidth": 1,
+      "pixelHeight": 2,
+      "worldX": 1.4120000000000004,
+      "worldY": -1.149,
+      "worldWidth": 0.05,
+      "worldHeight": 0.1
+    },
+    {
+      "pixelX": 59,
+      "pixelY": 33,
+      "pixelWidth": 6,
+      "pixelHeight": 2,
+      "worldX": 0.4870000000000001,
+      "worldY": -1.199,
+      "worldWidth": 0.30000000000000004,
+      "worldHeight": 0.1
+    },
+    {
+      "pixelX": 70,
+      "pixelY": 34,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": 0.9120000000000004,
+      "worldY": -1.224,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 63,
+      "pixelY": 35,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": 0.5870000000000002,
+      "worldY": -1.274,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 69,
+      "pixelY": 35,
+      "pixelWidth": 2,
+      "pixelHeight": 1,
+      "worldX": 0.887,
+      "worldY": -1.274,
+      "worldWidth": 0.1,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 68,
+      "pixelY": 36,
+      "pixelWidth": 4,
+      "pixelHeight": 1,
+      "worldX": 0.887,
+      "worldY": -1.324,
+      "worldWidth": 0.2,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 83,
+      "pixelY": 38,
+      "pixelWidth": 3,
+      "pixelHeight": 1,
+      "worldX": 1.6120000000000005,
+      "worldY": -1.424,
+      "worldWidth": 0.15000000000000002,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 82,
+      "pixelY": 39,
+      "pixelWidth": 4,
+      "pixelHeight": 1,
+      "worldX": 1.5870000000000002,
+      "worldY": -1.474,
+      "worldWidth": 0.2,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 2,
+      "pixelY": 29,
+      "pixelWidth": 1,
+      "pixelHeight": 13,
+      "worldX": -2.488,
+      "worldY": -1.274,
+      "worldWidth": 0.05,
+      "worldHeight": 0.65
+    },
+    {
+      "pixelX": 40,
+      "pixelY": 43,
+      "pixelWidth": 5,
+      "pixelHeight": 1,
+      "worldX": -0.488,
+      "worldY": -1.674,
+      "worldWidth": 0.25,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 32,
+      "pixelY": 44,
+      "pixelWidth": 12,
+      "pixelHeight": 1,
+      "worldX": -0.7129999999999999,
+      "worldY": -1.724,
+      "worldWidth": 0.6000000000000001,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 3,
+      "pixelY": 42,
+      "pixelWidth": 1,
+      "pixelHeight": 4,
+      "worldX": -2.438,
+      "worldY": -1.699,
+      "worldWidth": 0.05,
+      "worldHeight": 0.2
+    },
+    {
+      "pixelX": 24,
+      "pixelY": 45,
+      "pixelWidth": 13,
+      "pixelHeight": 1,
+      "worldX": -1.0879999999999999,
+      "worldY": -1.774,
+      "worldWidth": 0.65,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 15,
+      "pixelY": 46,
+      "pixelWidth": 9,
+      "pixelHeight": 1,
+      "worldX": -1.638,
+      "worldY": -1.824,
+      "worldWidth": 0.45,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 4,
+      "pixelY": 47,
+      "pixelWidth": 1,
+      "pixelHeight": 1,
+      "worldX": -2.388,
+      "worldY": -1.874,
+      "worldWidth": 0.05,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 8,
+      "pixelY": 47,
+      "pixelWidth": 3,
+      "pixelHeight": 1,
+      "worldX": -2.138,
+      "worldY": -1.874,
+      "worldWidth": 0.15000000000000002,
+      "worldHeight": 0.05
+    },
+    {
+      "pixelX": 12,
+      "pixelY": 47,
+      "pixelWidth": 3,
+      "pixelHeight": 1,
+      "worldX": -1.938,
+      "worldY": -1.874,
+      "worldWidth": 0.15000000000000002,
+      "worldHeight": 0.05
+    }
+  ]
+}
