@@ -28,10 +28,33 @@ export function LiveOccupancyMap({ grid, robot }: { grid: LiveOccupancyGrid | nu
   const robotTop = grid && robot ? (1 - (robot.y - grid.originY) / (grid.height * grid.resolution)) * 100 : null;
 
   return <div className="live-map-frame">
-    {grid ? <>
-      <canvas ref={canvasRef} className="live-map-canvas" aria-label="Bản đồ occupancy SLAM đang cập nhật" />
-      {robot && robotLeft !== null && robotTop !== null && <span className="live-map-robot" style={{ left: `${robotLeft}%`, top: `${robotTop}%`, transform: `translate(-50%, -50%) rotate(${-robot.yaw}rad)` }} aria-label="Vị trí robot"><i /></span>}
+    {grid ? (
+      <div
+        className="live-map-viewport"
+        style={{
+          aspectRatio: `${grid.width} / ${grid.height}`,
+        }}
+      >
+        <canvas ref={canvasRef} className="live-map-canvas" aria-label="Bản đồ occupancy SLAM đang cập nhật" />
+        {robot && robotLeft !== null && robotTop !== null && (
+          <span
+            className="live-map-robot"
+            style={{
+              left: `${robotLeft}%`,
+              top: `${robotTop}%`,
+              transform: `translate(-50%, -50%) rotate(${-robot.yaw}rad)`,
+            }}
+            aria-label="Vị trí robot"
+          >
+            <i />
+          </span>
+        )}
+      </div>
+    ) : (
+      <div className="live-map-empty">Chưa nhận được map từ robot. Hãy bắt đầu mapping để xem dữ liệu SLAM.</div>
+    )}
+    {grid && (
       <div className="live-map-caption">{grid.width} × {grid.height} px · {grid.resolution.toFixed(3)} m/px</div>
-    </> : <div className="live-map-empty">Chưa nhận được map từ robot. Hãy bắt đầu mapping để xem dữ liệu SLAM.</div>}
+    )}
   </div>;
 }
