@@ -14,15 +14,25 @@ export function OperationsMap2D({ map, robot, draft, path, onDraftChange }: Prop
   const dragStart = useRef<Omit<Pose2D, 'yaw'> | null>(null);
 
   const eventPoint = (event: PointerEvent<SVGSVGElement>) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const pixelX = ((event.clientX - bounds.left) / bounds.width) * map.imageWidth;
-    const pixelY = ((event.clientY - bounds.top) / bounds.height) * map.imageHeight;
-    return pixelToMap(pixelX, pixelY, map);
+    const svg = event.currentTarget;
+    const screenMatrix = svg.getScreenCTM();
+    if (!screenMatrix) return null;
+
+    const screenPoint = new DOMPoint(event.clientX, event.clientY);
+    const mapPoint = screenPoint.matrixTransform(screenMatrix.inverse());
+
+    if (
+      mapPoint.x < 0 || mapPoint.x > map.imageWidth
+      || mapPoint.y < 0 || mapPoint.y > map.imageHeight
+    ) return null;
+
+    return pixelToMap(mapPoint.x, mapPoint.y, map);
   };
 
   const handlePointerDown = (event: PointerEvent<SVGSVGElement>) => {
-    event.currentTarget.setPointerCapture(event.pointerId);
     const point = eventPoint(event);
+    if (!point) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
     dragStart.current = point;
     onDraftChange({ ...point, yaw: robot?.yaw ?? 0 });
   };
@@ -30,6 +40,7 @@ export function OperationsMap2D({ map, robot, draft, path, onDraftChange }: Prop
   const handlePointerMove = (event: PointerEvent<SVGSVGElement>) => {
     if (!dragStart.current) return;
     const point = eventPoint(event);
+    if (!point) return;
     const dx = point.x - dragStart.current.x;
     const dy = point.y - dragStart.current.y;
     const yaw = Math.hypot(dx, dy) > map.resolution ? Math.atan2(dy, dx) : robot?.yaw ?? 0;
@@ -44,6 +55,7 @@ export function OperationsMap2D({ map, robot, draft, path, onDraftChange }: Prop
     <svg
       className="operations-map"
       viewBox={`0 0 ${map.imageWidth} ${map.imageHeight}`}
+      preserveAspectRatio="xMidYMid meet"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={() => { dragStart.current = null; }}
@@ -52,7 +64,13 @@ export function OperationsMap2D({ map, robot, draft, path, onDraftChange }: Prop
       aria-label="Bản đồ điều khiển robot"
     >
       {map.occupancyImage ? (
-        <image href={map.occupancyImage} width={map.imageWidth} height={map.imageHeight} preserveAspectRatio="none" />
+        <image
+          className="operations-map-image"
+          href={map.occupancyImage}
+          width={map.imageWidth}
+          height={map.imageHeight}
+          preserveAspectRatio="none"
+        />
       ) : (
         <>
           <rect width={map.imageWidth} height={map.imageHeight} fill="#e8edf0" />
