@@ -35,15 +35,20 @@ function Path3D({ points }: { points: PathPoint2D[] }) {
 }
 
 export function RobotScene3D({ map, robot, draft, path }: { map: OccupancyMapMetadata; robot?: Pose2D; draft?: Pose2D | null; path?: PathPoint2D[] | null }) {
-  const centerX = map.origin[0] + map.widthMeters / 2;
-  const centerY = map.origin[1] + map.heightMeters / 2;
+  const mapYaw = map.origin[2] ?? 0;
+  const cosYaw = Math.cos(mapYaw);
+  const sinYaw = Math.sin(mapYaw);
+  const centerLocalX = map.widthMeters / 2;
+  const centerLocalY = map.heightMeters / 2;
+  const centerX = map.origin[0] + cosYaw * centerLocalX - sinYaw * centerLocalY;
+  const centerY = map.origin[1] + sinYaw * centerLocalX + cosYaw * centerLocalY;
   return (
     <div className="robot-scene">
       <Canvas shadows camera={{ position: [centerX + 3.5, 4.5, -centerY + 4], fov: 48 }}>
         <color attach="background" args={['#091318']} />
         <ambientLight intensity={0.7} /><directionalLight position={[3, 7, 4]} intensity={1.5} castShadow />
-        <mesh position={[centerX, -0.03, -centerY]} receiveShadow><boxGeometry args={[map.widthMeters, 0.06, map.heightMeters]} /><meshStandardMaterial color="#d9dedb" /></mesh>
-        {map.obstacles.map((obstacle, index) => <mesh key={index} position={[obstacle.worldX, 0.5, -obstacle.worldY]} castShadow receiveShadow>
+        <mesh position={[centerX, -0.03, -centerY]} rotation={[0, mapYaw, 0]} receiveShadow><boxGeometry args={[map.widthMeters, 0.06, map.heightMeters]} /><meshStandardMaterial color="#d9dedb" /></mesh>
+        {map.obstacles.map((obstacle, index) => <mesh key={index} position={[obstacle.worldX, 0.5, -obstacle.worldY]} rotation={[0, mapYaw, 0]} castShadow receiveShadow>
           <boxGeometry args={[obstacle.worldWidth, 1, obstacle.worldHeight]} /><meshStandardMaterial color="#405c68" />
         </mesh>)}
         {path && <Path3D points={path} />}

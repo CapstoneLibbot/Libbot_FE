@@ -51,10 +51,16 @@ export function OperationsMap2D({ map, robot, draft, path, onDraftChange }: Prop
       role="application"
       aria-label="Bản đồ điều khiển robot"
     >
-      <rect width={map.imageWidth} height={map.imageHeight} fill="#e8edf0" />
-      {map.obstacles.map((obstacle, index) => (
-        <rect key={index} x={obstacle.pixelX} y={obstacle.pixelY} width={obstacle.pixelWidth} height={obstacle.pixelHeight} fill="#334852" />
-      ))}
+      {map.occupancyImage ? (
+        <image href={map.occupancyImage} width={map.imageWidth} height={map.imageHeight} preserveAspectRatio="none" />
+      ) : (
+        <>
+          <rect width={map.imageWidth} height={map.imageHeight} fill="#e8edf0" />
+          {map.obstacles.map((obstacle, index) => (
+            <rect key={index} x={obstacle.pixelX} y={obstacle.pixelY} width={obstacle.pixelWidth} height={obstacle.pixelHeight} fill="#334852" />
+          ))}
+        </>
+      )}
       {pathPixels && pathPixels.length > 1 && (
         <polyline points={pathPixels.map((point) => `${point.x},${point.y}`).join(' ')} fill="none" stroke="#20b8d8" strokeWidth="0.8" strokeDasharray="1.5 1" />
       )}

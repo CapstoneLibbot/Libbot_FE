@@ -13,7 +13,12 @@ export const axiosClient = axios.create({
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error?.response?.data?.message ?? error.message ?? 'Request failed';
+    const responseData = error?.response?.data;
+    const message = responseData?.detail
+      ?? responseData?.message
+      ?? responseData?.title
+      ?? error.message
+      ?? 'Request failed';
     return Promise.reject(new ApiError(message, error?.response?.status ?? 500));
   }
 );

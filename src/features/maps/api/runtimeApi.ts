@@ -1,8 +1,13 @@
 import { axiosClient } from '../../../services/api/axiosClient';
-import { Pose2D, RobotRuntime, SavedMap } from '../types/runtime';
+import { LiveOccupancyGrid, Pose2D, RobotRuntime, SavedMap } from '../types/runtime';
 
 export async function getRobotRuntimes(): Promise<RobotRuntime[]> {
   return (await axiosClient.get<RobotRuntime[]>('/robot-runtimes')).data;
+}
+
+export async function getLatestRobotMapGrid(): Promise<LiveOccupancyGrid | null> {
+  const response = await axiosClient.get<LiveOccupancyGrid | null>('/robot-runtimes/real/map');
+  return response.status === 204 ? null : response.data;
 }
 
 export async function armRuntime(runtimeId: string) {
@@ -36,8 +41,16 @@ export async function sendManualVelocity(runtimeId: string, velocity: { linearX:
   });
 }
 
-export async function stopManual(runtimeId: string) {
-  await axiosClient.post(`/robot-runtimes/${runtimeId}/manual-stop`);
+export interface ManualStopResponse {
+  navigation_active?: boolean;
+  navigation_restarted?: boolean;
+}
+
+export async function stopManual(runtimeId: string, resumeNavigation = false): Promise<ManualStopResponse> {
+  const response = await axiosClient.post<ManualStopResponse>(`/robot-runtimes/${runtimeId}/manual-stop`, null, {
+    params: resumeNavigation ? { resumeNavigation: true } : undefined,
+  });
+  return response.data;
 }
 
 export async function setMapping(runtimeId: string, enabled: boolean, armLeaseId?: string | null) {
@@ -50,6 +63,44 @@ export async function saveRobotMap(name: string, armLeaseId: string): Promise<Sa
 
 export async function getSavedMaps(): Promise<SavedMap[]> {
   return (await axiosClient.get<SavedMap[]>('/robot-runtimes/real/maps')).data;
+}
+
+export async function getLatestSavedRobotMap(): Promise<{ id: string; name: string; version: string } | null> {
+  return (await axiosClient.get<{ id: string; name: string; version: string } | null>('/robot-runtimes/real/maps/latest')).data;
+}
+
+export async function getSavedRobotMapGrid(mapId: string): Promise<LiveOccupancyGrid> {
+  const response = await axiosClient.get<{
+    width: number;
+    height: number;
+    data?: {
+      format?: string;
+      resolution?: number;
+      origin?: unknown;
+      timestamp?: string;
+      cells?: unknown;
+    } | null;
+  }>(`/maps/${encodeURIComponent(mapId)}`);
+  const saved = response.data;
+  const origin = saved.data?.origin;
+  const cells = saved.data?.cells;
+  if (saved.data?.format !== 'occupancy-grid-v1'
+    || typeof saved.data.resolution !== 'number'
+    || !Array.isArray(origin) || origin.length < 3 || !origin.every((value) => typeof value === 'number')
+    || !Array.isArray(cells) || cells.length !== saved.width * saved.height
+    || !cells.every((value) => typeof value === 'number')) {
+    throw new Error('BE trả về dữ liệu map không hợp lệ.');
+  }
+  return {
+    timestamp: saved.data.timestamp ?? new Date().toISOString(),
+    width: saved.width,
+    height: saved.height,
+    resolution: saved.data.resolution,
+    originX: origin[0],
+    originY: origin[1],
+    originYaw: origin[2],
+    data: cells,
+  };
 }
 
 export async function startNavigationMode(mapId: string, armLeaseId: string) {

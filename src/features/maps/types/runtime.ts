@@ -20,6 +20,7 @@ export interface OccupancyMapMetadata {
   widthMeters: number;
   heightMeters: number;
   obstacles: MapObstacle[];
+  occupancyImage?: string;
 }
 
 export interface RobotTelemetry {

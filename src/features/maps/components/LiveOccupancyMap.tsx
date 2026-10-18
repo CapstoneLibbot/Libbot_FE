@@ -1,8 +1,35 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { LiveOccupancyGrid, Pose2D } from '../types/runtime';
 
-export function LiveOccupancyMap({ grid, robot }: { grid: LiveOccupancyGrid | null; robot?: Pose2D }) {
+export function LiveOccupancyMap({ grid, robot, mappingActive = false }: { grid: LiveOccupancyGrid | null; robot?: Pose2D; mappingActive?: boolean }) {
+  const frameRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+
+  useLayoutEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || !grid || grid.width <= 0 || grid.height <= 0) return;
+
+    const updateViewportSize = () => {
+      const style = window.getComputedStyle(frame);
+      const horizontalPadding = Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight);
+      const verticalPadding = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
+      const availableWidth = Math.max(0, frame.clientWidth - horizontalPadding);
+      const availableHeight = Math.max(0, frame.clientHeight - verticalPadding - 24);
+      const scale = Math.min(availableWidth / grid.width, availableHeight / grid.height);
+
+      setViewportSize({
+        width: Math.max(0, grid.width * scale),
+        height: Math.max(0, grid.height * scale),
+      });
+    };
+
+    const observer = new ResizeObserver(updateViewportSize);
+    observer.observe(frame);
+    updateViewportSize();
+    return () => observer.disconnect();
+  }, [grid?.width, grid?.height]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas?.getContext('2d');
@@ -24,15 +51,22 @@ export function LiveOccupancyMap({ grid, robot }: { grid: LiveOccupancyGrid | nu
     context.putImageData(image, 0, 0);
   }, [grid]);
 
-  const robotLeft = grid && robot ? ((robot.x - grid.originX) / (grid.width * grid.resolution)) * 100 : null;
-  const robotTop = grid && robot ? (1 - (robot.y - grid.originY) / (grid.height * grid.resolution)) * 100 : null;
+  const deltaX = grid && robot ? robot.x - grid.originX : null;
+  const deltaY = grid && robot ? robot.y - grid.originY : null;
+  const cosine = grid ? Math.cos(grid.originYaw) : 1;
+  const sine = grid ? Math.sin(grid.originYaw) : 0;
+  const mapX = deltaX !== null && deltaY !== null ? cosine * deltaX + sine * deltaY : null;
+  const mapY = deltaX !== null && deltaY !== null ? -sine * deltaX + cosine * deltaY : null;
+  const robotLeft = grid && mapX !== null ? (mapX / (grid.width * grid.resolution)) * 100 : null;
+  const robotTop = grid && mapY !== null ? (1 - mapY / (grid.height * grid.resolution)) * 100 : null;
 
-  return <div className="live-map-frame">
+  return <div ref={frameRef} className="live-map-frame">
     {grid ? (
       <div
         className="live-map-viewport"
         style={{
-          aspectRatio: `${grid.width} / ${grid.height}`,
+          width: `${viewportSize.width}px`,
+          height: `${viewportSize.height}px`,
         }}
       >
         <canvas ref={canvasRef} className="live-map-canvas" aria-label="Bản đồ occupancy SLAM đang cập nhật" />
@@ -51,7 +85,7 @@ export function LiveOccupancyMap({ grid, robot }: { grid: LiveOccupancyGrid | nu
         )}
       </div>
     ) : (
-      <div className="live-map-empty">Chưa nhận được map từ robot. Hãy bắt đầu mapping để xem dữ liệu SLAM.</div>
+      <div className="live-map-empty">{mappingActive ? 'SLAM đang chạy nhưng BE chưa nhận topic /map. Kiểm tra SLAM Toolbox và topic /scan trên robot.' : 'Chưa nhận được map từ robot. Hãy bật mapping để xem dữ liệu SLAM.'}</div>
     )}
     {grid && (
       <div className="live-map-caption">{grid.width} × {grid.height} px · {grid.resolution.toFixed(3)} m/px</div>

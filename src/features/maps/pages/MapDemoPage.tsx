@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../../components/common/Button/Button';
 import { PageContainer } from '../../../components/layout/PageContainer';
 import { LibrarianLayout } from '../../../layouts/LibrarianLayout';
 import { signalRClient } from '../../../services/realtime/signalRClient';
-import { armRuntime, cancelNavigationGoal, disarmRuntime, getRobotRuntimes, sendNavigationGoal, setInitialPose } from '../api/runtimeApi';
+import { armRuntime, cancelNavigationGoal, disarmRuntime, getLatestSavedRobotMap, getRobotRuntimes, getSavedRobotMapGrid, sendNavigationGoal, setInitialPose } from '../api/runtimeApi';
 import { OperationsMap2D } from '../components/OperationsMap2D';
 import { RobotScene3D } from '../components/RobotScene3D';
 import { OccupancyMapMetadata, Pose2D, RobotRuntime } from '../types/runtime';
+import { occupancyGridToMapMetadata } from '../utils/occupancyGrid';
 
 type SelectionMode = 'INITIAL_POSE' | 'GOAL';
 
@@ -15,8 +16,10 @@ function messageOf(error: unknown) {
 }
 export function MapDemoPage() {
   const [map, setMap] = useState<OccupancyMapMetadata | null>(null);
+  const [mapInfo, setMapInfo] = useState<{ id: string; name: string; version: string } | null>(null);
+  const [mapLoading, setMapLoading] = useState(true);
   const [runtimes, setRuntimes] = useState<RobotRuntime[]>([]);
-  const [runtimeId, setRuntimeId] = useState('sim');
+  const [runtimeId, setRuntimeId] = useState('real');
   const [runtime, setRuntime] = useState<RobotRuntime | null>(null);
   const [leaseId, setLeaseId] = useState<string | null>(null);
   const [mode, setMode] = useState<SelectionMode>('GOAL');
@@ -24,6 +27,8 @@ export function MapDemoPage() {
   const [view, setView] = useState<'SPLIT' | '2D' | '3D'>('SPLIT');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const loadedMapId = useRef<string | null>(null);
 
   const refreshRuntimes = useCallback(async () => {
     try {
@@ -36,7 +41,46 @@ export function MapDemoPage() {
   }, [runtimeId]);
 
   useEffect(() => {
-    fetch('/maps/library-map.json').then((response) => response.json()).then(setMap).catch((error) => setNotice(messageOf(error)));
+    let active = true;
+    let loading = false;
+
+    const refreshLatestMap = async () => {
+      if (loading) return;
+      loading = true;
+      try {
+        const latest = await getLatestSavedRobotMap();
+        if (!active) return;
+        if (!latest) {
+          loadedMapId.current = null;
+          setMap(null);
+          setMapInfo(null);
+          setMapError('BE chưa có map robot thật được lưu.');
+          return;
+        }
+
+        if (latest.id !== loadedMapId.current) {
+          setMapLoading(true);
+          const grid = await getSavedRobotMapGrid(latest.id);
+          if (!active) return;
+          setMap(occupancyGridToMapMetadata(grid));
+          loadedMapId.current = latest.id;
+        }
+        setMapInfo(latest);
+        setMapError(null);
+      } catch (error) {
+        if (active) setMapError(`Không thể tải map mới nhất từ BE: ${messageOf(error)}`);
+      } finally {
+        loading = false;
+        if (active) setMapLoading(false);
+      }
+    };
+
+    void refreshLatestMap();
+    const timer = window.setInterval(() => void refreshLatestMap(), 5000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -145,7 +189,7 @@ export function MapDemoPage() {
 
           <section className="operations-toolbar">
             <div className="runtime-tabs" aria-label="Chọn robot runtime">
-              {runtimes.map((item) => <button key={item.id} className={runtimeId === item.id ? 'active' : ''} onClick={() => void selectRuntime(item.id)}>
+              {runtimes.filter((item) => item.kind === 'REAL').map((item) => <button key={item.id} className={runtimeId === item.id ? 'active' : ''} onClick={() => void selectRuntime(item.id)}>
                 <span>{item.kind}</span>{item.displayName}
               </button>)}
             </div>
@@ -182,11 +226,12 @@ export function MapDemoPage() {
             </aside>
 
             <main className={`visualization-grid view-${view.toLowerCase()}`}>
-              {(view === 'SPLIT' || view === '2D') && <section className="visual-panel"><div className="visual-title"><span>Bản đồ SLAM</span><small>Đơn vị mét · 0,05 m/pixel</small></div>{map ? <OperationsMap2D map={map} robot={telemetry?.pose} draft={draft} path={telemetry?.plannedPath} onDraftChange={setDraft} /> : <div className="visual-loading">Đang tải bản đồ…</div>}</section>}
-              {(view === 'SPLIT' || view === '3D') && <section className="visual-panel"><div className="visual-title"><span>Digital twin 3D</span><small>Kéo để xoay · cuộn để zoom</small></div>{map ? <RobotScene3D map={map} robot={telemetry?.pose} draft={draft} path={telemetry?.plannedPath} /> : <div className="visual-loading">Đang dựng scene…</div>}</section>}
+              {(view === 'SPLIT' || view === '2D') && <section className="visual-panel"><div className="visual-title"><span>{mapInfo?.name ?? 'Bản đồ SLAM'}</span><small>{mapInfo ? `Phiên bản ${mapInfo.version} · ${map?.resolution.toFixed(3)} m/pixel` : 'Map mới nhất từ robot thật'}</small></div>{map ? <OperationsMap2D map={map} robot={telemetry?.pose} draft={draft} path={telemetry?.plannedPath} onDraftChange={setDraft} /> : <div className="visual-loading">{mapLoading ? 'Đang tải map mới nhất từ BE…' : mapError ?? 'Chưa có map robot thật được lưu.'}</div>}</section>}
+              {(view === 'SPLIT' || view === '3D') && <section className="visual-panel"><div className="visual-title"><span>{mapInfo?.name ?? 'Digital twin 3D'}</span><small>{mapInfo ? `Phiên bản ${mapInfo.version} · ${map?.resolution.toFixed(3)} m/pixel` : 'Kéo để xoay · cuộn để zoom'}</small></div>{map ? <RobotScene3D map={map} robot={telemetry?.pose} draft={draft} path={telemetry?.plannedPath} /> : <div className="visual-loading">{mapLoading ? 'Đang dựng scene từ map BE…' : mapError ?? 'Chưa có map robot thật được lưu.'}</div>}</section>}
             </main>
           </div>
           {notice && <div className="operations-notice" role="status">{notice}</div>}
+          {mapError && map && <div className="operations-error" role="alert">{mapError}</div>}
           {telemetry?.error && <div className="operations-error" role="alert">{telemetry.error}</div>}
         </div>
       </PageContainer>

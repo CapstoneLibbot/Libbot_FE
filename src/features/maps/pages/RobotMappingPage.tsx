@@ -1,7 +1,7 @@
 import { PointerEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { LibrarianLayout } from '../../../layouts/LibrarianLayout';
 import { PageContainer } from '../../../components/layout/PageContainer';
-import { armRuntime, disarmRuntime, getRobotRuntimes, getSavedMaps, saveRobotMap, sendManualVelocity, setMapping, startNavigationMode, stopManual, stopNavigationMode } from '../api/runtimeApi';
+import { armRuntime, disarmRuntime, getLatestRobotMapGrid, getRobotRuntimes, getSavedMaps, getSavedRobotMapGrid, saveRobotMap, sendManualVelocity, setMapping, startNavigationMode, stopManual, stopNavigationMode } from '../api/runtimeApi';
 import { LiveOccupancyMap } from '../components/LiveOccupancyMap';
 import { LiveOccupancyGrid, RobotRuntime, SavedMap } from '../types/runtime';
 import { signalRClient } from '../../../services/realtime/signalRClient';
@@ -11,6 +11,12 @@ const RUNTIME_ID = 'real';
 const HELD_KEYS = new Set(['w', 's', 'a', 'd', 'q', 'e']);
 
 function messageOf(error: unknown) {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: { data?: { message?: unknown; detail?: unknown; title?: unknown } } }).response;
+    if (typeof response?.data?.detail === 'string') return response.data.detail;
+    if (typeof response?.data?.message === 'string') return response.data.message;
+    if (typeof response?.data?.title === 'string') return response.data.title;
+  }
   return error instanceof Error ? error.message : 'Không thể thực hiện yêu cầu.';
 }
 
@@ -25,8 +31,11 @@ export function RobotMappingPage() {
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
   const held = useRef(new Set<string>());
+  const manualStopInFlight = useRef(false);
   const leaseRef = useRef<string | null>(null);
   const runtimeRef = useRef<RobotRuntime | null>(null);
+  const latestMapIdRef = useRef<string | null>(null);
+  const navigationRestartPending = useRef(false);
   const lastTelemetryAt = useRef(0);
 
   const refresh = useCallback(async () => {
@@ -43,26 +52,51 @@ export function RobotMappingPage() {
     try {
       const next = await getSavedMaps();
       const saved = next.filter((item) => item.data?.format === 'occupancy-grid-v1');
+      const previousLatestId = latestMapIdRef.current;
+      const latestId = saved[0]?.id ?? null;
+      latestMapIdRef.current = latestId;
       setMaps(saved);
-      setSelectedMap((current) => current || saved[0]?.id || '');
+      setSelectedMap((current) => {
+        if (!latestId) return '';
+        return !current || current === previousLatestId || !saved.some((item) => item.id === current)
+          ? latestId
+          : current;
+      });
     } catch (error) { setNotice(messageOf(error)); }
   }, []);
 
-  const stop = useCallback(async () => {
+  const stop = useCallback(async (resumeNavigation = true) => {
     held.current.clear();
-    try { await stopManual(RUNTIME_ID); } catch { /* gateway watchdog also publishes a stop */ }
-  }, []);
+    if (manualStopInFlight.current) return;
+    manualStopInFlight.current = true;
+    const shouldReportRestart = resumeNavigation && navigationRestartPending.current;
+    try {
+      const result = await stopManual(RUNTIME_ID, resumeNavigation);
+      if (shouldReportRestart) {
+        navigationRestartPending.current = false;
+        await refresh();
+        setNotice(result.navigation_restarted
+          ? 'Đã dừng điều khiển tay và khởi động lại Nav2.'
+          : 'Đã dừng điều khiển tay. Nav2 chưa được khởi động lại; hãy kiểm tra map và log robot.');
+      }
+    } catch (error) {
+      if (shouldReportRestart) setNotice(messageOf(error));
+    } finally {
+      manualStopInFlight.current = false;
+    }
+  }, [refresh]);
 
   useEffect(() => {
     void refresh();
     void refreshMaps();
     const timer = window.setInterval(() => { void refresh(); }, 1500);
+    const mapsTimer = window.setInterval(() => { void refreshMaps(); }, 5000);
     void signalRClient.subscribeRuntime(RUNTIME_ID);
     const removeMap = signalRClient.subscribe<LiveOccupancyGrid>('RobotMapUpdated', setGrid);
     const stopOnExit = () => {
       const baseUrl = axiosClient.defaults.baseURL ?? '/api';
       const apiUrl = (path: string) => new URL(`${baseUrl.replace(/\/$/, '')}${path}`, window.location.href);
-      void fetch(apiUrl('/robot-runtimes/real/manual-stop'), { method: 'POST', keepalive: true });
+      void fetch(apiUrl('/robot-runtimes/real/manual-stop?resumeNavigation=true'), { method: 'POST', keepalive: true });
       if (leaseRef.current) void fetch(apiUrl('/robot-runtimes/real/arm'), { method: 'DELETE', keepalive: true });
     };
     window.addEventListener('pagehide', stopOnExit);
@@ -75,6 +109,7 @@ export function RobotMappingPage() {
     });
     return () => {
       window.clearInterval(timer);
+      window.clearInterval(mapsTimer);
       removeMap(); removeTelemetry();
       window.removeEventListener('pagehide', stopOnExit);
       void signalRClient.unsubscribeRuntime(RUNTIME_ID);
@@ -82,6 +117,22 @@ export function RobotMappingPage() {
       if (leaseRef.current) void disarmRuntime(RUNTIME_ID);
     };
   }, [refresh, refreshMaps, stop]);
+
+  useEffect(() => {
+    if (grid) return;
+    let active = true;
+    const loadLatestMap = async () => {
+      try {
+        const latest = await getLatestRobotMapGrid();
+        if (active && latest) setGrid(latest);
+      } catch {
+        // SignalR remains the primary stream; retry REST while no map has arrived yet.
+      }
+    };
+    void loadLatestMap();
+    const timer = window.setInterval(() => { void loadLatestMap(); }, 2000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [grid]);
 
   useEffect(() => {
     const release = () => { void stop(); };
@@ -152,9 +203,8 @@ export function RobotMappingPage() {
 
   const toggleMapping = async (enabled: boolean) => {
     if (enabled && !leaseId) return;
-    setBusy(true); await stop();
-    if (enabled) setGrid(null);
-    try { await setMapping(RUNTIME_ID, enabled, leaseId); await refresh(); setNotice(enabled ? 'Đang mapping trực tiếp.' : 'Đã dừng mapping.'); }
+    setBusy(true); await stop(false);
+    try { await setMapping(RUNTIME_ID, enabled, leaseId); if (enabled) navigationRestartPending.current = false; await refresh(); setNotice(enabled ? 'Đang mapping trực tiếp.' : 'Đã dừng mapping.'); }
     catch (error) { setNotice(messageOf(error)); }
     finally { setBusy(false); }
   };
@@ -164,24 +214,28 @@ export function RobotMappingPage() {
     setBusy(true); setNotice('Đang lưu PGM/YAML trên robot và snapshot vào database…');
     try {
       const saved = await saveRobotMap(mapName.trim(), leaseId);
-      await refreshMaps();
+      setMaps((current) => [saved, ...current.filter((item) => item.id !== saved.id)]);
       setSelectedMap(saved.id);
-      setNotice(`Đã lưu “${saved.name}” phiên bản ${saved.version} trên robot và database.`);
+      await setMapping(RUNTIME_ID, false, leaseId);
+      await refreshMaps();
+      setGrid(await getSavedRobotMapGrid(saved.id));
+      await refresh();
+      setNotice(`Đã lưu “${saved.name}” phiên bản ${saved.version}; đã dừng SLAM để sẵn sàng khởi chạy Nav2.`);
     } catch (error) { setNotice(messageOf(error)); }
     finally { setBusy(false); }
   };
 
   const startNav = async () => {
     if (!leaseId || !selectedMap) return;
-    setBusy(true); await stop();
-    try { await startNavigationMode(selectedMap, leaseId); await refresh(); setNotice('Nav2 đã khởi động với map đã chọn. Dừng Nav2 trước khi điều khiển thủ công.'); }
+    setBusy(true); await stop(false);
+    try { await startNavigationMode(selectedMap, leaseId); navigationRestartPending.current = false; await refresh(); setNotice('Nav2 đã khởi động với map đã chọn. Dừng Nav2 trước khi điều khiển thủ công.'); }
     catch (error) { setNotice(messageOf(error)); }
     finally { setBusy(false); }
   };
 
   const stopNav = async () => {
-    setBusy(true); await stop();
-    try { await stopNavigationMode(); await refresh(); setNotice('Đã dừng Nav2.'); }
+    setBusy(true); await stop(false);
+    try { await stopNavigationMode(); navigationRestartPending.current = true; await refresh(); setNotice('Đã dừng Nav2. Nav2 sẽ tự khởi động lại khi bạn dừng điều khiển tay.'); }
     catch (error) { setNotice(messageOf(error)); }
     finally { setBusy(false); }
   };
@@ -198,7 +252,7 @@ export function RobotMappingPage() {
       <header className="robot-mapping-header"><div><span className="robot-mapping-eyebrow">LiBot · ROBOT THẬT</span><h1>Điều khiển và tạo bản đồ</h1><p>Map chỉ được lưu khi bạn chủ động bấm “Lưu map”.</p></div><span className={`robot-live-status ${connected ? 'online' : 'offline'}`}>{connected ? 'ĐANG KẾT NỐI' : 'MẤT KẾT NỐI'}</span></header>
       <div className="robot-mapping-grid">
         <section className="robot-map-panel"><div className="robot-panel-heading"><div><h2>Map trực tiếp</h2><span>{grid ? `Cập nhật ${new Date(grid.timestamp).toLocaleTimeString()}` : 'Chờ dữ liệu SLAM'}</span></div><span className={runtime?.mappingActive ? 'mapping-pill active' : 'mapping-pill'}>{runtime?.mappingActive ? 'SLAM ĐANG CHẠY' : navActive ? 'NAV2 ĐANG CHẠY' : 'CHƯA MAPPING'}</span></div>
-          <LiveOccupancyMap grid={grid} robot={mapPose} />
+          <LiveOccupancyMap grid={grid} robot={mapPose} mappingActive={Boolean(runtime?.mappingActive)} />
           <div className="robot-pose-readout"><span>Vị trí</span><strong>{mapPose ? `${mapPose.x.toFixed(2)} m, ${mapPose.y.toFixed(2)} m` : '—'}</strong><span>Hướng</span><strong>{mapPose ? `${(mapPose.yaw * 180 / Math.PI).toFixed(0)}°` : '—'}</strong></div>
         </section>
         <aside className="robot-tools-column">
