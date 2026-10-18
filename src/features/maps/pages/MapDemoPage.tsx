@@ -19,7 +19,7 @@ export function MapDemoPage() {
   const [mapInfo, setMapInfo] = useState<{ id: string; name: string; version: string } | null>(null);
   const [mapLoading, setMapLoading] = useState(true);
   const [runtimes, setRuntimes] = useState<RobotRuntime[]>([]);
-  const [runtimeId, setRuntimeId] = useState('real');
+  const [runtimeId, setRuntimeId] = useState('sim');
   const [runtime, setRuntime] = useState<RobotRuntime | null>(null);
   const [leaseId, setLeaseId] = useState<string | null>(null);
   const [mode, setMode] = useState<SelectionMode>('GOAL');
@@ -40,9 +40,44 @@ export function MapDemoPage() {
     }
   }, [runtimeId]);
 
+  const selectedRuntimeKind = runtimes.find((item) => item.id === runtimeId)?.kind
+    ?? runtime?.kind
+    ?? (runtimeId.toLowerCase() === 'sim' ? 'SIM' : 'REAL');
+
   useEffect(() => {
     let active = true;
     let loading = false;
+
+    setMapLoading(true);
+    setMapError(null);
+    setMap(null);
+    setMapInfo(null);
+    loadedMapId.current = null;
+
+    if (selectedRuntimeKind === 'SIM') {
+      const controller = new AbortController();
+      void fetch('/maps/library-map.json', { signal: controller.signal })
+        .then((response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json() as Promise<OccupancyMapMetadata>;
+        })
+        .then((simMap) => {
+          if (active) setMap(simMap);
+        })
+        .catch((error: unknown) => {
+          if (active && !controller.signal.aborted) {
+            setMapError(`Không thể tải map mô phỏng: ${messageOf(error)}`);
+          }
+        })
+        .finally(() => {
+          if (active) setMapLoading(false);
+        });
+
+      return () => {
+        active = false;
+        controller.abort();
+      };
+    }
 
     const refreshLatestMap = async () => {
       if (loading) return;
@@ -81,7 +116,7 @@ export function MapDemoPage() {
       active = false;
       window.clearInterval(timer);
     };
-  }, []);
+  }, [selectedRuntimeKind]);
 
   useEffect(() => {
     void refreshRuntimes();
@@ -189,7 +224,7 @@ export function MapDemoPage() {
 
           <section className="operations-toolbar">
             <div className="runtime-tabs" aria-label="Chọn robot runtime">
-              {runtimes.filter((item) => item.kind === 'REAL').map((item) => <button key={item.id} className={runtimeId === item.id ? 'active' : ''} onClick={() => void selectRuntime(item.id)}>
+              {runtimes.map((item) => <button key={item.id} className={runtimeId === item.id ? 'active' : ''} onClick={() => void selectRuntime(item.id)}>
                 <span>{item.kind}</span>{item.displayName}
               </button>)}
             </div>
@@ -226,8 +261,8 @@ export function MapDemoPage() {
             </aside>
 
             <main className={`visualization-grid view-${view.toLowerCase()}`}>
-              {(view === 'SPLIT' || view === '2D') && <section className="visual-panel"><div className="visual-title"><span>{mapInfo?.name ?? 'Bản đồ SLAM'}</span><small>{mapInfo ? `Phiên bản ${mapInfo.version} · ${map?.resolution.toFixed(3)} m/pixel` : 'Map mới nhất từ robot thật'}</small></div>{map ? <OperationsMap2D map={map} robot={telemetry?.pose} draft={draft} path={telemetry?.plannedPath} onDraftChange={setDraft} /> : <div className="visual-loading">{mapLoading ? 'Đang tải map mới nhất từ BE…' : mapError ?? 'Chưa có map robot thật được lưu.'}</div>}</section>}
-              {(view === 'SPLIT' || view === '3D') && <section className="visual-panel"><div className="visual-title"><span>{mapInfo?.name ?? 'Digital twin 3D'}</span><small>{mapInfo ? `Phiên bản ${mapInfo.version} · ${map?.resolution.toFixed(3)} m/pixel` : 'Kéo để xoay · cuộn để zoom'}</small></div>{map ? <RobotScene3D map={map} robot={telemetry?.pose} draft={draft} path={telemetry?.plannedPath} /> : <div className="visual-loading">{mapLoading ? 'Đang dựng scene từ map BE…' : mapError ?? 'Chưa có map robot thật được lưu.'}</div>}</section>}
+              {(view === 'SPLIT' || view === '2D') && <section className="visual-panel"><div className="visual-title"><span>{selectedRuntimeKind === 'SIM' ? 'Bản đồ mô phỏng thư viện' : mapInfo?.name ?? 'Bản đồ SLAM'}</span><small>{selectedRuntimeKind === 'SIM' ? `${map?.resolution.toFixed(3) ?? '0.050'} m/pixel · JSON` : mapInfo ? `Phiên bản ${mapInfo.version} · ${map?.resolution.toFixed(3)} m/pixel` : 'Map mới nhất từ robot thật'}</small></div>{map ? <OperationsMap2D map={map} robot={telemetry?.pose} draft={draft} path={telemetry?.plannedPath} onDraftChange={setDraft} /> : <div className="visual-loading">{mapLoading ? (selectedRuntimeKind === 'SIM' ? 'Đang tải map mô phỏng…' : 'Đang tải map mới nhất từ BE…') : mapError ?? (selectedRuntimeKind === 'SIM' ? 'Không có map mô phỏng.' : 'Chưa có map robot thật được lưu.')}</div>}</section>}
+              {(view === 'SPLIT' || view === '3D') && <section className="visual-panel"><div className="visual-title"><span>{selectedRuntimeKind === 'SIM' ? 'Digital twin mô phỏng' : mapInfo?.name ?? 'Digital twin 3D'}</span><small>{selectedRuntimeKind === 'SIM' ? 'Kéo để xoay · cuộn để zoom' : mapInfo ? `Phiên bản ${mapInfo.version} · ${map?.resolution.toFixed(3)} m/pixel` : 'Kéo để xoay · cuộn để zoom'}</small></div>{map ? <RobotScene3D map={map} robot={telemetry?.pose} draft={draft} path={telemetry?.plannedPath} /> : <div className="visual-loading">{mapLoading ? (selectedRuntimeKind === 'SIM' ? 'Đang dựng scene mô phỏng…' : 'Đang dựng scene từ map BE…') : mapError ?? (selectedRuntimeKind === 'SIM' ? 'Không có map mô phỏng.' : 'Chưa có map robot thật được lưu.')}</div>}</section>}
             </main>
           </div>
           {notice && <div className="operations-notice" role="status">{notice}</div>}
