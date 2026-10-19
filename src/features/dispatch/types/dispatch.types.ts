@@ -6,6 +6,8 @@ export interface DispatchRequest {
   workflowId: string;
   robotId?: string;
   priority: MissionPriority;
+  runtimeId: 'sim' | 'real';
+  initialContext?: Record<string, unknown>;
 }
 
 export interface DispatchPreview {

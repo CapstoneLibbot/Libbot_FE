@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { dispatchWorkflow, previewDispatch } from '../api/dispatchApi';
 import { DispatchPreview, DispatchRequest } from '../types/dispatch.types';
 import { useQueryClient } from '@tanstack/react-query';
+import { armRuntime, startMission } from '../../missions/api/missionApi';
 
 export function useDispatchWorkflow() {
   const queryClient = useQueryClient();
@@ -18,7 +19,10 @@ export function useDispatchWorkflow() {
     setSubmitting(true);
     try {
       const result = await dispatchWorkflow(payload);
+      const armLease = payload.runtimeId === 'real' ? await armRuntime('real') : undefined;
+      await startMission(result.id, armLease?.armLeaseId);
       await queryClient.invalidateQueries({ queryKey: ['missions'] });
+      await queryClient.invalidateQueries({ queryKey: ['mission-execution', result.id] });
       return result;
     } finally {
       setSubmitting(false);

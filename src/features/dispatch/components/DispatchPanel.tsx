@@ -40,7 +40,7 @@ export function DispatchPanel({
             <option value="CRITICAL">CRITICAL</option>
           </select>
         </div>
-        <Button variant="primary" onClick={() => onDispatch({ workflowId, robotId, priority })}>Dispatch Mission</Button>
+        <Button variant="primary" onClick={() => onDispatch({ workflowId, robotId, priority, runtimeId: 'real' })}>Dispatch Mission</Button>
       </div>
     </div>
   );

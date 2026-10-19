@@ -1,5 +1,20 @@
 import { axiosClient } from '../../../services/api/axiosClient';
-import { Workflow, WorkflowCreateRequest } from '../types/workflow.types';
+import { Workflow, WorkflowCreateRequest, WorkflowTemplate } from '../types/workflow.types';
+
+export async function getWorkflowTemplates(): Promise<WorkflowTemplate[]> {
+  const response = await axiosClient.get<WorkflowTemplate[]>('/workflows/templates');
+  return response.data;
+}
+
+export async function createWorkflowFromTemplate(templateId: string, name?: string): Promise<Workflow> {
+  const response = await axiosClient.post<Workflow>(`/workflows/templates/${templateId}/create`, { name });
+  return response.data;
+}
+
+export async function exportRobotWorkflow(id: string, runtimeId: 'sim' | 'real') {
+  const response = await axiosClient.get(`/workflows/${id}/robot-json`, { params: { runtimeId } });
+  return response.data;
+}
 
 export async function getWorkflows(): Promise<Workflow[]> {
   const response = await axiosClient.get<Workflow[]>('/workflows');

@@ -10,7 +10,7 @@ const defaultWorkflow = (): Workflow => ({
   type: 'PATROL',
   isActive: true,
   steps: [
-    { id: 'step-1', sequence: 1, type: WorkflowStepType.MOVE, name: 'MOVE', configuration: { target: 'Shelf A' } },
+    { id: 'step-1', sequence: 1, type: WorkflowStepType.MOVE, name: 'MOVE', configuration: { target: 'Kệ A3' } },
     { id: 'step-2', sequence: 2, type: WorkflowStepType.SCAN, name: 'SCAN', configuration: { mode: 'QR' } },
     { id: 'step-3', sequence: 3, type: WorkflowStepType.PROCESS_DATA, name: 'PROCESS_DATA' }
   ]
@@ -37,7 +37,7 @@ export function useWorkflowBuilder(initialWorkflow?: Workflow) {
         sequence: nextSequence,
         type,
         name: type,
-        configuration: type === WorkflowStepType.MOVE ? { target: 'Shelf A' } : type === WorkflowStepType.WAIT ? { duration: 5 } : undefined
+        configuration: type === WorkflowStepType.MOVE ? { target: 'Kệ A3' } : type === WorkflowStepType.WAIT ? { duration_sec: 5 } : undefined
       };
 
       return {

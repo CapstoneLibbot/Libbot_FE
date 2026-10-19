@@ -7,7 +7,8 @@ export enum WorkflowStepType {
   EVALUATE = 'EVALUATE',
   DISPLAY = 'DISPLAY',
   WAIT = 'WAIT',
-  NOTIFY = 'NOTIFY'
+  NOTIFY = 'NOTIFY',
+  END = 'END'
 }
 
 export interface WorkflowStep {
@@ -37,6 +38,19 @@ export interface WorkflowCreateRequest {
   description?: string;
   type: string;
   steps: WorkflowStep[];
+}
+
+export interface WorkflowTemplate {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  steps: Array<{
+    sequence: number;
+    type: WorkflowStepType;
+    name: string;
+    configuration: Record<string, unknown>;
+  }>;
 }
 
 export interface WorkflowDispatchConfig {
