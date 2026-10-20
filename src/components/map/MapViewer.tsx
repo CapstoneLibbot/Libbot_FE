@@ -634,7 +634,6 @@ function MapViewer({
           )
           const splitDistance = totalLength * progressRatio
           const completedPixels = [routePixels[0]]
-          const upcomingPixels: Point[] = []
           let traversedDistance = 0
 
           for (let index = 0; index < routePixels.length - 1; index += 1) {
@@ -655,18 +654,17 @@ function MapViewer({
               y: start.y + (end.y - start.y) * segmentProgress,
             }
             if (segmentProgress > 0) completedPixels.push(splitPoint)
-            upcomingPixels.push(splitPoint, end, ...routePixels.slice(index + 2))
             break
           }
 
-          const strokeRoute = (points: Point[], dashed: boolean, color: string) => {
+          const strokeRoute = (points: Point[], color: string) => {
             if (points.length < 2) return
             context.beginPath()
             context.moveTo(points[0].x, points[0].y)
             points.slice(1).forEach((point) => context.lineTo(point.x, point.y))
             context.lineJoin = 'round'
             context.lineCap = 'round'
-            context.setLineDash(dashed ? [9, 8] : [])
+            context.setLineDash([])
             context.strokeStyle = 'rgba(255, 255, 255, 0.95)'
             context.lineWidth = 10
             context.stroke()
@@ -677,19 +675,18 @@ function MapViewer({
           }
 
           context.save()
-          strokeRoute(completedPixels, false, '#ea580c')
-          strokeRoute(upcomingPixels, true, '#f59e0b')
+          strokeRoute(completedPixels, '#ea580c')
 
           let distanceSinceArrow = 0
-          for (let index = 0; index < routePixels.length - 1; index += 1) {
-            const start = routePixels[index]
-            const end = routePixels[index + 1]
+          for (let index = 0; index < completedPixels.length - 1; index += 1) {
+            const start = completedPixels[index]
+            const end = completedPixels[index + 1]
             const deltaX = end.x - start.x
             const deltaY = end.y - start.y
             const segmentLength = Math.hypot(deltaX, deltaY)
             distanceSinceArrow += segmentLength
 
-            if (distanceSinceArrow < 58 && index < routePixels.length - 2) continue
+            if (distanceSinceArrow < 58 && index < completedPixels.length - 2) continue
             distanceSinceArrow = 0
 
             const midpointX = (start.x + end.x) / 2
@@ -712,7 +709,7 @@ function MapViewer({
           }
 
           const routeStart = routePixels[0]
-          const routeEnd = routePixels[routePixels.length - 1]
+          const routeEnd = completedPixels[completedPixels.length - 1]
           context.beginPath()
           context.arc(routeStart.x, routeStart.y, 8, 0, Math.PI * 2)
           context.fillStyle = '#16a34a'
@@ -1312,7 +1309,7 @@ function MapViewer({
 
       <div className="pointer-events-none absolute left-4 top-4 rounded-md border border-white/10 bg-black/60 px-3 py-2 text-xs text-white/60 backdrop-blur">
         {routeLabel
-          ? `${animateRoute ? 'Completed route' : routeProgressRatio !== undefined ? 'Live route' : 'Planned route'} · ${routeLabel}`
+          ? `${animateRoute ? 'Completed route' : routeProgressRatio !== undefined ? 'Traversed route' : 'Route'} · ${routeLabel}`
           : zoneDrawMode
           ? 'Drag on the map to draw a zone'
           : showEndpoints
