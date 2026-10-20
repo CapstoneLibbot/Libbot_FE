@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router'
 import { ArrowLeft, MapPin } from 'lucide-react'
-import { initialAreas } from '../lib/mapData'
+import { initialAreas } from '../../lib/mapData'
 
 function AreaDetail() {
   const { id } = useParams()

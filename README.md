@@ -57,7 +57,7 @@ Các cấu hình đáng chú ý:
 │   │   ├── mapData.ts         # Mock data và quan hệ map entities
 │   │   └── utils.ts           # cn(...classes)
 │   ├── pages/
-│   │   ├── AreaDetail.tsx
+│   │   ├── areas/AreaDetail.tsx
 │   │   ├── aisles/AisleDetail.tsx
 │   │   ├── floors/FloorDetail.tsx  # File hiện rỗng
 │   │   ├── maps/ListMap.tsx

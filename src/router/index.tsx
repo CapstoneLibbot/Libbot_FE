@@ -7,7 +7,7 @@ import {
 } from 'react-router'
 
 import Sidebar from '../components/layout/Sidebar'
-import AreaDetail from '../pages/AreaDetail'
+import AreaDetail from '../pages/areas/AreaDetail'
 import AisleDetail from '../pages/aisles/AisleDetail'
 import ListMap from '../pages/maps/ListMap'
 import MapDetail from '../pages/maps/MapDetail'
