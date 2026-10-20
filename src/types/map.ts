@@ -1,40 +1,46 @@
-export interface MapPose {
-  x: number;
-  y: number;
-  yaw: number;
+export type MapArea = {
+  id: number
+  endpoint_id: number
+  code: string
+  name: string
+  description: string | null
 }
 
-export interface PathPoint {
-  x: number;
-  y: number;
-  timestamp?: number;
+export type MapAisle = {
+  id: number
+  endpointA_id: number
+  endpointB_id: number
+  floor_id: number
+  code: string
+  name: string
+  description: string | null
+  status: string
 }
 
-export interface RobotPose extends MapPose {
-  robotId: string;
-  status: string;
-  battery: number;
+export type MapShelf = {
+  id: number
+  endpoint_id: number
+  aisle_id: number
+  name: string
+  code: string
+  description: string | null
+  status: string
 }
 
-export interface MapObject {
-  id: string;
-  type: 'SHELF' | 'WALL' | 'WAYPOINT' | 'CHARGING_STATION';
-  x: number;
-  y: number;
-  width?: number;
-  height?: number;
+export type EndpointLinkedObject = {
+  kind: 'AREA' | 'AISLE' | 'SHELF'
+  id: number
+  name: string
+} | null
+
+export type EndpointGroup = {
+  id: number
+  name: string
+  description: string | null
 }
 
-export interface MapDefinition {
-  id: string;
-  name: string;
-  floor: number;
-  width: number;
-  height: number;
-  walls: Array<{ x1: number; y1: number; x2: number; y2: number }>;
-  shelves: MapObject[];
-  waypoints: MapObject[];
-  chargingStation?: { x: number; y: number };
-  start: { x: number; y: number };
-  goal: { x: number; y: number };
+export type EndpointGroupMember = {
+  id: number
+  endpoint_group_id: number
+  endpoint_id: number
 }
