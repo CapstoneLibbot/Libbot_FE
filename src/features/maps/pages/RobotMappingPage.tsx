@@ -228,7 +228,7 @@ export function RobotMappingPage() {
   const startNav = async () => {
     if (!leaseId || !selectedMap) return;
     setBusy(true); await stop(false);
-    try { await startNavigationMode(selectedMap, leaseId); navigationRestartPending.current = false; await refresh(); setNotice('Nav2 đã khởi động với map đã chọn. Dừng Nav2 trước khi điều khiển thủ công.'); }
+    try { await startNavigationMode(selectedMap, leaseId); navigationRestartPending.current = false; await refresh(); setNotice('Nav2 đã nạp map. Nếu vị trí chưa LOCALIZED, hãy đặt initial pose trên trang bản đồ trước khi gửi goal.'); }
     catch (error) { setNotice(messageOf(error)); }
     finally { setBusy(false); }
   };

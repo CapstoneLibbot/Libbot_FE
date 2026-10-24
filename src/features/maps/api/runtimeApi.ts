@@ -104,7 +104,10 @@ export async function getSavedRobotMapGrid(mapId: string): Promise<LiveOccupancy
 }
 
 export async function startNavigationMode(mapId: string, armLeaseId: string) {
-  await axiosClient.post(`/maps/${mapId}/start-navigation`, null, { params: { armLeaseId } });
+  await axiosClient.post(`/maps/${mapId}/start-navigation`, null, {
+    params: { armLeaseId },
+    timeout: 75000,
+  });
 }
 
 export async function stopNavigationMode() {
