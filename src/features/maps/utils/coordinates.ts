@@ -26,3 +26,7 @@ export function mapToPixel(x: number, y: number, map: OccupancyMapMetadata) {
   };
 }
 
+export function robotYawToCssRotation(robotYaw: number, mapOriginYaw: number) {
+  return -(robotYaw - mapOriginYaw);
+}
+

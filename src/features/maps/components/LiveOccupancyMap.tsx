@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { LiveOccupancyGrid, Pose2D } from '../types/runtime';
+import { robotYawToCssRotation } from '../utils/coordinates';
 
 export function LiveOccupancyMap({ grid, robot, mappingActive = false }: { grid: LiveOccupancyGrid | null; robot?: Pose2D; mappingActive?: boolean }) {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -59,6 +60,7 @@ export function LiveOccupancyMap({ grid, robot, mappingActive = false }: { grid:
   const mapY = deltaX !== null && deltaY !== null ? -sine * deltaX + cosine * deltaY : null;
   const robotLeft = grid && mapX !== null ? (mapX / (grid.width * grid.resolution)) * 100 : null;
   const robotTop = grid && mapY !== null ? (1 - mapY / (grid.height * grid.resolution)) * 100 : null;
+  const robotRotation = grid && robot ? robotYawToCssRotation(robot.yaw, grid.originYaw) : null;
 
   return <div ref={frameRef} className="live-map-frame">
     {grid ? (
@@ -76,7 +78,7 @@ export function LiveOccupancyMap({ grid, robot, mappingActive = false }: { grid:
             style={{
               left: `${robotLeft}%`,
               top: `${robotTop}%`,
-              transform: `translate(-50%, -50%) rotate(${-robot.yaw}rad)`,
+              transform: `translate(-50%, -50%) rotate(${robotRotation}rad)`,
             }}
             aria-label="Vị trí robot"
           >

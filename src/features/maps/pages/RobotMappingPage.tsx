@@ -3,6 +3,7 @@ import { LibrarianLayout } from '../../../layouts/LibrarianLayout';
 import { PageContainer } from '../../../components/layout/PageContainer';
 import { armRuntime, disarmRuntime, getLatestRobotMapGrid, getRobotRuntimes, getSavedMaps, getSavedRobotMapGrid, saveRobotMap, sendManualVelocity, setMapping, startNavigationMode, stopManual, stopNavigationMode } from '../api/runtimeApi';
 import { LiveOccupancyMap } from '../components/LiveOccupancyMap';
+import { RealtimeCamera } from '../components/RealtimeCamera';
 import { LiveOccupancyGrid, RobotRuntime, SavedMap } from '../types/runtime';
 import { signalRClient } from '../../../services/realtime/signalRClient';
 import { axiosClient } from '../../../services/api/axiosClient';
@@ -252,7 +253,10 @@ export function RobotMappingPage() {
       <header className="robot-mapping-header"><div><span className="robot-mapping-eyebrow">LiBot · ROBOT THẬT</span><h1>Điều khiển và tạo bản đồ</h1><p>Map chỉ được lưu khi bạn chủ động bấm “Lưu map”.</p></div><span className={`robot-live-status ${connected ? 'online' : 'offline'}`}>{connected ? 'ĐANG KẾT NỐI' : 'MẤT KẾT NỐI'}</span></header>
       <div className="robot-mapping-grid">
         <section className="robot-map-panel"><div className="robot-panel-heading"><div><h2>Map trực tiếp</h2><span>{grid ? `Cập nhật ${new Date(grid.timestamp).toLocaleTimeString()}` : 'Chờ dữ liệu SLAM'}</span></div><span className={runtime?.mappingActive ? 'mapping-pill active' : 'mapping-pill'}>{runtime?.mappingActive ? 'SLAM ĐANG CHẠY' : navActive ? 'NAV2 ĐANG CHẠY' : 'CHƯA MAPPING'}</span></div>
-          <LiveOccupancyMap grid={grid} robot={mapPose} mappingActive={Boolean(runtime?.mappingActive)} />
+          <div className="robot-live-workspace">
+            <LiveOccupancyMap grid={grid} robot={mapPose} mappingActive={Boolean(runtime?.mappingActive)} />
+            <RealtimeCamera runtimeId={RUNTIME_ID} connected={connected} mappingActive={Boolean(runtime?.mappingActive)} />
+          </div>
           <div className="robot-pose-readout"><span>Vị trí</span><strong>{mapPose ? `${mapPose.x.toFixed(2)} m, ${mapPose.y.toFixed(2)} m` : '—'}</strong><span>Hướng</span><strong>{mapPose ? `${(mapPose.yaw * 180 / Math.PI).toFixed(0)}°` : '—'}</strong></div>
         </section>
         <aside className="robot-tools-column">

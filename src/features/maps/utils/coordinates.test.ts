@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapToPixel, pixelToMap } from './coordinates';
+import { mapToPixel, pixelToMap, robotYawToCssRotation } from './coordinates';
 import type { OccupancyMapMetadata } from '../types/runtime';
 
 const map: OccupancyMapMetadata = {
@@ -29,5 +29,11 @@ describe('ROS map coordinate conversion', () => {
     const second = pixelToMap(11, 19, map);
     expect(second.x - first.x).toBeCloseTo(0.05, 10);
     expect(second.y - first.y).toBeCloseTo(0.05, 10);
+  });
+
+  it('renders the robot front relative to a rotated map image', () => {
+    expect(robotYawToCssRotation(Math.PI / 2, 0)).toBeCloseTo(-Math.PI / 2, 10);
+    expect(robotYawToCssRotation(Math.PI / 2, Math.PI / 4)).toBeCloseTo(-Math.PI / 4, 10);
+    expect(robotYawToCssRotation(Math.PI / 4, Math.PI / 4)).toBeCloseTo(0, 10);
   });
 });

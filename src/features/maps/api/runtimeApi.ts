@@ -10,6 +10,16 @@ export async function getLatestRobotMapGrid(): Promise<LiveOccupancyGrid | null>
   return response.status === 204 ? null : response.data;
 }
 
+export function getCameraStreamUrl(runtimeId: string, attempt = 0): string {
+  const baseUrl = axiosClient.defaults.baseURL ?? '/api';
+  const url = new URL(
+    `${baseUrl.replace(/\/$/, '')}/robot-runtimes/${encodeURIComponent(runtimeId)}/camera/stream`,
+    window.location.href,
+  );
+  url.searchParams.set('v', String(attempt));
+  return url.toString();
+}
+
 export async function armRuntime(runtimeId: string) {
   return (await axiosClient.post<{ runtimeId: string; leaseId: string; expiresAt: string }>(`/robot-runtimes/${runtimeId}/arm`)).data;
 }
