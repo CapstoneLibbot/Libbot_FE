@@ -36,7 +36,7 @@ export interface RobotTelemetry {
   mappingActive?: boolean;
   navigationActive?: boolean;
   navigationReady?: boolean;
-  navigationModeState?: 'STOPPED' | 'FETCHING_MAP' | 'WAITING_INITIAL_POSE' | 'ACTIVATING' | 'READY' | 'ERROR';
+  navigationModeState?: 'STOPPED' | 'FETCHING_MAP' | 'WAITING_INITIAL_POSE' | 'LOCALIZING' | 'ACTIVATING' | 'READY' | 'FAILED' | 'ERROR';
   activeMapId?: string | null;
 }
 

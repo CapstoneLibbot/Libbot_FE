@@ -158,19 +158,24 @@ export function MapDemoPage() {
   const isSim = runtime?.kind === 'SIM';
   const isNavigating = ['SENDING', 'NAVIGATING', 'CANCELING'].includes(telemetry?.navigationState ?? '');
   const canSelect = Boolean(map && runtime?.connected && !runtime.stale && !busy);
-  const canSendGoal = Boolean(canSelect && navigationReady && localized && draft && (!isReal || (runtime?.armed && leaseId)) && !isNavigating);
+  const canSendGoal = Boolean(canSelect && navigationReady && localized
+    && telemetry?.navigationModeState === 'READY'
+    && draft && (!isReal || (runtime?.armed && leaseId)) && !isNavigating);
   const canSetInitialPose = Boolean(canSelect && runtime?.navigationActive
-    && ['WAITING_INITIAL_POSE', 'ACTIVATING', 'READY', 'ERROR'].includes(telemetry?.navigationModeState ?? ''));
+    && ['WAITING_INITIAL_POSE', 'LOCALIZING', 'ACTIVATING', 'READY', 'FAILED', 'ERROR'].includes(telemetry?.navigationModeState ?? ''));
   const stateTone = runtime?.connected && !runtime.stale ? 'success' : 'danger';
 
   const statusText = useMemo(() => {
     if (!runtime) return 'Không có runtime';
     if (!runtime.connected || runtime.stale) return 'Mất kết nối';
-    if (isReal && telemetry?.navigationModeState && telemetry.navigationModeState !== 'READY') {
-      return telemetry.navigationModeState;
+    if (telemetry?.navigationModeState && telemetry.navigationModeState !== 'READY') {
+      return telemetry.navigationModeState === 'ERROR' && telemetry.error
+        ? `${telemetry.navigationModeState}: ${telemetry.error}`
+        : telemetry.navigationModeState;
     }
+    if (telemetry?.error) return `${telemetry.navigationState}: ${telemetry.error}`;
     return telemetry?.navigationState ?? 'IDLE';
-  }, [isReal, runtime, telemetry]);
+  }, [runtime, telemetry]);
 
   const selectRuntime = async (nextId: string) => {
     if (runtime?.kind === 'REAL' && runtime.armed) {
@@ -266,10 +271,12 @@ export function MapDemoPage() {
                 <div className="mode-switch"><button disabled={isSim} title={isSim ? 'SIM lấy vị trí trực tiếp từ Gazebo.' : undefined} className={mode === 'INITIAL_POSE' ? 'active' : ''} onClick={() => { setMode('INITIAL_POSE'); setDraft(null); }}>Đặt vị trí đầu</button><button className={mode === 'GOAL' ? 'active' : ''} onClick={() => { setMode('GOAL'); setDraft(null); }}>Chọn điểm đến</button></div>
                 <p className="helper-text">{isSim ? 'SIM tự lấy vị trí thật từ Gazebo. Chỉ cần chọn điểm đến.' : 'Bấm để chọn vị trí, kéo chuột để đặt hướng robot.'}</p>
                 {draft && <div className="draft-pose"><strong>Điểm đã chọn</strong><span>X {draft.x.toFixed(2)} m</span><span>Y {draft.y.toFixed(2)} m</span><span>Yaw {(draft.yaw * 180 / Math.PI).toFixed(0)}°</span></div>}
-                {isReal && telemetry?.navigationModeState === 'FETCHING_MAP' && <p className="helper-text">Đang tải map mới nhất từ backend.</p>}
+                {telemetry?.navigationModeState === 'FETCHING_MAP' && <p className="helper-text">Đang tải map đã chọn.</p>}
                 {isReal && telemetry?.navigationModeState === 'WAITING_INITIAL_POSE' && <p className="helper-text">Nav2 đã nạp map và đang chờ initial pose.</p>}
-                {isReal && telemetry?.navigationModeState === 'ACTIVATING' && <p className="helper-text">Đang định vị và kích hoạt các node Nav2.</p>}
-                {isReal && telemetry?.navigationModeState === 'ERROR' && <p className="helper-text">Nav2 chưa sẵn sàng: {telemetry.error ?? 'không rõ lỗi'}.</p>}
+                {isReal && telemetry?.navigationModeState === 'LOCALIZING' && <p className="helper-text">Đang chờ AMCL ổn định: cần 5 mẫu pose liên tiếp, scan mới và TF hợp lệ.</p>}
+                {telemetry?.navigationModeState === 'ACTIVATING' && <p className="helper-text">{isReal ? 'AMCL đã ổn định; đang kích hoạt các node Nav2.' : 'Đang kích hoạt Nav2 cho Gazebo SIM.'}</p>}
+                {(telemetry?.navigationModeState === 'ERROR' || telemetry?.navigationModeState === 'FAILED') && <p className="helper-text">Nav2 chưa sẵn sàng: {telemetry.error ?? 'không rõ lỗi'}.</p>}
+                {telemetry?.error === 'NO_PROGRESS_TIMEOUT' && <p className="helper-text">Robot không tiến triển trong thời gian cho phép; goal đã bị hủy và vận tốc được dừng.</p>}
                 {newerMapAvailable && <p className="helper-text">Có map mới hơn; map đó sẽ được áp dụng ở lần khởi động robot tiếp theo.</p>}
                 <Button variant="primary" disabled={mode === 'GOAL' ? !canSendGoal : !canSetInitialPose || !draft} onClick={() => void confirmDraft()}>{mode === 'GOAL' ? 'Xác nhận di chuyển' : 'Xác nhận initial pose'}</Button>
               </div>
