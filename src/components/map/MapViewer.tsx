@@ -62,6 +62,8 @@ type MapViewerProps = {
   routePoints?: MapRoutePoint[]
   routeProgressRatio?: number
   routeLabel?: string
+  liveRobotPose?: { x: number; y: number; yaw: number } | null
+  roomLabels?: { label: string; x: number; y: number }[]
   animateRoute?: boolean
   showEndpointLabels?: boolean
   onEndpointSelect: (endpointId: number) => void
@@ -285,6 +287,8 @@ function MapViewer({
   routePoints = [],
   routeProgressRatio,
   routeLabel,
+  liveRobotPose,
+  roomLabels = [],
   animateRoute = false,
   showEndpointLabels = true,
   onEndpointSelect,
@@ -451,6 +455,21 @@ function MapViewer({
         offsetY,
       }
 
+      if (liveRobotPose) {
+        const robotPixel = worldToPixel(liveRobotPose, config, imageData.width, imageData.height)
+        const nextRobotPosition = {
+          x: offsetX + robotPixel.x * scale,
+          y: offsetY + robotPixel.y * scale,
+          angle: 90 - liveRobotPose.yaw * 180 / Math.PI,
+        }
+        setRobotPosition((current) => current
+          && Math.abs(current.x - nextRobotPosition.x) < 0.5
+          && Math.abs(current.y - nextRobotPosition.y) < 0.5
+          && Math.abs(current.angle - nextRobotPosition.angle) < 0.5
+          ? current
+          : nextRobotPosition)
+      }
+
       const bitmapCanvas = document.createElement('canvas')
       bitmapCanvas.width = imageData.width
       bitmapCanvas.height = imageData.height
@@ -472,6 +491,25 @@ function MapViewer({
         drawWidth,
         drawHeight,
       )
+
+      for (const room of roomLabels) {
+        const pixel = worldToPixel(room, config, imageData.width, imageData.height)
+        const screenX = offsetX + pixel.x * scale
+        const screenY = offsetY + pixel.y * scale
+        context.font = '700 12px Inter, sans-serif'
+        const labelWidth = context.measureText(room.label).width
+        context.fillStyle = 'rgba(255, 255, 255, 0.88)'
+        context.fillRect(screenX - labelWidth / 2 - 7, screenY - 11, labelWidth + 14, 22)
+        context.strokeStyle = 'rgba(30, 41, 59, 0.55)'
+        context.lineWidth = 1
+        context.strokeRect(screenX - labelWidth / 2 - 7, screenY - 11, labelWidth + 14, 22)
+        context.fillStyle = '#1f2937'
+        context.textAlign = 'center'
+        context.textBaseline = 'middle'
+        context.fillText(room.label, screenX, screenY)
+      }
+      context.textAlign = 'start'
+      context.textBaseline = 'alphabetic'
 
       context.strokeStyle = 'rgba(0, 0, 0, 0.12)'
       context.lineWidth = 1
@@ -813,6 +851,8 @@ function MapViewer({
     zones,
     routePoints,
     routeProgressRatio,
+    liveRobotPose,
+    roomLabels,
     selectedEndpointId,
     selectedZoneId,
     showEndpointLabels,
@@ -823,6 +863,7 @@ function MapViewer({
   ])
 
   useEffect(() => {
+    if (liveRobotPose) return
     if ((!animateRoute && routeProgressRatio === undefined) || loading || routePoints.length < 2) {
       setRobotPosition(null)
       return
@@ -895,7 +936,7 @@ function MapViewer({
       cancelAnimationFrame(frameId)
       setRobotPosition(null)
     }
-  }, [animateRoute, loading, routePoints, routeProgressRatio])
+  }, [animateRoute, liveRobotPose, loading, routePoints, routeProgressRatio])
 
   const screenToWorld = (
     screenX: number,

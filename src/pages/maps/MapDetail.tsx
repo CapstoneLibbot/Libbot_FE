@@ -11,8 +11,10 @@ import MapViewer, {
   type MapEndpoint,
   type MapZone,
 } from '../../components/map/MapViewer'
+import SdfScene3D from '../../components/map/SdfScene3D'
 
 type Tab = 'detail' | 'endpoint' | 'zone'
+type MapViewMode = '2d' | 'gazebo3d'
 
 export type MapInfo = {
   id: number
@@ -361,6 +363,7 @@ function MapDetail() {
   const { id } = useParams()
 
   const [activeTab, setActiveTab] = useState<Tab>('detail')
+  const [mapViewMode, setMapViewMode] = useState<MapViewMode>('2d')
 
   const [endpoints, setEndpoints] =
     useState<MapEndpoint[]>(initialEndpoints)
@@ -608,22 +611,53 @@ function MapDetail() {
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto xl:flex-row">
-        <main className="min-h-[280px] min-w-0 flex-1">
-          <MapViewer
-            yamlUrl="/maps/floor1_library_v1.yaml"
-            endpoints={filteredEndpoints}
-            aisles={initialAisles}
-            zones={filteredZones}
-            selectedEndpointId={selectedEndpointId}
-            selectedZoneId={selectedZoneId}
-            showEndpoints={activeTab === 'endpoint'}
-            showZones={activeTab === 'zone'}
-            zoneDrawMode={zoneDrawMode}
-            onEndpointSelect={handleEndpointSelect}
-            onZoneSelect={handleZoneSelect}
-            onMapClick={handleMapClick}
-            onZoneDrawComplete={handleZoneDrawComplete}
-          />
+        <main className="flex min-h-[320px] min-w-0 flex-1 flex-col">
+          <div className="flex min-h-12 shrink-0 items-center justify-between gap-3 border-b border-white/8 bg-[#121318] px-4">
+            <div className="flex items-center gap-1 rounded-md border border-white/10 bg-black/20 p-1">
+              <button
+                type="button"
+                onClick={() => setMapViewMode('2d')}
+                aria-pressed={mapViewMode === '2d'}
+                className={`rounded px-3 py-1.5 text-xs font-medium transition ${mapViewMode === '2d' ? 'bg-white/12 text-white' : 'text-white/50 hover:text-white'}`}
+              >
+                2D map
+              </button>
+              <button
+                type="button"
+                onClick={() => setMapViewMode('gazebo3d')}
+                aria-pressed={mapViewMode === 'gazebo3d'}
+                className={`rounded px-3 py-1.5 text-xs font-medium transition ${mapViewMode === 'gazebo3d' ? 'bg-cyan-400/15 text-cyan-200' : 'text-white/50 hover:text-white'}`}
+              >
+                Gazebo 3D
+              </button>
+            </div>
+            {mapViewMode === 'gazebo3d' && (
+              <span className="truncate text-[11px] text-amber-200/70">
+                Nguồn: library_layout.json · cảnh Gazebo tĩnh 50×60 m, độc lập với map biên tập 2D
+              </span>
+            )}
+          </div>
+          <div className="min-h-[280px] min-w-0 flex-1">
+            {mapViewMode === '2d' ? (
+              <MapViewer
+                yamlUrl="/maps/floor1_library_v1.yaml"
+                endpoints={filteredEndpoints}
+                aisles={initialAisles}
+                zones={filteredZones}
+                selectedEndpointId={selectedEndpointId}
+                selectedZoneId={selectedZoneId}
+                showEndpoints={activeTab === 'endpoint'}
+                showZones={activeTab === 'zone'}
+                zoneDrawMode={zoneDrawMode}
+                onEndpointSelect={handleEndpointSelect}
+                onZoneSelect={handleZoneSelect}
+                onMapClick={handleMapClick}
+                onZoneDrawComplete={handleZoneDrawComplete}
+              />
+            ) : (
+              <SdfScene3D />
+            )}
+          </div>
         </main>
 
         <MapDetailPanel
