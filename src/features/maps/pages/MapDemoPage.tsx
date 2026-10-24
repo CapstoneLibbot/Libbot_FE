@@ -28,6 +28,7 @@ export function MapDemoPage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [newerMapAvailable, setNewerMapAvailable] = useState(false);
   const loadedMapId = useRef<string | null>(null);
 
   const refreshRuntimes = useCallback(async () => {
@@ -43,6 +44,7 @@ export function MapDemoPage() {
   const selectedRuntimeKind = runtimes.find((item) => item.id === runtimeId)?.kind
     ?? runtime?.kind
     ?? (runtimeId.toLowerCase() === 'sim' ? 'SIM' : 'REAL');
+  const activeMapId = runtime?.telemetry?.activeMapId ?? null;
 
   useEffect(() => {
     let active = true;
@@ -52,6 +54,7 @@ export function MapDemoPage() {
     setMapError(null);
     setMap(null);
     setMapInfo(null);
+    setNewerMapAvailable(false);
     loadedMapId.current = null;
 
     if (selectedRuntimeKind === 'SIM') {
@@ -93,14 +96,18 @@ export function MapDemoPage() {
           return;
         }
 
-        if (latest.id !== loadedMapId.current) {
+        const targetMapId = activeMapId ?? latest.id;
+        if (targetMapId !== loadedMapId.current) {
           setMapLoading(true);
-          const grid = await getSavedRobotMapGrid(latest.id);
+          const grid = await getSavedRobotMapGrid(targetMapId);
           if (!active) return;
           setMap(occupancyGridToMapMetadata(grid));
-          loadedMapId.current = latest.id;
+          loadedMapId.current = targetMapId;
         }
-        setMapInfo(latest);
+        setNewerMapAvailable(Boolean(activeMapId && latest.id !== activeMapId));
+        setMapInfo(activeMapId && latest.id !== activeMapId
+          ? { id: activeMapId, name: 'Map đang hoạt động', version: '-' }
+          : latest);
         setMapError(null);
       } catch (error) {
         if (active) setMapError(`Không thể tải map mới nhất từ BE: ${messageOf(error)}`);
@@ -116,7 +123,7 @@ export function MapDemoPage() {
       active = false;
       window.clearInterval(timer);
     };
-  }, [selectedRuntimeKind]);
+  }, [selectedRuntimeKind, activeMapId]);
 
   useEffect(() => {
     void refreshRuntimes();
@@ -146,18 +153,24 @@ export function MapDemoPage() {
 
   const telemetry = runtime?.telemetry;
   const localized = telemetry?.localizationState === 'LOCALIZED';
+  const navigationReady = Boolean(telemetry?.navigationReady);
   const isReal = runtime?.kind === 'REAL';
   const isSim = runtime?.kind === 'SIM';
   const isNavigating = ['SENDING', 'NAVIGATING', 'CANCELING'].includes(telemetry?.navigationState ?? '');
   const canSelect = Boolean(map && runtime?.connected && !runtime.stale && !busy);
-  const canSendGoal = Boolean(canSelect && localized && draft && (!isReal || (runtime?.armed && leaseId)) && !isNavigating);
+  const canSendGoal = Boolean(canSelect && navigationReady && localized && draft && (!isReal || (runtime?.armed && leaseId)) && !isNavigating);
+  const canSetInitialPose = Boolean(canSelect && runtime?.navigationActive
+    && ['WAITING_INITIAL_POSE', 'ACTIVATING', 'READY', 'ERROR'].includes(telemetry?.navigationModeState ?? ''));
   const stateTone = runtime?.connected && !runtime.stale ? 'success' : 'danger';
 
   const statusText = useMemo(() => {
     if (!runtime) return 'Không có runtime';
     if (!runtime.connected || runtime.stale) return 'Mất kết nối';
+    if (isReal && telemetry?.navigationModeState && telemetry.navigationModeState !== 'READY') {
+      return telemetry.navigationModeState;
+    }
     return telemetry?.navigationState ?? 'IDLE';
-  }, [runtime, telemetry]);
+  }, [isReal, runtime, telemetry]);
 
   const selectRuntime = async (nextId: string) => {
     if (runtime?.kind === 'REAL' && runtime.armed) {
@@ -253,7 +266,12 @@ export function MapDemoPage() {
                 <div className="mode-switch"><button disabled={isSim} title={isSim ? 'SIM lấy vị trí trực tiếp từ Gazebo.' : undefined} className={mode === 'INITIAL_POSE' ? 'active' : ''} onClick={() => { setMode('INITIAL_POSE'); setDraft(null); }}>Đặt vị trí đầu</button><button className={mode === 'GOAL' ? 'active' : ''} onClick={() => { setMode('GOAL'); setDraft(null); }}>Chọn điểm đến</button></div>
                 <p className="helper-text">{isSim ? 'SIM tự lấy vị trí thật từ Gazebo. Chỉ cần chọn điểm đến.' : 'Bấm để chọn vị trí, kéo chuột để đặt hướng robot.'}</p>
                 {draft && <div className="draft-pose"><strong>Điểm đã chọn</strong><span>X {draft.x.toFixed(2)} m</span><span>Y {draft.y.toFixed(2)} m</span><span>Yaw {(draft.yaw * 180 / Math.PI).toFixed(0)}°</span></div>}
-                <Button variant="primary" disabled={mode === 'GOAL' ? !canSendGoal : !canSelect || !draft || (isReal && (!runtime?.armed || !leaseId))} onClick={() => void confirmDraft()}>{mode === 'GOAL' ? 'Xác nhận di chuyển' : 'Xác nhận initial pose'}</Button>
+                {isReal && telemetry?.navigationModeState === 'FETCHING_MAP' && <p className="helper-text">Đang tải map mới nhất từ backend.</p>}
+                {isReal && telemetry?.navigationModeState === 'WAITING_INITIAL_POSE' && <p className="helper-text">Nav2 đã nạp map và đang chờ initial pose.</p>}
+                {isReal && telemetry?.navigationModeState === 'ACTIVATING' && <p className="helper-text">Đang định vị và kích hoạt các node Nav2.</p>}
+                {isReal && telemetry?.navigationModeState === 'ERROR' && <p className="helper-text">Nav2 chưa sẵn sàng: {telemetry.error ?? 'không rõ lỗi'}.</p>}
+                {newerMapAvailable && <p className="helper-text">Có map mới hơn; map đó sẽ được áp dụng ở lần khởi động robot tiếp theo.</p>}
+                <Button variant="primary" disabled={mode === 'GOAL' ? !canSendGoal : !canSetInitialPose || !draft} onClick={() => void confirmDraft()}>{mode === 'GOAL' ? 'Xác nhận di chuyển' : 'Xác nhận initial pose'}</Button>
               </div>
 
               <button className="stop-button" disabled={!telemetry?.activeGoalId || busy} onClick={() => void stopRobot()}>Dừng điều hướng</button>

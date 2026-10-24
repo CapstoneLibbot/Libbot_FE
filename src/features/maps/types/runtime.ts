@@ -35,6 +35,9 @@ export interface RobotTelemetry {
   error?: string | null;
   mappingActive?: boolean;
   navigationActive?: boolean;
+  navigationReady?: boolean;
+  navigationModeState?: 'STOPPED' | 'FETCHING_MAP' | 'WAITING_INITIAL_POSE' | 'ACTIVATING' | 'READY' | 'ERROR';
+  activeMapId?: string | null;
 }
 
 export interface RobotRuntime {
