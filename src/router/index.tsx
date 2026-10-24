@@ -12,6 +12,10 @@ import AisleDetail from '../pages/aisles/AisleDetail'
 import ListMap from '../pages/maps/ListMap'
 import MapDetail from '../pages/maps/MapDetail'
 import ShelfDetail from '../pages/shelves/ShelfDetail'
+import ShelfList from '../pages/shelves/ShelfList'
+import BookList from '../pages/books/BookList'
+import InventoryPage from '../pages/inventory/InventoryPage'
+import InventoryResultsPage from '../pages/inventory/InventoryResultsPage'
 import TaskCreate from '../pages/tasks/TaskCreate'
 import TaskDetail from '../pages/tasks/TaskDetail'
 import TaskList from '../pages/tasks/TaskList'
@@ -88,6 +92,11 @@ function AppRouter() {
           />
 
           <Route
+            path="/shelf"
+            element={<ShelfList />}
+          />
+
+          <Route
             path="/shelves/:id"
             element={<ShelfDetail />}
           />
@@ -123,25 +132,25 @@ function AppRouter() {
           />
 
           <Route
-            path="/iii-row"
-            element={<PlaceholderPage title="III Row" />}
+            path="/rows"
+            element={<PlaceholderPage title="Row" />}
           />
+
+          <Route path="/iii-row" element={<Navigate to="/rows" replace />} />
 
           <Route
             path="/book"
-            element={<PlaceholderPage title="Book" />}
+            element={<BookList />}
           />
 
           <Route
             path="/inventory"
-            element={<PlaceholderPage title="Inventory" />}
+            element={<InventoryPage />}
           />
 
           <Route
             path="/inventory-results"
-            element={
-              <PlaceholderPage title="Inventory Results" />
-            }
+            element={<InventoryResultsPage />}
           />
 
           <Route

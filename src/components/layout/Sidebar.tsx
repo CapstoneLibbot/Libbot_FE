@@ -42,9 +42,9 @@ const menuItems = [
     path: '/areas',
   },
   {
-    label: 'III Row',
+    label: 'Row',
     icon: Rows3,
-    path: '/iii-row',
+    path: '/rows',
   },
   {
     label: 'Shelf',
