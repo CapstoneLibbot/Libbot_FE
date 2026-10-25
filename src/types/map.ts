@@ -6,6 +6,14 @@ export type MapArea = {
   description: string | null
 }
 
+export type Floor = {
+  id: number
+  code: string
+  name: string
+  description: string | null
+  status: string
+}
+
 export type MapAisle = {
   id: number
   endpointA_id: number

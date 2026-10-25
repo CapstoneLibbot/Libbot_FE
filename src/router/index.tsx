@@ -9,6 +9,8 @@ import {
 import Sidebar from '../components/layout/Sidebar'
 import AreaDetail from '../pages/areas/AreaDetail'
 import AisleDetail from '../pages/aisles/AisleDetail'
+import FloorList from '../pages/floors/FloorList'
+import FloorDetail from '../pages/floors/FloorDetail'
 import ListMap from '../pages/maps/ListMap'
 import MapDetail from '../pages/maps/MapDetail'
 import ShelfDetail from '../pages/shelves/ShelfDetail'
@@ -81,10 +83,9 @@ function AppRouter() {
             element={<AreaDetail />}
           />
 
-          <Route
-            path="/floors/:id"
-            element={<PlaceholderPage title="Floor Detail" />}
-          />
+          <Route path="/floors" element={<FloorList />} />
+
+          <Route path="/floors/:id" element={<FloorDetail />} />
 
           <Route
             path="/aisles/:id"

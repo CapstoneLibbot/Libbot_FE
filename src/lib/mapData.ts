@@ -1,10 +1,42 @@
 import type {
   EndpointGroup,
   EndpointGroupMember,
+  Floor,
   MapAisle,
   MapArea,
   MapShelf,
 } from '../types/map'
+
+export const initialFloors: Floor[] = [
+  {
+    id: 1,
+    code: 'FL-001',
+    name: 'Ground Floor',
+    description: 'Library entrance, reception, and self-service area.',
+    status: 'ACTIVE',
+  },
+  {
+    id: 2,
+    code: 'FL-002',
+    name: 'First Floor',
+    description: 'Main reading room and book collection area.',
+    status: 'ACTIVE',
+  },
+  {
+    id: 3,
+    code: 'FL-003',
+    name: 'Second Floor',
+    description: 'Study spaces and reference collection.',
+    status: 'ACTIVE',
+  },
+  {
+    id: 4,
+    code: 'FL-004',
+    name: 'Archive Floor',
+    description: 'Archived collection; currently unavailable to visitors.',
+    status: 'INACTIVE',
+  },
+]
 
 export const initialEndpointGroups: EndpointGroup[] = [
   {
@@ -111,6 +143,36 @@ export const initialAisles: MapAisle[] = [
     code: 'AIS-004',
     name: 'Aisle D',
     description: 'Aisle D from EP-120 to EP-121.',
+    status: 'ACTIVE',
+  },
+  {
+    id: 5,
+    endpointA_id: 122,
+    endpointB_id: 123,
+    floor_id: 2,
+    code: 'AIS-001',
+    name: 'Reference Aisle',
+    description: 'Reference collection aisle on the first floor.',
+    status: 'ACTIVE',
+  },
+  {
+    id: 6,
+    endpointA_id: 124,
+    endpointB_id: 125,
+    floor_id: 2,
+    code: 'AIS-002',
+    name: 'Periodicals Aisle',
+    description: 'Magazine and journal collection aisle.',
+    status: 'MAINTENANCE',
+  },
+  {
+    id: 7,
+    endpointA_id: 126,
+    endpointB_id: 127,
+    floor_id: 3,
+    code: 'AIS-001',
+    name: 'Study Aisle',
+    description: 'Aisle next to the group study spaces.',
     status: 'ACTIVE',
   },
 ]

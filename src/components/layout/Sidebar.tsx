@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Map,
   MapPin,
+  Layers3,
   Rows3,
   Settings,
   Warehouse,
@@ -42,7 +43,12 @@ const menuItems = [
     path: '/areas',
   },
   {
-    label: 'Row',
+    label: 'Floor',
+    icon: Layers3,
+    path: '/floors',
+  },
+  {
+    label: 'III Row',
     icon: Rows3,
     path: '/rows',
   },
