@@ -146,6 +146,7 @@ function ListMap() {
 
           <button
             type="button"
+            onClick={() => navigate('/maps/create')}
             className="flex h-10 items-center gap-2 rounded-none bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
