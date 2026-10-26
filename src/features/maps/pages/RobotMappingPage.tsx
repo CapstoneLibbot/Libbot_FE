@@ -246,6 +246,26 @@ export function RobotMappingPage() {
   const connected = Boolean(runtime?.connected && !runtime.stale);
   const navActive = Boolean(runtime?.navigationActive);
   const mapPose = runtime?.telemetry?.pose;
+  const battery = runtime?.telemetry?.battery;
+  const batteryLevel = connected && typeof battery === 'number' && Number.isFinite(battery)
+    ? Math.max(0, Math.min(100, battery))
+    : null;
+  const batteryTone = batteryLevel === null
+    ? 'unknown'
+    : batteryLevel <= 15
+      ? 'critical'
+      : batteryLevel <= 30
+        ? 'low'
+        : 'normal';
+  const batteryLabel = !connected
+    ? 'Mất kết nối'
+    : batteryLevel === null
+      ? 'Chưa có dữ liệu'
+      : batteryLevel <= 15
+        ? 'Pin yếu'
+        : batteryLevel <= 30
+          ? 'Pin thấp'
+          : 'Bình thường';
   const heldButton = (key: string, label: string, wide = false) => <button type="button" className={`manual-key ${wide ? 'wide' : ''}`} disabled={!leaseId || !connected || navActive} onPointerDown={(event) => pointerDown(event, key)} onPointerUp={() => pointerUp(key)} onPointerCancel={() => pointerUp(key)} onLostPointerCapture={() => pointerUp(key)}>{label}</button>;
 
   return <LibrarianLayout><PageContainer>
@@ -260,6 +280,16 @@ export function RobotMappingPage() {
           <div className="robot-pose-readout"><span>Vị trí</span><strong>{mapPose ? `${mapPose.x.toFixed(2)} m, ${mapPose.y.toFixed(2)} m` : '—'}</strong><span>Hướng</span><strong>{mapPose ? `${(mapPose.yaw * 180 / Math.PI).toFixed(0)}°` : '—'}</strong></div>
         </section>
         <aside className="robot-tools-column">
+          <section className="robot-control-card battery-card" aria-label="Trạng thái pin robot">
+            <div className="robot-card-title"><h2>Pin robot</h2><span className={`battery-status ${batteryTone}`}>{batteryLabel}</span></div>
+            <div className={`battery-reading ${batteryTone}`}>
+              <strong>{batteryLevel === null ? '—' : `${Math.round(batteryLevel)}%`}</strong>
+              <span>{connected ? 'Mức pin ước tính từ Raspberry Pi' : 'Robot đang offline'}</span>
+            </div>
+            <div className={`battery-track ${batteryTone}`} role="progressbar" aria-label="Mức pin robot" aria-valuemin={0} aria-valuemax={100} aria-valuenow={batteryLevel ?? undefined}>
+              <span style={{ width: `${batteryLevel ?? 0}%` }} />
+            </div>
+          </section>
           <section className="robot-control-card"><div className="robot-card-title"><h2>Điều khiển</h2><span>{leaseId ? 'ĐÃ ARM' : 'ĐANG KHÓA'}</span></div>
             {leaseId ? <button className="robot-arm-button armed" onClick={() => void disarm()} disabled={busy}>Khóa robot</button> : <button className="robot-arm-button" onClick={() => void arm()} disabled={!connected || busy}>Mở khóa robot</button>}
             <div className="manual-pad">{heldButton('q', '↶')} {heldButton('w', '↑', true)} {heldButton('e', '↷')} {heldButton('a', '←')} {heldButton('s', '↓')} {heldButton('d', '→')}</div>

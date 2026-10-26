@@ -526,6 +526,22 @@ img, svg {
 .robot-pose-readout strong { color: #e5faff; font-family: ui-monospace,monospace; }
 .robot-tools-column { display: grid; gap: 12px; }
 .robot-card-title { padding-bottom: 8px; }
+.battery-card { padding: 0 14px 14px; }
+.battery-card .robot-card-title { padding: 14px 0 10px; }
+.battery-status { padding: 4px 8px; border-radius: 999px; background: #273941; color: #9ab0b8!important; font-size: .65rem!important; font-weight: 800; }
+.battery-status.normal { background: #103c36; color: #6ee7b7!important; }
+.battery-status.low { background: #493c23; color: #fcd34d!important; }
+.battery-status.critical { background: #48242a; color: #fda4af!important; }
+.battery-reading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.battery-reading strong { color: #e6faff; font-family: ui-monospace,monospace; font-size: 1.55rem; }
+.battery-reading span { color: #8da3ab; font-size: .65rem; text-align: right; }
+.battery-reading.low strong { color: #fcd34d; }
+.battery-reading.critical strong { color: #fda4af; }
+.battery-track { height: 8px; margin-top: 9px; overflow: hidden; border-radius: 999px; background: #263a41; }
+.battery-track span { display: block; height: 100%; border-radius: inherit; background: #34d399; transition: width .25s ease; }
+.battery-track.low span { background: #fbbf24; }
+.battery-track.critical span { background: #fb7185; }
+.battery-track.unknown span { background: #647780; }
 .robot-arm-button,.robot-primary-button,.robot-secondary-button,.robot-save-button,.robot-stop-button { border: 1px solid #31525e; border-radius: 9px; padding: 10px 12px; color: #e6f4f7; background: #18343e; font-weight: 700; cursor: pointer; }
 .robot-arm-button { width: calc(100% - 28px); margin: 0 14px; background: #087f9a; border-color: #22c8e5; }
 .robot-arm-button.armed { background: #493c23; border-color: #d8a642; }
