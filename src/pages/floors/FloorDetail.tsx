@@ -1,10 +1,15 @@
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { ArrowLeft, Layers3, Route } from 'lucide-react'
+import { ArrowLeft, Layers3, Pencil, Plus, Route, X } from 'lucide-react'
 
 import { initialAisles, initialFloors } from '../../lib/mapData'
+import { FloorFormDialog, type FloorFormData } from './FloorList'
 
 function FloorDetail() {
   const navigate = useNavigate()
+  const [editing, setEditing] = useState(false)
+  const [creatingAisle, setCreatingAisle] = useState(false)
+  const [, setVersion] = useState(0)
   const { id } = useParams()
   const floor = id
     ? initialFloors.find((item) => item.id === Number(id))
@@ -36,7 +41,7 @@ function FloorDetail() {
         Floors
       </Link>
 
-      <header className="mt-6 flex items-center gap-3">
+      <header className="mt-6 flex flex-wrap items-center justify-between gap-4"><div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
           <Layers3 className="h-5 w-5" />
         </div>
@@ -46,7 +51,7 @@ function FloorDetail() {
           </p>
           <h1 className="text-2xl font-bold tracking-tight">{floor.name}</h1>
         </div>
-      </header>
+      </div><button type="button" onClick={() => setEditing(true)} className="flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium"><Pencil className="h-4 w-4" />Update Floor</button></header>
 
       <section className="mt-8 max-w-3xl overflow-hidden border border-[#d9dce5] bg-white">
         <dl className="divide-y divide-[#d9dce5]">
@@ -62,7 +67,7 @@ function FloorDetail() {
       </section>
 
       <section className="mt-9">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2">
           <Route className="h-5 w-5 text-primary" />
           <div>
             <h2 className="text-lg font-semibold">Aisles</h2>
@@ -70,7 +75,7 @@ function FloorDetail() {
               {aisles.length} aisle{aisles.length === 1 ? '' : 's'} belonging to this floor.
             </p>
           </div>
-        </div>
+        </div><button type="button" onClick={() => setCreatingAisle(true)} className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white"><Plus className="h-4 w-4" />Create Aisle</button></div>
 
         <div className="mt-4 overflow-hidden border border-[#d9dce5] bg-white">
           <div className="overflow-x-auto">
@@ -122,6 +127,8 @@ function FloorDetail() {
           </div>
         </div>
       </section>
+      {editing && <FloorFormDialog title="Update Floor" initial={floor as FloorFormData} onClose={() => setEditing(false)} onSubmit={(data) => { Object.assign(floor, data); setVersion((value) => value + 1); setEditing(false) }} />}
+      {creatingAisle && <AisleForFloorDialog floorId={floor.id} onClose={() => setCreatingAisle(false)} onSubmit={(data) => { initialAisles.push({ id: Math.max(0, ...initialAisles.map((aisle) => aisle.id)) + 1, floor_id: floor.id, ...data }); setVersion((value) => value + 1); setCreatingAisle(false) }} />}
     </div>
   )
 }
@@ -134,6 +141,8 @@ function DetailRow({ label, value }: { label: string; value: string }) {
     </div>
   )
 }
+
+function AisleForFloorDialog({ floorId, onClose, onSubmit }: { floorId: number; onClose: () => void; onSubmit: (data: { endpointA_id: number; endpointB_id: number; code: string; name: string; description: string | null; status: string }) => void }) { const [data, setData] = useState({ endpointA_id: 0, endpointB_id: 0, code: '', name: '', description: null as string | null, status: 'ACTIVE' }); const input = 'mt-1.5 h-10 w-full border border-[#d7d9e2] px-3'; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#151922]/45 p-4"><section className="w-full max-w-lg bg-white shadow-xl"><header className="flex justify-between border-b p-5"><h2 className="text-lg font-semibold">Create Aisle</h2><button type="button" onClick={onClose}><X className="h-4 w-4" /></button></header><form onSubmit={(event) => { event.preventDefault(); if (data.endpointA_id !== data.endpointB_id) onSubmit(data) }} className="space-y-4 p-5"><p className="text-sm text-[#687386]">Floor #{floorId} is assigned automatically.</p><label>Endpoint A ID<input required min={1} type="number" value={data.endpointA_id || ''} onChange={(event) => setData({ ...data, endpointA_id: Number(event.target.value) })} className={input} /></label><label>Endpoint B ID<input required min={1} type="number" value={data.endpointB_id || ''} onChange={(event) => setData({ ...data, endpointB_id: Number(event.target.value) })} className={input} /></label><label>Code<input required value={data.code} onChange={(event) => setData({ ...data, code: event.target.value })} className={input} /></label><label>Name<input required value={data.name} onChange={(event) => setData({ ...data, name: event.target.value })} className={input} /></label><label>Description<textarea value={data.description || ''} onChange={(event) => setData({ ...data, description: event.target.value || null })} className={`${input} h-20 py-2`} /></label><label>Status<select value={data.status} onChange={(event) => setData({ ...data, status: event.target.value })} className={input}><option>ACTIVE</option><option>INACTIVE</option><option>MAINTENANCE</option></select></label><footer className="flex justify-end gap-2 border-t pt-4"><button type="button" onClick={onClose} className="h-10 border px-4">Cancel</button><button className="h-10 bg-primary px-4 text-white">Save</button></footer></form></section></div> }
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {

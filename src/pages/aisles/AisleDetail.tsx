@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { ArrowLeft, ChevronDown, Route, Search, X } from 'lucide-react'
+import { ArrowLeft, ChevronDown, Pencil, Plus, Route, Search, X } from 'lucide-react'
 
 import { initialAisles, initialFloors, initialShelves } from '../../lib/mapData'
 
@@ -20,6 +20,8 @@ function AisleList() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('ALL')
   const [floorId, setFloorId] = useState('ALL')
+  const [createOpen, setCreateOpen] = useState(false)
+  const [, setVersion] = useState(0)
   const floorsById = useMemo(
     () => new Map(initialFloors.map((floor) => [floor.id, floor])),
     [],
@@ -45,14 +47,14 @@ function AisleList() {
   return (
     <div className="min-h-full bg-[#f9f7fd] p-5 text-[#17181c] sm:p-8">
       <div className="space-y-5">
-        <header className="flex items-start gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
+        <header className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-start gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
             <Route className="h-5 w-5 text-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Aisles</h1>
             <p className="mt-0.5 text-sm text-[#596174]">Manage library aisles and their floor assignments.</p>
-          </div>
+          </div></div><button type="button" onClick={() => setCreateOpen(true)} className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white"><Plus className="h-4 w-4" />Create Aisle</button>
         </header>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -103,21 +105,25 @@ function AisleList() {
           </div>
         </div>
       </div>
+      {createOpen && <AisleFormDialog title="Create Aisle" onClose={() => setCreateOpen(false)} onSubmit={(data) => { initialAisles.push({ id: Math.max(0, ...initialAisles.map((item) => item.id)) + 1, ...data }); setVersion((value) => value + 1); setCreateOpen(false) }} />}
     </div>
   )
 }
 
 function AisleDetailView({ aisle }: { aisle: (typeof initialAisles)[number] }) {
+  const [editing, setEditing] = useState(false)
+  const [addingShelf, setAddingShelf] = useState(false)
+  const [, setVersion] = useState(0)
   const floor = initialFloors.find((item) => item.id === aisle.floor_id)
   const shelves = initialShelves.filter((shelf) => shelf.aisle_id === aisle.id)
 
   return (
     <div className="min-h-full bg-[#f9f7fd] p-5 text-[#17181c] sm:p-8">
       <Link to="/aisles" className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"><ArrowLeft className="h-4 w-4" />Aisles</Link>
-      <header className="mt-6 flex items-center gap-3">
+      <header className="mt-6 flex flex-wrap items-center justify-between gap-4"><div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary"><Route className="h-5 w-5" /></div>
         <div><p className="text-xs font-medium uppercase text-[#687386]">Aisle #{aisle.id}</p><h1 className="text-2xl font-bold tracking-tight">{aisle.name}</h1></div>
-      </header>
+      </div><button type="button" onClick={() => setEditing(true)} className="flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium"><Pencil className="h-4 w-4" />Update Aisle</button></header>
 
       <section className="mt-8 max-w-3xl overflow-hidden border border-[#d9dce5] bg-white">
         <dl className="divide-y divide-[#d9dce5]">
@@ -136,7 +142,7 @@ function AisleDetailView({ aisle }: { aisle: (typeof initialAisles)[number] }) {
       </section>
 
       <section className="mt-9">
-        <div className="flex items-center gap-2"><Route className="h-5 w-5 text-primary" /><div><h2 className="text-lg font-semibold">Shelves</h2><p className="mt-0.5 text-sm text-[#687386]">{shelves.length} shelf{shelves.length === 1 ? '' : 's'} belonging to this aisle.</p></div></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2"><Route className="h-5 w-5 text-primary" /><div><h2 className="text-lg font-semibold">Shelves</h2><p className="mt-0.5 text-sm text-[#687386]">{shelves.length} shelf{shelves.length === 1 ? '' : 's'} belonging to this aisle.</p></div></div><button type="button" onClick={() => setAddingShelf(true)} className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white"><Plus className="h-4 w-4" />Create Shelf</button></div>
         <div className="mt-4 overflow-hidden border border-[#d9dce5] bg-white"><div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead><tr className="border-b border-[#d9dce5] bg-[#f5f4f8]"><TableHeader>Code</TableHeader><TableHeader>Name</TableHeader><TableHeader className="w-[150px]">Status</TableHeader></tr></thead>
@@ -150,6 +156,8 @@ function AisleDetailView({ aisle }: { aisle: (typeof initialAisles)[number] }) {
           </table>
         </div></div>
       </section>
+      {editing && <AisleFormDialog title="Update Aisle" initial={aisle} onClose={() => setEditing(false)} onSubmit={(data) => { Object.assign(aisle, data); setVersion((value) => value + 1); setEditing(false) }} />}
+      {addingShelf && <ShelfForAisleDialog aisleId={aisle.id} onClose={() => setAddingShelf(false)} onSubmit={(data) => { initialShelves.push({ id: Math.max(0, ...initialShelves.map((item) => item.id)) + 1, aisle_id: aisle.id, ...data }); setVersion((value) => value + 1); setAddingShelf(false) }} />}
     </div>
   )
 }
@@ -157,6 +165,14 @@ function AisleDetailView({ aisle }: { aisle: (typeof initialAisles)[number] }) {
 function AisleNotFound() {
   return <div className="min-h-full bg-[#f9f7fd] p-6 text-[#17181c] md:p-8"><h1 className="text-xl font-semibold">Aisle not found</h1><Link to="/aisles" className="mt-4 inline-flex text-sm text-primary hover:underline">Back to Aisles</Link></div>
 }
+
+type AisleFormData = { endpointA_id: number; endpointB_id: number; floor_id: number; code: string; name: string; description: string | null; status: string }
+function AisleFormDialog({ title, initial, onClose, onSubmit }: { title: string; initial?: AisleFormData; onClose: () => void; onSubmit: (data: AisleFormData) => void }) {
+  const [form, setForm] = useState<AisleFormData>(initial || { endpointA_id: 0, endpointB_id: 0, floor_id: initialFloors[0]?.id || 0, code: '', name: '', description: null, status: 'ACTIVE' })
+  const input = 'mt-1.5 h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm'
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#151922]/45 p-4"><section className="w-full max-w-xl border border-[#d9dce5] bg-white shadow-xl"><header className="flex justify-between border-b border-[#e4e6eb] p-5"><h2 className="text-lg font-semibold">{title}</h2><button type="button" onClick={onClose}><X className="h-4 w-4" /></button></header><form onSubmit={(event) => { event.preventDefault(); if (form.endpointA_id !== form.endpointB_id) onSubmit(form) }} className="space-y-4 p-5"><div className="grid gap-4 sm:grid-cols-2"><label>Endpoint A ID<input required min={1} type="number" value={form.endpointA_id || ''} onChange={(event) => setForm({ ...form, endpointA_id: Number(event.target.value) })} className={input} /></label><label>Endpoint B ID<input required min={1} type="number" value={form.endpointB_id || ''} onChange={(event) => setForm({ ...form, endpointB_id: Number(event.target.value) })} className={input} /></label><label>Floor<select value={form.floor_id} onChange={(event) => setForm({ ...form, floor_id: Number(event.target.value) })} className={input}>{initialFloors.map((floor) => <option key={floor.id} value={floor.id}>{floor.code} · {floor.name}</option>)}</select></label><label>Code<input required maxLength={50} value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value })} className={input} /></label><label className="sm:col-span-2">Name<input required maxLength={100} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} className={input} /></label><label className="sm:col-span-2">Description<textarea maxLength={500} value={form.description || ''} onChange={(event) => setForm({ ...form, description: event.target.value || null })} className={`${input} h-20 py-2`} /></label><label>Status<select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })} className={input}><option>ACTIVE</option><option>INACTIVE</option><option>MAINTENANCE</option></select></label></div><footer className="flex justify-end gap-2 border-t pt-4"><button type="button" onClick={onClose} className="h-10 border px-4">Cancel</button><button className="h-10 bg-primary px-4 text-white">Save</button></footer></form></section></div>
+}
+function ShelfForAisleDialog({ aisleId, onClose, onSubmit }: { aisleId: number; onClose: () => void; onSubmit: (data: { endpoint_id: number; code: string; name: string; description: string | null; status: 1 | 2 | 3 }) => void }) { const [data, setData] = useState({ endpoint_id: 0, code: '', name: '', description: null as string | null, status: 1 as 1 | 2 | 3 }); const input = 'mt-1.5 h-10 w-full border border-[#d7d9e2] px-3'; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#151922]/45 p-4"><section className="w-full max-w-lg bg-white shadow-xl"><header className="flex justify-between border-b p-5"><h2 className="text-lg font-semibold">Create Shelf</h2><button type="button" onClick={onClose}><X className="h-4 w-4" /></button></header><form onSubmit={(event) => { event.preventDefault(); onSubmit(data) }} className="space-y-4 p-5"><p className="text-sm text-[#687386]">Aisle #{aisleId} is assigned automatically.</p><label>Endpoint ID<input required min={1} type="number" value={data.endpoint_id || ''} onChange={(event) => setData({ ...data, endpoint_id: Number(event.target.value) })} className={input} /></label><label>Code<input required value={data.code} onChange={(event) => setData({ ...data, code: event.target.value })} className={input} /></label><label>Name<input required value={data.name} onChange={(event) => setData({ ...data, name: event.target.value })} className={input} /></label><label>Description<textarea value={data.description || ''} onChange={(event) => setData({ ...data, description: event.target.value || null })} className={`${input} h-20 py-2`} /></label><label>Status<select value={data.status} onChange={(event) => setData({ ...data, status: Number(event.target.value) as 1 | 2 | 3 })} className={input}><option value={1}>Active</option><option value={2}>Inactive</option><option value={3}>Maintenance</option></select></label><footer className="flex justify-end gap-2 border-t pt-4"><button type="button" onClick={onClose} className="h-10 border px-4">Cancel</button><button className="h-10 bg-primary px-4 text-white">Save</button></footer></form></section></div> }
 
 function SelectFilter({ value, onChange, ariaLabel, children }: { value: string; onChange: (value: string) => void; ariaLabel: string; children: ReactNode }) {
   return <div className="relative w-40"><select value={value} onChange={(event) => onChange(event.target.value)} aria-label={ariaLabel} className="h-10 w-full appearance-none border border-[#d7d9e2] bg-white px-3 pr-9 text-sm outline-none focus:border-primary">{children}</select><ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#687386]" /></div>
