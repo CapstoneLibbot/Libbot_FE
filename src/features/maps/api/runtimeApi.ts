@@ -2,6 +2,7 @@ import axios from 'axios'
 
 import type {
   LiveOccupancyGrid,
+  Pose2D,
   RobotRuntime,
   SavedMap,
 } from '../types/runtime'
@@ -49,6 +50,62 @@ export async function armRuntime(runtimeId: string) {
 
 export async function disarmRuntime(runtimeId: string): Promise<void> {
   await apiClient.delete(`/robot-runtimes/${runtimeId}/arm`)
+}
+
+export async function setInitialPose(
+  runtimeId: string,
+  pose: Pose2D,
+  armLeaseId?: string | null,
+): Promise<void> {
+  await apiClient.post(`/robot-runtimes/${encodeURIComponent(runtimeId)}/initial-pose`, {
+    ...pose,
+    armLeaseId,
+  })
+}
+
+export async function sendNavigationGoal(
+  runtimeId: string,
+  pose: Pose2D,
+  armLeaseId?: string | null,
+) {
+  return (
+    await apiClient.post<{
+      runtimeId: string
+      commandId: string
+      status: string
+    }>(`/robot-runtimes/${encodeURIComponent(runtimeId)}/navigation-goals`, {
+      ...pose,
+      armLeaseId,
+      speedMode: 'NORMAL',
+      obstaclePolicy: 'REROUTE',
+      timeoutSec: 180,
+    })
+  ).data
+}
+
+export async function cancelNavigationGoal(
+  runtimeId: string,
+  commandId: string,
+  armLeaseId?: string | null,
+): Promise<void> {
+  await apiClient.delete(
+    `/robot-runtimes/${encodeURIComponent(runtimeId)}/navigation-goals/${encodeURIComponent(commandId)}`,
+    { params: armLeaseId ? { armLeaseId } : undefined },
+  )
+}
+
+export async function getLatestSavedRobotMap(): Promise<{
+  id: string
+  name: string
+  version: string
+} | null> {
+  return (
+    await apiClient.get<{
+      id: string
+      name: string
+      version: string
+    } | null>('/robot-runtimes/real/maps/latest')
+  ).data
 }
 
 export async function sendManualVelocity(

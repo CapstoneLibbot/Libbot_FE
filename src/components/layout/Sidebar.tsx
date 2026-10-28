@@ -12,6 +12,7 @@ import {
   MapPin,
   Layers3,
   Rows3,
+  Send,
   Settings,
   Warehouse,
 } from 'lucide-react'
@@ -26,6 +27,11 @@ const menuItems = [
     label: 'Tasks',
     icon: ClipboardList,
     path: '/tasks',
+  },
+  {
+    label: 'Dispatch Workflow',
+    icon: Send,
+    path: '/dispatch',
   },
   {
     label: 'Workflows',

@@ -8,6 +8,8 @@ import type { HubConnection } from '@microsoft/signalr'
 type SignalREventName =
   | 'RobotTelemetryUpdated'
   | 'RobotMapUpdated'
+  | 'MissionStatusChanged'
+  | 'MissionStepChanged'
 
 type SignalREventHandler<T> = (payload: T) => void
 
@@ -41,6 +43,12 @@ class SignalRClient {
       })
       this.connection.on('RobotMapUpdated', (payload) => {
         this.emit('RobotMapUpdated', payload)
+      })
+      this.connection.on('MissionStatusChanged', (payload) => {
+        this.emit('MissionStatusChanged', payload)
+      })
+      this.connection.on('MissionStepChanged', (payload) => {
+        this.emit('MissionStepChanged', payload)
       })
       this.connection.onreconnected(() => {
         this.runtimeSubscriptions.forEach((runtimeId) => {

@@ -4,6 +4,33 @@ export type Pose2D = {
   yaw: number
 }
 
+export type PathPoint2D = {
+  x: number
+  y: number
+}
+
+export type MapObstacle = {
+  pixelX: number
+  pixelY: number
+  pixelWidth: number
+  pixelHeight: number
+  worldX: number
+  worldY: number
+  worldWidth: number
+  worldHeight: number
+}
+
+export type OccupancyMapMetadata = {
+  imageWidth: number
+  imageHeight: number
+  resolution: number
+  origin: [number, number, number]
+  widthMeters: number
+  heightMeters: number
+  obstacles: MapObstacle[]
+  occupancyImage?: string
+}
+
 export type RobotTelemetry = {
   timestamp: string
   pose: Pose2D
@@ -16,6 +43,7 @@ export type RobotTelemetry = {
   localizationState: string
   navigationState: string
   activeGoalId?: string | null
+  plannedPath?: PathPoint2D[] | null
   error?: string | null
   mappingActive?: boolean
   navigationActive?: boolean

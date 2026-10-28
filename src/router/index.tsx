@@ -7,6 +7,7 @@ import {
 } from 'react-router'
 
 import Sidebar from '../components/layout/Sidebar'
+import DispatchWorkflowPage from '../features/dispatch/DispatchWorkflowPage'
 import AreaDetail from '../pages/areas/AreaDetail'
 import AisleDetail from '../pages/aisles/AisleDetail'
 import FloorList from '../pages/floors/FloorList'
@@ -116,6 +117,11 @@ function AppRouter() {
           <Route
             path="/tasks"
             element={<TaskList />}
+          />
+
+          <Route
+            path="/dispatch"
+            element={<DispatchWorkflowPage />}
           />
 
           <Route
