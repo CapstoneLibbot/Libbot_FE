@@ -7,6 +7,7 @@ import {
 } from 'react-router'
 
 import Sidebar from '../components/layout/Sidebar'
+import Overview from '../pages/overview/Overview'
 import AreaDetail from '../pages/areas/AreaDetail'
 import AisleDetail from '../pages/aisles/AisleDetail'
 import FloorList from '../pages/floors/FloorList'
@@ -61,7 +62,7 @@ function AppRouter() {
         <Route element={<AppLayout />}>
           <Route
             path="/"
-            element={<PlaceholderPage title="Overview" />}
+            element={<Overview />}
           />
 
           <Route
