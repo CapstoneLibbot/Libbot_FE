@@ -67,6 +67,10 @@ export type Book = {
   isbn: string | null
   title: string
   author: string | null
+  image_url?: string | null
+  description?: string | null
+  publisher?: string | null
+  publication_year?: number | null
 }
 
 export type EndpointLinkedObject = {

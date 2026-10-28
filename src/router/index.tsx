@@ -16,6 +16,7 @@ import MapDetail from '../pages/maps/MapDetail'
 import ShelfDetail from '../pages/shelves/ShelfDetail'
 import ShelfList from '../pages/shelves/ShelfList'
 import BookList from '../pages/books/BookList'
+import BookDetail from '../pages/books/BookDetail'
 import InventoryPage from '../pages/inventory/InventoryPage'
 import InventoryResultsPage from '../pages/inventory/InventoryResultsPage'
 import TaskCreate from '../pages/tasks/TaskCreate'
@@ -134,6 +135,8 @@ function AppRouter() {
             path="/book"
             element={<BookList />}
           />
+
+          <Route path="/book/:id" element={<BookDetail />} />
 
           <Route
             path="/inventory"

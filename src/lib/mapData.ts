@@ -294,10 +294,10 @@ export const initialBookCategories: BookCategory[] = [
 ]
 
 export const initialBooks: Book[] = [
-  { id: 101, category_id: 1, isbn: '978-0132350884', title: 'Clean Code', author: 'Robert C. Martin' },
-  { id: 102, category_id: 1, isbn: '978-0134494166', title: 'Clean Architecture', author: 'Robert C. Martin' },
-  { id: 103, category_id: 1, isbn: '978-0201633610', title: 'Design Patterns', author: 'Erich Gamma' },
-  { id: 104, category_id: 3, isbn: '978-0198601778', title: 'Oxford Dictionary of Computing', author: null },
+  { id: 101, category_id: 1, isbn: '978-0132350884', title: 'Clean Code', author: 'Robert C. Martin', image_url: null, description: 'A handbook of agile software craftsmanship.', publisher: 'Prentice Hall', publication_year: 2008 },
+  { id: 102, category_id: 1, isbn: '978-0134494166', title: 'Clean Architecture', author: 'Robert C. Martin', image_url: null, description: 'A guide to software structure and design.', publisher: 'Pearson', publication_year: 2017 },
+  { id: 103, category_id: 1, isbn: '978-0201633610', title: 'Design Patterns', author: 'Erich Gamma', image_url: null, description: 'Elements of reusable object-oriented software.', publisher: 'Addison-Wesley', publication_year: 1994 },
+  { id: 104, category_id: 3, isbn: '978-0198601778', title: 'Oxford Dictionary of Computing', author: null, image_url: null, description: 'Reference work for computing terminology.', publisher: 'Oxford University Press', publication_year: 2008 },
   { id: 105, category_id: 1, isbn: '978-0134685991', title: 'Effective Java', author: 'Joshua Bloch' },
   { id: 106, category_id: 1, isbn: '978-1491950296', title: 'Programming TypeScript', author: 'Boris Cherny' },
   { id: 107, category_id: 1, isbn: '978-1617294136', title: 'Spring in Action', author: 'Craig Walls' },
@@ -335,4 +335,5 @@ export const initialBookItems: BookItem[] = [
   { id: 17, expected_shelf_level_id: 9, current_shelf_level_id: 9, book_id: 117, barcode: 'BK-0017', last_inventory_at: '2026-10-23T10:00:00Z', status: 'AVAILABLE' },
   { id: 18, expected_shelf_level_id: 9, current_shelf_level_id: null, book_id: 118, barcode: 'BK-0018', last_inventory_at: '2026-10-23T10:00:00Z', status: 'MISSING' },
   { id: 19, expected_shelf_level_id: 10, current_shelf_level_id: 10, book_id: 119, barcode: 'BK-0019', last_inventory_at: '2026-10-23T10:00:00Z', status: 'AVAILABLE' },
+  { id: 20, expected_shelf_level_id: 1, current_shelf_level_id: 0, book_id: 101, barcode: 'BK-0020', last_inventory_at: '2026-10-24T10:00:00Z', status: 'AVAILABLE' },
 ]
