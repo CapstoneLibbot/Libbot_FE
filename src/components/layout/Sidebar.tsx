@@ -11,7 +11,7 @@ import {
   Map,
   MapPin,
   Layers3,
-  Rows3,
+  Route,
   Settings,
   Warehouse,
 } from 'lucide-react'
@@ -48,9 +48,9 @@ const menuItems = [
     path: '/floors',
   },
   {
-    label: 'III Row',
-    icon: Rows3,
-    path: '/rows',
+    label: 'Aisle',
+    icon: Route,
+    path: '/aisles',
   },
   {
     label: 'Shelf',

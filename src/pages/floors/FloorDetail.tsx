@@ -1,9 +1,10 @@
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { ArrowLeft, Layers3, Route } from 'lucide-react'
 
 import { initialAisles, initialFloors } from '../../lib/mapData'
 
 function FloorDetail() {
+  const navigate = useNavigate()
   const { id } = useParams()
   const floor = id
     ? initialFloors.find((item) => item.id === Number(id))
@@ -84,16 +85,25 @@ function FloorDetail() {
               </thead>
               <tbody>
                 {aisles.length > 0 ? aisles.map((aisle) => (
-                  <tr key={aisle.id} className="border-b border-[#d9dce5] last:border-b-0 hover:bg-[#faf9fc]">
-                    <td className="px-4 py-4 font-mono text-xs font-semibold">
-                      <Link to={`/aisles/${aisle.id}`} className="text-primary hover:underline">
-                        {aisle.code}
-                      </Link>
+                  <tr
+                    key={aisle.id}
+                    onClick={() => navigate(`/aisles/${aisle.id}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        navigate(`/aisles/${aisle.id}`)
+                      }
+                    }}
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`Open ${aisle.name}`}
+                    className="cursor-pointer border-b border-[#d9dce5] last:border-b-0 hover:bg-[#faf9fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <td className="px-4 py-4 font-mono text-xs font-semibold text-primary">
+                      {aisle.code}
                     </td>
                     <td className="px-4 py-4 font-medium">
-                      <Link to={`/aisles/${aisle.id}`} className="text-[#17181c] hover:text-primary hover:underline">
-                        {aisle.name}
-                      </Link>
+                      {aisle.name}
                     </td>
                     <td className="px-4 py-4 text-[#596174]">{aisle.description || '—'}</td>
                     <td className="px-4 py-4"><StatusBadge status={aisle.status} /></td>

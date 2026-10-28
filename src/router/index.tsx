@@ -87,10 +87,9 @@ function AppRouter() {
 
           <Route path="/floors/:id" element={<FloorDetail />} />
 
-          <Route
-            path="/aisles/:id"
-            element={<AisleDetail />}
-          />
+          <Route path="/aisles" element={<AisleDetail />} />
+
+          <Route path="/aisles/:id" element={<AisleDetail />} />
 
           <Route
             path="/shelf"
@@ -131,13 +130,6 @@ function AppRouter() {
             path="/workflows/:id"
             element={<WorkflowDetail />}
           />
-
-          <Route
-            path="/rows"
-            element={<PlaceholderPage title="Row" />}
-          />
-
-          <Route path="/iii-row" element={<Navigate to="/rows" replace />} />
 
           <Route
             path="/book"
