@@ -174,9 +174,10 @@ function EmptyTable({ colSpan, title, description }: { colSpan: number; title: s
   return <tr><td colSpan={colSpan} className="px-6 py-14 text-center"><Route className="mx-auto h-8 w-8 text-[#89909f]" /><p className="mt-3 font-medium text-[#3f4654]">{title}</p><p className="mt-1 text-sm text-[#7b8190]">{description}</p></td></tr>
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status }: { status: string | number }) {
+  const normalized = typeof status === 'number' ? ({ 1: 'ACTIVE', 2: 'INACTIVE', 3: 'MAINTENANCE' }[status] || 'INACTIVE') : status
   const styles: Record<string, string> = { ACTIVE: 'bg-[#d9f7e7] text-[#087443]', INACTIVE: 'bg-[#eef0f3] text-[#596174]', MAINTENANCE: 'bg-[#fff0d8] text-[#a65000]' }
-  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${styles[status] || styles.INACTIVE}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{status.charAt(0) + status.slice(1).toLowerCase()}</span>
+  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${styles[normalized] || styles.INACTIVE}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{normalized.charAt(0) + normalized.slice(1).toLowerCase()}</span>
 }
 
 export default AisleDetail

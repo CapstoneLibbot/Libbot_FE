@@ -25,6 +25,8 @@ export type MapAisle = {
   status: string
 }
 
+export type ShelfStatus = 1 | 2 | 3
+
 export type MapShelf = {
   id: number
   endpoint_id: number
@@ -32,7 +34,39 @@ export type MapShelf = {
   name: string
   code: string
   description: string | null
+  status: ShelfStatus
+}
+
+export type ShelfLevel = {
+  id: number
+  shelf_id: number
+  name: string
+  level_number: number
+  status: ShelfStatus
+}
+
+export type BookItem = {
+  id: number
+  expected_shelf_level_id: number
+  current_shelf_level_id: number | null
+  book_id: number
+  barcode: string
+  last_inventory_at: string | null
   status: string
+}
+
+export type BookCategory = {
+  id: number
+  name: string
+  description: string | null
+}
+
+export type Book = {
+  id: number
+  category_id: number | null
+  isbn: string | null
+  title: string
+  author: string | null
 }
 
 export type EndpointLinkedObject = {

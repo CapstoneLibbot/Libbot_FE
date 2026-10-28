@@ -55,7 +55,7 @@ const menuItems = [
   {
     label: 'Shelf',
     icon: Warehouse,
-    path: '/shelf',
+    path: '/shelves',
   },
   {
     label: 'Book',

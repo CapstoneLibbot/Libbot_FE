@@ -2,9 +2,13 @@ import type {
   EndpointGroup,
   EndpointGroupMember,
   Floor,
+  BookItem,
+  Book,
+  BookCategory,
   MapAisle,
   MapArea,
   MapShelf,
+  ShelfLevel,
 } from '../types/map'
 
 export const initialFloors: Floor[] = [
@@ -185,7 +189,7 @@ export const initialShelves: MapShelf[] = [
     name: 'Shelf A-01',
     code: 'SH-001',
     description: 'First shelf on Aisle A.',
-    status: 'ACTIVE',
+    status: 1,
   },
   {
     id: 2,
@@ -194,7 +198,7 @@ export const initialShelves: MapShelf[] = [
     name: 'Shelf A-02',
     code: 'SH-002',
     description: 'Second shelf on Aisle A.',
-    status: 'ACTIVE',
+    status: 1,
   },
   {
     id: 3,
@@ -203,7 +207,7 @@ export const initialShelves: MapShelf[] = [
     name: 'Shelf A-03',
     code: 'SH-003',
     description: 'Shelf A-03.',
-    status: 'ACTIVE',
+    status: 1,
   },
   {
     id: 4,
@@ -212,7 +216,7 @@ export const initialShelves: MapShelf[] = [
     name: 'Shelf A-04',
     code: 'SH-004',
     description: 'Shelf A-04.',
-    status: 'ACTIVE',
+    status: 1,
   },
   {
     id: 5,
@@ -221,7 +225,7 @@ export const initialShelves: MapShelf[] = [
     name: 'Shelf A-05',
     code: 'SH-005',
     description: 'Shelf A-05.',
-    status: 'ACTIVE',
+    status: 1,
   },
   {
     id: 6,
@@ -230,7 +234,7 @@ export const initialShelves: MapShelf[] = [
     name: 'Shelf A-06',
     code: 'SH-006',
     description: 'Shelf A-06.',
-    status: 'ACTIVE',
+    status: 1,
   },
   {
     id: 7,
@@ -239,7 +243,7 @@ export const initialShelves: MapShelf[] = [
     name: 'Shelf A-07',
     code: 'SH-007',
     description: 'Shelf A-07.',
-    status: 'ACTIVE',
+    status: 1,
   },
   {
     id: 8,
@@ -248,7 +252,7 @@ export const initialShelves: MapShelf[] = [
     name: 'Shelf A-08',
     code: 'SH-008',
     description: 'Shelf A-08.',
-    status: 'ACTIVE',
+    status: 1,
   },
   {
     id: 9,
@@ -257,7 +261,7 @@ export const initialShelves: MapShelf[] = [
     name: 'Shelf A-09',
     code: 'SH-009',
     description: 'Shelf A-09.',
-    status: 'ACTIVE',
+    status: 1,
   },
   {
     id: 10,
@@ -266,6 +270,69 @@ export const initialShelves: MapShelf[] = [
     name: 'Shelf A-10',
     code: 'SH-010',
     description: 'Shelf A-10.',
-    status: 'ACTIVE',
+    status: 1,
   },
+]
+
+export const initialShelfLevels: ShelfLevel[] = [
+  { id: 1, shelf_id: 1, name: 'Lower shelf', level_number: 1, status: 1 },
+  { id: 2, shelf_id: 1, name: 'Middle shelf', level_number: 2, status: 1 },
+  { id: 3, shelf_id: 1, name: 'Upper shelf', level_number: 3, status: 1 },
+  { id: 4, shelf_id: 2, name: 'Lower shelf', level_number: 1, status: 1 },
+  { id: 5, shelf_id: 2, name: 'Middle shelf', level_number: 2, status: 1 },
+  { id: 6, shelf_id: 2, name: 'Upper shelf', level_number: 3, status: 3 },
+  { id: 7, shelf_id: 3, name: 'Lower shelf', level_number: 1, status: 1 },
+  { id: 8, shelf_id: 3, name: 'Upper shelf', level_number: 2, status: 1 },
+  { id: 9, shelf_id: 4, name: 'Lower shelf', level_number: 1, status: 1 },
+  { id: 10, shelf_id: 4, name: 'Upper shelf', level_number: 2, status: 2 },
+]
+
+export const initialBookCategories: BookCategory[] = [
+  { id: 1, name: 'Computer Science', description: 'Computer science and technology titles.' },
+  { id: 2, name: 'Literature', description: 'Literary works and criticism.' },
+  { id: 3, name: 'Reference', description: 'Reference materials.' },
+]
+
+export const initialBooks: Book[] = [
+  { id: 101, category_id: 1, isbn: '978-0132350884', title: 'Clean Code', author: 'Robert C. Martin' },
+  { id: 102, category_id: 1, isbn: '978-0134494166', title: 'Clean Architecture', author: 'Robert C. Martin' },
+  { id: 103, category_id: 1, isbn: '978-0201633610', title: 'Design Patterns', author: 'Erich Gamma' },
+  { id: 104, category_id: 3, isbn: '978-0198601778', title: 'Oxford Dictionary of Computing', author: null },
+  { id: 105, category_id: 1, isbn: '978-0134685991', title: 'Effective Java', author: 'Joshua Bloch' },
+  { id: 106, category_id: 1, isbn: '978-1491950296', title: 'Programming TypeScript', author: 'Boris Cherny' },
+  { id: 107, category_id: 1, isbn: '978-1617294136', title: 'Spring in Action', author: 'Craig Walls' },
+  { id: 108, category_id: 2, isbn: '978-0141439518', title: 'Pride and Prejudice', author: 'Jane Austen' },
+  { id: 109, category_id: 2, isbn: '978-0141182803', title: 'Nineteen Eighty-Four', author: 'George Orwell' },
+  { id: 110, category_id: 3, isbn: '978-1119456339', title: 'Library Management Handbook', author: 'Susan Carter' },
+  { id: 111, category_id: 3, isbn: '978-0321127426', title: 'The Pragmatic Programmer', author: 'Andrew Hunt' },
+  { id: 112, category_id: 1, isbn: '978-1492078005', title: 'Learning React', author: 'Alex Banks' },
+  { id: 113, category_id: 2, isbn: '978-0141439600', title: 'Jane Eyre', author: 'Charlotte Brontë' },
+  { id: 114, category_id: 2, isbn: '978-0141439570', title: 'Wuthering Heights', author: 'Emily Brontë' },
+  { id: 115, category_id: 2, isbn: '978-0141187761', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald' },
+  { id: 116, category_id: 2, isbn: '978-0141182704', title: 'To Kill a Mockingbird', author: 'Harper Lee' },
+  { id: 117, category_id: 3, isbn: '978-0198735695', title: 'World Atlas', author: null },
+  { id: 118, category_id: 3, isbn: '978-0198609958', title: 'Modern Encyclopedia', author: null },
+  { id: 119, category_id: 1, isbn: '978-0131103627', title: 'The C Programming Language', author: 'Brian Kernighan' },
+]
+
+export const initialBookItems: BookItem[] = [
+  { id: 1, expected_shelf_level_id: 1, current_shelf_level_id: 1, book_id: 101, barcode: 'BK-0001', last_inventory_at: '2026-10-20T08:30:00Z', status: 'AVAILABLE' },
+  { id: 2, expected_shelf_level_id: 1, current_shelf_level_id: 1, book_id: 102, barcode: 'BK-0002', last_inventory_at: '2026-10-20T08:30:00Z', status: 'AVAILABLE' },
+  { id: 3, expected_shelf_level_id: 1, current_shelf_level_id: 2, book_id: 103, barcode: 'BK-0003', last_inventory_at: '2026-10-20T08:30:00Z', status: 'MISPLACED' },
+  { id: 4, expected_shelf_level_id: 1, current_shelf_level_id: null, book_id: 104, barcode: 'BK-0004', last_inventory_at: '2026-10-20T08:30:00Z', status: 'MISSING' },
+  { id: 5, expected_shelf_level_id: 2, current_shelf_level_id: 2, book_id: 105, barcode: 'BK-0005', last_inventory_at: '2026-10-20T08:30:00Z', status: 'AVAILABLE' },
+  { id: 6, expected_shelf_level_id: 2, current_shelf_level_id: 2, book_id: 106, barcode: 'BK-0006', last_inventory_at: '2026-10-20T08:30:00Z', status: 'AVAILABLE' },
+  { id: 7, expected_shelf_level_id: 2, current_shelf_level_id: 3, book_id: 107, barcode: 'BK-0007', last_inventory_at: '2026-10-20T08:30:00Z', status: 'MISPLACED' },
+  { id: 8, expected_shelf_level_id: 3, current_shelf_level_id: 3, book_id: 108, barcode: 'BK-0008', last_inventory_at: '2026-10-20T08:30:00Z', status: 'AVAILABLE' },
+  { id: 9, expected_shelf_level_id: 3, current_shelf_level_id: 3, book_id: 109, barcode: 'BK-0009', last_inventory_at: '2026-10-20T08:30:00Z', status: 'AVAILABLE' },
+  { id: 10, expected_shelf_level_id: 4, current_shelf_level_id: 4, book_id: 110, barcode: 'BK-0010', last_inventory_at: '2026-10-21T09:15:00Z', status: 'AVAILABLE' },
+  { id: 11, expected_shelf_level_id: 4, current_shelf_level_id: 5, book_id: 111, barcode: 'BK-0011', last_inventory_at: '2026-10-21T09:15:00Z', status: 'MISPLACED' },
+  { id: 12, expected_shelf_level_id: 5, current_shelf_level_id: 5, book_id: 112, barcode: 'BK-0012', last_inventory_at: '2026-10-21T09:15:00Z', status: 'AVAILABLE' },
+  { id: 13, expected_shelf_level_id: 5, current_shelf_level_id: null, book_id: 113, barcode: 'BK-0013', last_inventory_at: '2026-10-21T09:15:00Z', status: 'MISSING' },
+  { id: 14, expected_shelf_level_id: 7, current_shelf_level_id: 7, book_id: 114, barcode: 'BK-0014', last_inventory_at: '2026-10-22T10:00:00Z', status: 'AVAILABLE' },
+  { id: 15, expected_shelf_level_id: 7, current_shelf_level_id: 8, book_id: 115, barcode: 'BK-0015', last_inventory_at: '2026-10-22T10:00:00Z', status: 'MISPLACED' },
+  { id: 16, expected_shelf_level_id: 8, current_shelf_level_id: 8, book_id: 116, barcode: 'BK-0016', last_inventory_at: '2026-10-22T10:00:00Z', status: 'AVAILABLE' },
+  { id: 17, expected_shelf_level_id: 9, current_shelf_level_id: 9, book_id: 117, barcode: 'BK-0017', last_inventory_at: '2026-10-23T10:00:00Z', status: 'AVAILABLE' },
+  { id: 18, expected_shelf_level_id: 9, current_shelf_level_id: null, book_id: 118, barcode: 'BK-0018', last_inventory_at: '2026-10-23T10:00:00Z', status: 'MISSING' },
+  { id: 19, expected_shelf_level_id: 10, current_shelf_level_id: 10, book_id: 119, barcode: 'BK-0019', last_inventory_at: '2026-10-23T10:00:00Z', status: 'AVAILABLE' },
 ]

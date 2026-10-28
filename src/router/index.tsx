@@ -91,10 +91,9 @@ function AppRouter() {
 
           <Route path="/aisles/:id" element={<AisleDetail />} />
 
-          <Route
-            path="/shelf"
-            element={<ShelfList />}
-          />
+          <Route path="/shelves" element={<ShelfList />} />
+
+          <Route path="/shelf" element={<Navigate to="/shelves" replace />} />
 
           <Route
             path="/shelves/:id"
