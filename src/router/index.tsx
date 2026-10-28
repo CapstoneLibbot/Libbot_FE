@@ -7,6 +7,7 @@ import {
 } from 'react-router'
 
 import Sidebar from '../components/layout/Sidebar'
+import OperationBanner from '../components/layout/OperationBanner'
 import Overview from '../pages/overview/Overview'
 import AreaDetail from '../pages/areas/AreaDetail'
 import AisleDetail from '../pages/aisles/AisleDetail'
@@ -48,8 +49,11 @@ function AppLayout() {
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
 
-      <main className="h-full min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
-        <Outlet />
+      <main className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <OperationBanner />
+        <div className="app-page-content min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+          <Outlet />
+        </div>
       </main>
     </div>
   )

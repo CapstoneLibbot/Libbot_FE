@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #0056d2;
+  --primary: #075ed3;
   --primary-foreground: #ffffff;
 
   --secondary: #f8f9fa;
@@ -13,7 +13,7 @@
   --neutral: #757780;
   --neutral-foreground: #ffffff;
 
-  --background: #f8f7fc;
+  --background: #f5f8ff;
   --foreground: #17181c;
 
   --card: #ffffff;
@@ -91,7 +91,10 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: var(--background);
+  background:
+    radial-gradient(circle at 92% 4%, rgb(125 211 252 / 23%), transparent 27rem),
+    radial-gradient(circle at 16% 95%, rgb(196 181 253 / 15%), transparent 30rem),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-inter);
   -webkit-font-smoothing: antialiased;
@@ -129,6 +132,39 @@ main > * {
   animation: app-page-enter 320ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
 }
 
+.app-page-content {
+  background:
+    radial-gradient(circle at 96% 15%, rgb(219 234 254 / 66%), transparent 25rem),
+    radial-gradient(circle at 5% 90%, rgb(237 233 254 / 55%), transparent 24rem);
+}
+
+.operation-banner {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  min-height: 43px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  overflow: hidden;
+  padding: 0.45rem 2rem;
+  color: #ffffff;
+  background: linear-gradient(105deg, #075ed3 0%, #0b72d9 52%, #0f8baa 100%);
+  box-shadow: 0 3px 12px rgb(7 94 211 / 20%);
+}
+
+.operation-banner::after {
+  position: absolute;
+  top: -4rem;
+  right: 12%;
+  width: 12rem;
+  height: 12rem;
+  content: "";
+  border-radius: 999px;
+  background: rgb(255 255 255 / 11%);
+  pointer-events: none;
+}
+
 main button:not([class~="rounded-full"]) {
   border-radius: var(--radius);
 }
@@ -161,13 +197,33 @@ main textarea:focus {
 main :is(section, article, div, dl)[class~="border"][class~="bg-white"],
 main [class~="overflow-hidden"][class~="border"] {
   border-radius: 0.625rem;
-  box-shadow: 0 1px 3px rgb(23 24 28 / 6%);
+  border-color: #dbe2ef;
+  box-shadow: 0 2px 5px rgb(42 73 125 / 7%), 0 12px 28px rgb(42 73 125 / 4%);
   transition: box-shadow 180ms ease, border-color 180ms ease;
 }
 
 main :is(section, article, div, dl)[class~="border"][class~="bg-white"]:hover,
 main [class~="overflow-hidden"][class~="border"]:hover {
-  box-shadow: 0 5px 16px rgb(23 24 28 / 9%);
+  border-color: #c9d7ed;
+  box-shadow: 0 7px 20px rgb(42 73 125 / 11%), 0 18px 34px rgb(42 73 125 / 6%);
+}
+
+main button[class~="bg-primary"],
+main a[class~="bg-primary"] {
+  background-image: linear-gradient(135deg, #075ed3, #0b78d1);
+  box-shadow: 0 5px 12px rgb(7 94 211 / 18%);
+}
+
+main table thead tr {
+  background: linear-gradient(90deg, #eef5ff, #f5f1ff) !important;
+}
+
+main table tbody tr:nth-child(even) {
+  background-color: rgb(248 251 255 / 72%);
+}
+
+main table tbody tr:hover {
+  background-color: #eef6ff !important;
 }
 
 main table tbody tr {
@@ -190,6 +246,55 @@ aside nav a {
 
 aside nav a:hover {
   transform: translateX(2px);
+}
+
+aside {
+  background: linear-gradient(180deg, #f9fbff 0%, #f5f4ff 100%) !important;
+  border-color: #dce4f2 !important;
+}
+
+aside > div:first-child {
+  position: relative;
+  overflow: hidden;
+  border-color: rgb(255 255 255 / 18%) !important;
+  background: linear-gradient(135deg, #075ed3, #0b78d1 58%, #0f93a9) !important;
+}
+
+aside > div:first-child::after {
+  position: absolute;
+  right: -1.5rem;
+  bottom: -3.5rem;
+  width: 8rem;
+  height: 8rem;
+  content: "";
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 999px;
+}
+
+aside > div:first-child h1,
+aside > div:first-child p {
+  position: relative;
+  z-index: 1;
+  color: #ffffff !important;
+}
+
+aside > div:first-child p {
+  color: rgb(255 255 255 / 76%) !important;
+}
+
+aside nav a[class~="bg-primary"] {
+  background-image: linear-gradient(110deg, #075ed3, #0b78d1) !important;
+  box-shadow: 0 4px 12px rgb(7 94 211 / 20%);
+}
+
+aside > div:last-child {
+  border-color: #dce4f2 !important;
+  background: rgb(255 255 255 / 42%);
+}
+
+aside > div:last-child > div > div:first-child {
+  background: linear-gradient(135deg, #075ed3, #8b5cf6) !important;
+  box-shadow: 0 4px 10px rgb(79 70 229 / 18%);
 }
 
 .map-detail-panel [class~="text-white"] {
@@ -240,5 +345,12 @@ aside nav a:hover {
   main button:not(:disabled):active,
   aside nav a:hover {
     transform: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .operation-banner {
+    padding-right: 1.25rem;
+    padding-left: 1.25rem;
   }
 }
