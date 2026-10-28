@@ -1,6 +1,7 @@
 export interface ShelfRecord {
   id: string
   aisleId: string
+  endpointId: string | null
   code: string
   name: string
   createdAtUtc: string
@@ -18,8 +19,20 @@ export interface AisleRecord {
 
 export interface ShelfWriteRequest {
   aisleId: string
+  endpointId: string | null
   code: string
   name: string
+}
+
+export interface EndpointRecord {
+  id: string
+  mapId: string
+  name: string
+  endpointType: 'WAYPOINT' | 'CHARGER' | 'PARK'
+  positionX: number
+  positionY: number
+  theta: number
+  isActive: boolean
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -49,6 +62,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const shelfApi = {
   list: () => request<ShelfRecord[]>('/api/shelves'),
   listAisles: () => request<AisleRecord[]>('/api/aisles'),
+  listEndpoints: () => request<EndpointRecord[]>('/api/endpoints'),
   create: (shelf: ShelfWriteRequest) => request<ShelfRecord>('/api/shelves', {
     method: 'POST',
     body: JSON.stringify(shelf),

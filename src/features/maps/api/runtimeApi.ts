@@ -118,10 +118,92 @@ export async function getSavedMaps(): Promise<SavedMap[]> {
   ).data
 }
 
-export async function getSavedRobotMapGrid(
+export type SavedRobotMapDetails = {
+  map: SavedMap
+  grid: LiveOccupancyGrid
+}
+
+export type SavedMapEndpoint = {
+  id: string
+  mapId: string
+  name: string
+  endpointType: 'WAYPOINT' | 'CHARGER' | 'PARK'
+  positionX: number
+  positionY: number
+  theta: number
+  isActive: boolean
+}
+
+export type SavedMapZone = {
+  id: string
+  mapId: string
+  zoneType: string
+  maxSpeed: number
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+  isActive: boolean
+}
+
+export type SavedMapEndpointGroup = {
+  id: string
+  name: string
+}
+
+export type SavedMapEndpointGroupMember = {
+  id: string
+  endpointGroupId: string
+  endpointId: string
+}
+
+export async function getSavedMapEndpoints(mapId: string): Promise<SavedMapEndpoint[]> {
+  return (await apiClient.get<SavedMapEndpoint[]>(`/maps/${encodeURIComponent(mapId)}/endpoints`)).data
+}
+
+export async function getSavedMapZones(mapId: string): Promise<SavedMapZone[]> {
+  return (await apiClient.get<SavedMapZone[]>(`/maps/${encodeURIComponent(mapId)}/zones`)).data
+}
+
+export async function getSavedMapEndpointGroups(): Promise<SavedMapEndpointGroup[]> {
+  return (await apiClient.get<SavedMapEndpointGroup[]>('/endpoint-groups')).data
+}
+
+export async function getSavedMapEndpointGroupMembers(): Promise<SavedMapEndpointGroupMember[]> {
+  return (await apiClient.get<SavedMapEndpointGroupMember[]>('/endpoint-group-members')).data
+}
+
+export async function createSavedMapEndpoint(input: Omit<SavedMapEndpoint, 'id' | 'isActive'>): Promise<SavedMapEndpoint> {
+  return (await apiClient.post<SavedMapEndpoint>('/endpoints', input)).data
+}
+
+export async function updateSavedMapEndpoint(id: string, input: Omit<SavedMapEndpoint, 'id'>): Promise<SavedMapEndpoint> {
+  return (await apiClient.put<SavedMapEndpoint>(`/endpoints/${encodeURIComponent(id)}`, input)).data
+}
+
+export async function deleteSavedMapEndpoint(id: string): Promise<void> {
+  await apiClient.delete(`/endpoints/${encodeURIComponent(id)}`)
+}
+
+export async function createSavedMapZone(input: Omit<SavedMapZone, 'id' | 'isActive'>): Promise<SavedMapZone> {
+  return (await apiClient.post<SavedMapZone>('/zones', input)).data
+}
+
+export async function updateSavedMapZone(id: string, input: Omit<SavedMapZone, 'id'>): Promise<SavedMapZone> {
+  return (await apiClient.put<SavedMapZone>(`/zones/${encodeURIComponent(id)}`, input)).data
+}
+
+export async function deleteSavedMapZone(id: string): Promise<void> {
+  await apiClient.delete(`/zones/${encodeURIComponent(id)}`)
+}
+
+export async function getSavedRobotMapDetails(
   mapId: string,
-): Promise<LiveOccupancyGrid> {
+): Promise<SavedRobotMapDetails> {
   const response = await apiClient.get<{
+    id: string
+    name: string
+    version: string
     width: number
     height: number
     data?: {
@@ -139,7 +221,12 @@ export async function getSavedRobotMapGrid(
 
   if (
     saved.data?.format !== 'occupancy-grid-v1' ||
+    !Number.isInteger(saved.width) ||
+    saved.width <= 0 ||
+    !Number.isInteger(saved.height) ||
+    saved.height <= 0 ||
     typeof saved.data.resolution !== 'number' ||
+    saved.data.resolution <= 0 ||
     !Array.isArray(origin) ||
     origin.length < 3 ||
     !origin.every((value) => typeof value === 'number') ||
@@ -151,15 +238,31 @@ export async function getSavedRobotMapGrid(
   }
 
   return {
-    timestamp: saved.data.timestamp ?? new Date().toISOString(),
-    width: saved.width,
-    height: saved.height,
-    resolution: saved.data.resolution,
-    originX: origin[0],
-    originY: origin[1],
-    originYaw: origin[2],
-    data: cells,
+    map: {
+      id: saved.id,
+      name: saved.name,
+      version: saved.version,
+      width: saved.width,
+      height: saved.height,
+      data: { format: saved.data.format },
+    },
+    grid: {
+      timestamp: saved.data.timestamp ?? new Date().toISOString(),
+      width: saved.width,
+      height: saved.height,
+      resolution: saved.data.resolution,
+      originX: origin[0],
+      originY: origin[1],
+      originYaw: origin[2],
+      data: cells,
+    },
   }
+}
+
+export async function getSavedRobotMapGrid(
+  mapId: string,
+): Promise<LiveOccupancyGrid> {
+  return (await getSavedRobotMapDetails(mapId)).grid
 }
 
 export async function startNavigationMode(

@@ -12,8 +12,8 @@ import AisleDetail from '../pages/aisles/AisleDetail'
 import FloorList from '../pages/floors/FloorList'
 import FloorDetail from '../pages/floors/FloorDetail'
 import ListMap from '../pages/maps/ListMap'
-import MapDetail from '../pages/maps/MapDetail'
 import CreateMap from '../pages/maps/CreateMap'
+import RobotMapDetail from '../pages/maps/RobotMapDetail'
 import ShelfDetail from '../pages/shelves/ShelfDetail'
 import ShelfList from '../pages/shelves/ShelfList'
 import BookList from '../pages/books/BookList'
@@ -75,8 +75,13 @@ function AppRouter() {
           />
 
           <Route
+            path="/maps/robot/:id"
+            element={<RobotMapDetail />}
+          />
+
+          <Route
             path="/maps/:id"
-            element={<MapDetail />}
+            element={<RobotMapDetail />}
           />
 
           <Route
