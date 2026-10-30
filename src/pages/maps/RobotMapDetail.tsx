@@ -146,14 +146,7 @@ function RobotMapDetail() {
     }
   }
 
-  const handleCreateZone = async (input: {
-    zoneType: 'KEEP_OUT' | 'SPEED_LIMIT' | 'NO_STOP'
-    maxSpeed: number
-    minX: number
-    minY: number
-    maxX: number
-    maxY: number
-  }) => {
+  const handleCreateZone = async (input: ZoneCreateInput) => {
     if (!id || !zoneDraft) return
     setSavingResource(true)
     setActionError(null)
@@ -615,6 +608,7 @@ function zoneDisplayName(zoneType: string) {
 
 type EndpointCreateInput = { name: string; endpointType: 'WAYPOINT' | 'CHARGER' | 'PARK'; positionX: number; positionY: number; theta: number }
 type ZoneCreateInput = {
+  name: string
   zoneType: 'KEEP_OUT' | 'SPEED_LIMIT' | 'NO_STOP'
   maxSpeed: number
   minX: number
@@ -750,6 +744,7 @@ function CreateZoneDialog({
         event.preventDefault()
         const data = new FormData(event.currentTarget)
         onSubmit({
+          name: String(data.get('name')).trim(),
           zoneType,
           maxSpeed: zoneType === 'SPEED_LIMIT' ? Number(data.get('maxSpeed')) : 0,
           minX: Number(data.get('minX')),
@@ -759,6 +754,7 @@ function CreateZoneDialog({
         })
       }}
     >
+      <FormField label="Zone name"><input name="name" required autoFocus className={inputClass} placeholder="Reading area" defaultValue={zone?.name ?? ''} /></FormField>
       <FormField label="Zone type">
         <select value={zoneType} onChange={(event) => setZoneType(event.target.value as ZoneCreateInput['zoneType'])} className={inputClass}>
           {zoneTypes.map((type) => <option key={type} value={type}>{zoneDisplayName(type)}</option>)}

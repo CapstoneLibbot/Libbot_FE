@@ -194,6 +194,7 @@ export type SavedMapEndpoint = {
 export type SavedMapZone = {
   id: string
   mapId: string
+  name: string
   zoneType: string
   maxSpeed: number
   minX: number
