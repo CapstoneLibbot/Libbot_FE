@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft, Map as MapIcon, MapPin, Pencil, Plus, RefreshCw, SquareDashed, Trash2 } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router'
-import LiveOccupancyMap, { type OccupancyZoneBounds } from '../../features/maps/components/LiveOccupancyMap'
+import LiveOccupancyMap, {
+  type OccupancyEndpointPlacement,
+  type OccupancyZoneBounds,
+} from '../../features/maps/components/LiveOccupancyMap'
 import {
   createSavedMapEndpoint,
   createSavedMapZone,
@@ -43,7 +46,7 @@ function RobotMapDetail() {
   const [selectedEndpointId, setSelectedEndpointId] = useState<string | null>(null)
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null)
   const [endpointPlacementMode, setEndpointPlacementMode] = useState(false)
-  const [endpointDraft, setEndpointDraft] = useState<{ positionX: number; positionY: number } | null>(null)
+  const [endpointDraft, setEndpointDraft] = useState<OccupancyEndpointPlacement | null>(null)
   const [endpointEditTarget, setEndpointEditTarget] = useState<SavedMapEndpoint | null>(null)
   const [drawZoneMode, setDrawZoneMode] = useState(false)
   const [zoneDraft, setZoneDraft] = useState<OccupancyZoneBounds | null>(null)
@@ -343,9 +346,14 @@ function RobotMapDetail() {
                     disabled={endpointPlacementMode}
                     className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
                   >
-                    <Plus className="h-4 w-4" /> {endpointPlacementMode ? 'Click map' : 'Create'}
+                    <Plus className="h-4 w-4" /> {endpointPlacementMode ? 'Drag on map' : 'Create'}
                   </button>
                 </div>
+                {endpointPlacementMode && (
+                  <p className="border-b border-[#e2e3e8] bg-emerald-50 px-4 py-3 text-xs text-emerald-800">
+                    Drag from the endpoint position toward the direction the robot should face.
+                  </p>
+                )}
                 <label className="block border-b border-[#e2e3e8] px-4 py-3 text-xs text-[#596174]">
                   Filter by endpoint group
                   <select
@@ -708,7 +716,7 @@ function CreateEndpointDialog({
   saving,
   error,
 }: {
-  position?: { positionX: number; positionY: number }
+  position?: OccupancyEndpointPlacement
   endpoint?: SavedMapEndpoint
   onClose: () => void
   onSubmit: (input: EndpointCreateInput) => void
@@ -744,8 +752,24 @@ function CreateEndpointDialog({
       <div className="grid grid-cols-3 gap-2">
         <FormField label="Position X"><input name="positionX" type="number" step="any" required className={inputClass} defaultValue={(endpoint?.positionX ?? position?.positionX ?? 0).toFixed(3)} /></FormField>
         <FormField label="Position Y"><input name="positionY" type="number" step="any" required className={inputClass} defaultValue={(endpoint?.positionY ?? position?.positionY ?? 0).toFixed(3)} /></FormField>
-        <FormField label="Theta"><input name="theta" type="number" step="any" required className={inputClass} defaultValue={String(endpoint?.theta ?? 0)} /></FormField>
+        <FormField label="Direction">
+          <input
+            name="theta"
+            type="number"
+            step="any"
+            required
+            readOnly={!endpoint}
+            className={`${inputClass} ${endpoint ? '' : 'cursor-not-allowed bg-[#f5f6f8] text-[#687386]'}`}
+            defaultValue={String(endpoint?.theta ?? position?.theta ?? 0)}
+            title={endpoint ? 'Direction in radians' : 'Direction selected on the map, in radians'}
+          />
+        </FormField>
       </div>
+      {!endpoint && (
+        <p className="text-xs text-[#687386]">
+          Direction was calculated from the arrow drawn on the map ({(((position?.theta ?? 0) * 180) / Math.PI).toFixed(1)}°).
+        </p>
+      )}
     </DialogFrame>
   )
 }

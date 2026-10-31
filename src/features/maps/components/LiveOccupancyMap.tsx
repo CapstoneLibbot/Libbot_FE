@@ -13,7 +13,14 @@ export type OccupancyEndpointOverlay = {
   endpointType: 'WAYPOINT' | 'CHARGER' | 'PARK'
   positionX: number
   positionY: number
+  theta: number
   isActive: boolean
+}
+
+export type OccupancyEndpointPlacement = {
+  positionX: number
+  positionY: number
+  theta: number
 }
 
 export type OccupancyZoneOverlay = {
@@ -55,7 +62,7 @@ type LiveOccupancyMapProps = {
   drawZoneMode?: boolean
   endpointPlacementMode?: boolean
   onZoneDraw?: (bounds: OccupancyZoneBounds) => void
-  onEndpointPlace?: (position: { positionX: number; positionY: number }) => void
+  onEndpointPlace?: (placement: OccupancyEndpointPlacement) => void
 }
 
 type MapViewportSize = {
@@ -303,14 +310,25 @@ export default function LiveOccupancyMap({
                 setDrawCurrent(dragPoint)
               }}
               onPointerMove={(event) => {
-                if (drawZoneMode && drawStart) setDrawCurrent(toDisplayGridPoint(getSvgPoint(event)))
+                if (!drawStart) return
+                const point = getSvgPoint(event)
+                setDrawCurrent(drawZoneMode ? toDisplayGridPoint(point) : point)
               }}
               onPointerUp={(event) => {
-                if (!drawZoneMode && endpointPlacementMode) {
-                  const point = toWorldPoint(getSvgPoint(event))
+                if (!drawZoneMode && endpointPlacementMode && drawStart) {
+                  const end = getSvgPoint(event)
+                  const dragDistance = Math.hypot(end.x - drawStart.x, end.y - drawStart.y)
+                  if (dragDistance > 2) {
+                    const startWorld = toWorldPoint(drawStart)
+                    const endWorld = toWorldPoint(end)
+                    onEndpointPlace?.({
+                      positionX: startWorld.x,
+                      positionY: startWorld.y,
+                      theta: Math.atan2(endWorld.y - startWorld.y, endWorld.x - startWorld.x),
+                    })
+                  }
                   setDrawStart(null)
                   setDrawCurrent(null)
-                  onEndpointPlace?.({ positionX: point.x, positionY: point.y })
                   return
                 }
                 if (!drawZoneMode || !drawStart) return
@@ -428,6 +446,12 @@ export default function LiveOccupancyMap({
 
               {showEndpoints && endpoints.map((endpoint) => {
                 const point = toGridPoint(endpoint.positionX, endpoint.positionY)
+                const mapTheta = endpoint.theta - (grid?.originYaw ?? 0)
+                const headingLength = 4
+                const heading = {
+                  x: point.x + Math.cos(mapTheta) * headingLength,
+                  y: point.y - Math.sin(mapTheta) * headingLength,
+                }
                 const selected = endpoint.id === selectedEndpointId
                 const endpointColor = !endpoint.isActive
                   ? '#64748b'
@@ -454,6 +478,16 @@ export default function LiveOccupancyMap({
                       if (event.key === 'Enter' || event.key === ' ') onEndpointSelect?.(endpoint.id)
                     }}
                   >
+                    <line
+                      x1={point.x}
+                      y1={point.y}
+                      x2={heading.x}
+                      y2={heading.y}
+                      stroke={endpointColor}
+                      strokeWidth="0.7"
+                      strokeLinecap="round"
+                    />
+                    <circle cx={heading.x} cy={heading.y} r="0.75" fill={endpointColor} />
                     <circle
                       cx={point.x}
                       cy={point.y}
@@ -504,6 +538,30 @@ export default function LiveOccupancyMap({
                   strokeDasharray="1.5 1"
                   className="pointer-events-none"
                 />
+              )}
+
+              {endpointPlacementMode && drawStart && drawCurrent && (
+                <g className="pointer-events-none">
+                  <circle
+                    cx={drawStart.x}
+                    cy={drawStart.y}
+                    r="1.5"
+                    fill="#ecfdf5"
+                    stroke="#34d399"
+                    strokeWidth="0.6"
+                  />
+                  <line
+                    x1={drawStart.x}
+                    y1={drawStart.y}
+                    x2={drawCurrent.x}
+                    y2={drawCurrent.y}
+                    stroke="#34d399"
+                    strokeWidth="0.8"
+                    strokeLinecap="round"
+                    strokeDasharray="1.5 0.8"
+                  />
+                  <circle cx={drawCurrent.x} cy={drawCurrent.y} r="0.8" fill="#34d399" />
+                </g>
               )}
             </svg>
           )}
