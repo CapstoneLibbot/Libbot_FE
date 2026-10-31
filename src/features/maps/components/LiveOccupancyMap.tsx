@@ -1,10 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import type {
   LiveOccupancyGrid,
   Pose2D,
 } from '../types/runtime'
 import { robotYawToCssRotation } from '../utils/coordinates'
+import { inferVerticalRotationAngle, rotatePointAroundCenter } from '../utils/orientation'
 
 export type OccupancyEndpointOverlay = {
   id: string
@@ -22,6 +23,9 @@ export type OccupancyZoneOverlay = {
   minY: number
   maxX: number
   maxY: number
+  width?: number | null
+  height?: number | null
+  rotationAngle?: number
   isActive: boolean
 }
 
@@ -30,10 +34,14 @@ export type OccupancyZoneBounds = {
   minY: number
   maxX: number
   maxY: number
+  width: number
+  height: number
+  rotationAngle: number
 }
 
 type LiveOccupancyMapProps = {
   grid: LiveOccupancyGrid | null
+  orientVertically?: boolean
   robot?: Pose2D
   mappingActive?: boolean
   endpoints?: OccupancyEndpointOverlay[]
@@ -50,8 +58,16 @@ type LiveOccupancyMapProps = {
   onEndpointPlace?: (position: { positionX: number; positionY: number }) => void
 }
 
+type MapViewportSize = {
+  width: number
+  height: number
+  contentWidth: number
+  contentHeight: number
+}
+
 export default function LiveOccupancyMap({
   grid,
+  orientVertically = true,
   robot,
   mappingActive = false,
   endpoints = [],
@@ -69,9 +85,20 @@ export default function LiveOccupancyMap({
 }: LiveOccupancyMapProps) {
   const frameRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
+  const [viewportSize, setViewportSize] = useState<MapViewportSize>({
+    width: 0,
+    height: 0,
+    contentWidth: 0,
+    contentHeight: 0,
+  })
   const [drawStart, setDrawStart] = useState<{ x: number; y: number } | null>(null)
   const [drawCurrent, setDrawCurrent] = useState<{ x: number; y: number } | null>(null)
+  const orientationAngle = useMemo(
+    () => (orientVertically && grid
+      ? inferVerticalRotationAngle(grid.width, grid.height, (index) => (grid.data[index] ?? -1) >= 0)
+      : 0),
+    [grid, orientVertically],
+  )
 
   useLayoutEffect(() => {
     const frame = frameRef.current
@@ -96,14 +123,17 @@ export default function LiveOccupancyMap({
         0,
         frame.clientHeight - verticalPadding - 24,
       )
-      const scale = Math.min(
-        availableWidth / grid.width,
-        availableHeight / grid.height,
-      )
+      const cosine = Math.abs(Math.cos(orientationAngle))
+      const sine = Math.abs(Math.sin(orientationAngle))
+      const rotatedWidth = cosine * grid.width + sine * grid.height
+      const rotatedHeight = sine * grid.width + cosine * grid.height
+      const scale = Math.min(availableWidth / rotatedWidth, availableHeight / rotatedHeight)
 
       setViewportSize({
-        width: Math.max(0, grid.width * scale),
-        height: Math.max(0, grid.height * scale),
+        width: Math.max(0, rotatedWidth * scale),
+        height: Math.max(0, rotatedHeight * scale),
+        contentWidth: Math.max(0, grid.width * scale),
+        contentHeight: Math.max(0, grid.height * scale),
       })
     }
 
@@ -112,7 +142,7 @@ export default function LiveOccupancyMap({
     updateViewportSize()
 
     return () => observer.disconnect()
-  }, [grid])
+  }, [grid, orientationAngle])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -184,6 +214,31 @@ export default function LiveOccupancyMap({
     }
   }
 
+  const toDisplayGridPoint = (point: { x: number; y: number }) => {
+    if (!grid) return point
+    return rotatePointAroundCenter(
+      point,
+      { x: grid.width / 2, y: grid.height / 2 },
+      orientationAngle,
+    )
+  }
+
+  const toMapGridPoint = (point: { x: number; y: number }) => {
+    if (!grid) return point
+    return rotatePointAroundCenter(
+      point,
+      { x: grid.width / 2, y: grid.height / 2 },
+      -orientationAngle,
+    )
+  }
+
+  const getZoneCorners = (start: { x: number; y: number }, end: { x: number; y: number }) => [
+    { x: Math.min(start.x, end.x), y: Math.min(start.y, end.y) },
+    { x: Math.max(start.x, end.x), y: Math.min(start.y, end.y) },
+    { x: Math.max(start.x, end.x), y: Math.max(start.y, end.y) },
+    { x: Math.min(start.x, end.x), y: Math.max(start.y, end.y) },
+  ].map(toMapGridPoint)
+
   const getSvgPoint = (event: React.PointerEvent<SVGSVGElement>) => {
     const svg = event.currentTarget
     const matrix = svg.getScreenCTM()
@@ -218,6 +273,14 @@ export default function LiveOccupancyMap({
             height: `${viewportSize.height}px`,
           }}
         >
+          <div
+            className="absolute left-1/2 top-1/2"
+            style={{
+              width: `${viewportSize.contentWidth}px`,
+              height: `${viewportSize.contentHeight}px`,
+              transform: `translate(-50%, -50%) rotate(${(orientationAngle * 180) / Math.PI}deg)`,
+            }}
+          >
           <canvas
             ref={canvasRef}
             className="block h-full w-full [image-rendering:pixelated]"
@@ -235,11 +298,12 @@ export default function LiveOccupancyMap({
                 event.preventDefault()
                 event.currentTarget.setPointerCapture(event.pointerId)
                 const point = getSvgPoint(event)
-                setDrawStart(point)
-                setDrawCurrent(point)
+                const dragPoint = drawZoneMode ? toDisplayGridPoint(point) : point
+                setDrawStart(dragPoint)
+                setDrawCurrent(dragPoint)
               }}
               onPointerMove={(event) => {
-                if (drawZoneMode && drawStart) setDrawCurrent(getSvgPoint(event))
+                if (drawZoneMode && drawStart) setDrawCurrent(toDisplayGridPoint(getSvgPoint(event)))
               }}
               onPointerUp={(event) => {
                 if (!drawZoneMode && endpointPlacementMode) {
@@ -250,19 +314,25 @@ export default function LiveOccupancyMap({
                   return
                 }
                 if (!drawZoneMode || !drawStart) return
-                const end = getSvgPoint(event)
+                const end = toDisplayGridPoint(getSvgPoint(event))
                 if (Math.abs(end.x - drawStart.x) > 2 && Math.abs(end.y - drawStart.y) > 2) {
-                  const worldCorners = [
-                    drawStart,
-                    { x: end.x, y: drawStart.y },
-                    end,
-                    { x: drawStart.x, y: end.y },
-                  ].map(toWorldPoint)
+                  const worldCorners = getZoneCorners(drawStart, end).map(toWorldPoint)
+                  const widthVector = {
+                    x: worldCorners[1].x - worldCorners[0].x,
+                    y: worldCorners[1].y - worldCorners[0].y,
+                  }
+                  const heightVector = {
+                    x: worldCorners[3].x - worldCorners[0].x,
+                    y: worldCorners[3].y - worldCorners[0].y,
+                  }
                   onZoneDraw?.({
                     minX: Math.min(...worldCorners.map((point) => point.x)),
                     minY: Math.min(...worldCorners.map((point) => point.y)),
                     maxX: Math.max(...worldCorners.map((point) => point.x)),
                     maxY: Math.max(...worldCorners.map((point) => point.y)),
+                    width: Math.hypot(widthVector.x, widthVector.y),
+                    height: Math.hypot(heightVector.x, heightVector.y),
+                    rotationAngle: Math.atan2(widthVector.y, widthVector.x),
                   })
                 }
                 setDrawStart(null)
@@ -274,12 +344,31 @@ export default function LiveOccupancyMap({
               }}
             >
               {showZones && zones.map((zone) => {
-                const corners = [
-                  toGridPoint(zone.minX, zone.minY),
-                  toGridPoint(zone.maxX, zone.minY),
-                  toGridPoint(zone.maxX, zone.maxY),
-                  toGridPoint(zone.minX, zone.maxY),
-                ]
+                const hasOrientedGeometry = zone.width != null && zone.height != null
+                const centerX = (zone.minX + zone.maxX) / 2
+                const centerY = (zone.minY + zone.maxY) / 2
+                const halfWidth = (zone.width ?? 0) / 2
+                const halfHeight = (zone.height ?? 0) / 2
+                const angle = zone.rotationAngle ?? 0
+                const cosine = Math.cos(angle)
+                const sine = Math.sin(angle)
+                const worldCorners = hasOrientedGeometry
+                  ? [
+                      [-halfWidth, -halfHeight],
+                      [halfWidth, -halfHeight],
+                      [halfWidth, halfHeight],
+                      [-halfWidth, halfHeight],
+                    ].map(([localX, localY]) => ({
+                      x: centerX + cosine * localX - sine * localY,
+                      y: centerY + sine * localX + cosine * localY,
+                    }))
+                  : [
+                      { x: zone.minX, y: zone.minY },
+                      { x: zone.maxX, y: zone.minY },
+                      { x: zone.maxX, y: zone.maxY },
+                      { x: zone.minX, y: zone.maxY },
+                    ]
+                const corners = worldCorners.map((point) => toGridPoint(point.x, point.y))
                 const selected = zone.id === selectedZoneId
                 const zoneColor = !zone.isActive
                   ? '#64748b'
@@ -404,11 +493,10 @@ export default function LiveOccupancyMap({
               })}
 
               {drawZoneMode && drawStart && drawCurrent && (
-                <rect
-                  x={Math.min(drawStart.x, drawCurrent.x)}
-                  y={Math.min(drawStart.y, drawCurrent.y)}
-                  width={Math.abs(drawCurrent.x - drawStart.x)}
-                  height={Math.abs(drawCurrent.y - drawStart.y)}
+                <polygon
+                  points={getZoneCorners(drawStart, drawCurrent)
+                    .map((point) => `${point.x},${point.y}`)
+                    .join(' ')}
                   fill="#3b82f6"
                   fillOpacity="0.2"
                   stroke="#60a5fa"
@@ -433,6 +521,7 @@ export default function LiveOccupancyMap({
               <span className="absolute -right-2 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[5px] border-l-[8px] border-y-transparent border-l-white" />
             </span>
           )}
+          </div>
         </div>
       ) : (
         <div className="max-w-sm text-center text-sm leading-6 text-slate-300">

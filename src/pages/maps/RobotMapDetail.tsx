@@ -146,7 +146,7 @@ function RobotMapDetail() {
     }
   }
 
-  const handleCreateZone = async (input: ZoneCreateInput) => {
+  const handleCreateZone = async (input: ZoneWriteInput) => {
     if (!id || !zoneDraft) return
     setSavingResource(true)
     setActionError(null)
@@ -272,6 +272,7 @@ function RobotMapDetail() {
               <div className="w-full">
                 <LiveOccupancyMap
                   grid={grid}
+                  orientVertically
                   endpoints={filteredEndpoints}
                   zones={filteredZones}
                   showEndpoints={activeTab === 'endpoint'}
@@ -606,6 +607,32 @@ function zoneDisplayName(zoneType: string) {
   }
 }
 
+function orientedGeometryForBounds(
+  minX: number,
+  minY: number,
+  maxX: number,
+  maxY: number,
+  rotationAngle: number,
+) {
+  const boxWidth = maxX - minX
+  const boxHeight = maxY - minY
+  const cosine = Math.abs(Math.cos(rotationAngle))
+  const sine = Math.abs(Math.sin(rotationAngle))
+  const determinant = cosine * cosine - sine * sine
+
+  if (Math.abs(determinant) < 1e-6) {
+    return { width: boxWidth, height: boxHeight, rotationAngle: 0 }
+  }
+
+  const width = (boxWidth * cosine - boxHeight * sine) / determinant
+  const height = (boxHeight * cosine - boxWidth * sine) / determinant
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return { width: boxWidth, height: boxHeight, rotationAngle: 0 }
+  }
+
+  return { width, height, rotationAngle }
+}
+
 type EndpointCreateInput = { name: string; endpointType: 'WAYPOINT' | 'CHARGER' | 'PARK'; positionX: number; positionY: number; theta: number }
 type ZoneCreateInput = {
   name: string
@@ -615,8 +642,15 @@ type ZoneCreateInput = {
   minY: number
   maxX: number
   maxY: number
+  width: number
+  height: number
+  rotationAngle: number
 }
-type ZoneWriteInput = ZoneCreateInput
+type ZoneWriteInput = Omit<ZoneCreateInput, 'width' | 'height' | 'rotationAngle'> & {
+  width?: number | null
+  height?: number | null
+  rotationAngle?: number
+}
 
 function DialogFrame({
   title,
@@ -724,7 +758,11 @@ function CreateZoneDialog({
   saving,
   error,
 }: {
-  bounds: OccupancyZoneBounds
+  bounds: Pick<OccupancyZoneBounds, 'minX' | 'minY' | 'maxX' | 'maxY'> & {
+    width?: number | null
+    height?: number | null
+    rotationAngle?: number
+  }
   zone?: SavedMapZone
   onClose: () => void
   onSubmit: (input: ZoneWriteInput) => void
@@ -743,14 +781,28 @@ function CreateZoneDialog({
       onSubmit={(event) => {
         event.preventDefault()
         const data = new FormData(event.currentTarget)
+        const minX = Number(data.get('minX'))
+        const minY = Number(data.get('minY'))
+        const maxX = Number(data.get('maxX'))
+        const maxY = Number(data.get('maxY'))
+        const geometry = zone?.width != null && zone.height != null
+          ? orientedGeometryForBounds(minX, minY, maxX, maxY, zone.rotationAngle ?? 0)
+          : zone
+            ? {}
+            : {
+                width: bounds.width,
+                height: bounds.height,
+                rotationAngle: bounds.rotationAngle,
+              }
         onSubmit({
           name: String(data.get('name')).trim(),
           zoneType,
           maxSpeed: zoneType === 'SPEED_LIMIT' ? Number(data.get('maxSpeed')) : 0,
-          minX: Number(data.get('minX')),
-          minY: Number(data.get('minY')),
-          maxX: Number(data.get('maxX')),
-          maxY: Number(data.get('maxY')),
+          minX,
+          minY,
+          maxX,
+          maxY,
+          ...geometry,
         })
       }}
     >

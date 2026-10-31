@@ -397,6 +397,9 @@ function MapDetail() {
       min_y: number
       max_x: number
       max_y: number
+      width: number
+      height: number
+      rotation_angle: number
     } | null>(null)
 
   const selectedEndpoint = useMemo(
@@ -523,6 +526,9 @@ function MapDetail() {
     min_y: number
     max_x: number
     max_y: number
+    width: number
+    height: number
+    rotation_angle: number
   }) => {
     setZoneDrawMode(false)
     setCreateZoneRect(rect)
@@ -568,6 +574,9 @@ function MapDetail() {
       min_y: createZoneRect.min_y,
       max_x: createZoneRect.max_x,
       max_y: createZoneRect.max_y,
+      width: createZoneRect.width,
+      height: createZoneRect.height,
+      rotation_angle: createZoneRect.rotation_angle,
       is_active: formData.get('is_active') === 'on',
     }
 

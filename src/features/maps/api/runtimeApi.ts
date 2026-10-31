@@ -201,6 +201,11 @@ export type SavedMapZone = {
   minY: number
   maxX: number
   maxY: number
+  /** Intrinsic rectangle dimensions in meters. Missing values denote a legacy axis-aligned zone. */
+  width?: number | null
+  height?: number | null
+  /** Rectangle orientation in world coordinates, in radians. */
+  rotationAngle?: number
   isActive: boolean
 }
 

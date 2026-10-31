@@ -8,19 +8,23 @@ import type {
   Pose2D,
 } from '../types/runtime'
 
-function RobotModel({ pose }: { pose: Pose2D }) {
+function RobotModel({ pose, centerX, centerY }: { pose: Pose2D; centerX: number; centerY: number }) {
   const group = useRef<{
     position: { lerp: (target: { x: number; y: number; z: number }, alpha: number) => void }
     rotation: { y: number }
   }>(null)
   useFrame(() => {
     if (!group.current) return
-    group.current.position.lerp({ x: pose.x, y: 0.05, z: -pose.y } as never, 0.16)
+    group.current.position.lerp({
+      x: pose.x - centerX,
+      y: 0.05,
+      z: -(pose.y - centerY),
+    } as never, 0.16)
     group.current.rotation.y += (-pose.yaw - group.current.rotation.y) * 0.16
   })
 
   return (
-    <group ref={group} position={[pose.x, 0.05, -pose.y]} rotation={[0, -pose.yaw, 0]}>
+    <group ref={group} position={[pose.x - centerX, 0.05, -(pose.y - centerY)]} rotation={[0, -pose.yaw, 0]}>
       <mesh position={[0, 0.2, 0]} castShadow>
         <boxGeometry args={[0.5, 0.3, 0.4]} />
         <meshStandardMaterial color="#0891b2" />
@@ -41,7 +45,7 @@ function RobotModel({ pose }: { pose: Pose2D }) {
   )
 }
 
-function Path3D({ points }: { points: PathPoint2D[] }) {
+function Path3D({ points, centerX, centerY }: { points: PathPoint2D[]; centerX: number; centerY: number }) {
   if (points.length < 2) return null
   return (
     <group>
@@ -53,7 +57,7 @@ function Path3D({ points }: { points: PathPoint2D[] }) {
         return (
           <mesh
             key={`${point.x}-${point.y}-${index}`}
-            position={[(point.x + previous.x) / 2, 0.025, -(point.y + previous.y) / 2]}
+            position={[(point.x + previous.x) / 2 - centerX, 0.025, -((point.y + previous.y) / 2 - centerY)]}
             rotation={[0, -Math.atan2(dz, dx), 0]}
           >
             <boxGeometry args={[length, 0.018, 0.025]} />
@@ -87,6 +91,7 @@ type Props = {
 
 export default function RobotScene3D({ map, robot, draft, path }: Props) {
   const mapYaw = map.origin[2]
+  const verticalRotation = map.verticalRotation ?? 0
   const cosine = Math.cos(mapYaw)
   const sine = Math.sin(mapYaw)
   const centerLocalX = map.widthMeters / 2
@@ -100,31 +105,33 @@ export default function RobotScene3D({ map, robot, draft, path }: Props) {
         <color attach="background" args={['#091318']} />
         <ambientLight intensity={0.7} />
         <directionalLight position={[3, 7, 4]} intensity={1.5} castShadow />
-        <mesh position={[centerX, -0.03, -centerY]} rotation={[0, mapYaw, 0]} receiveShadow>
-          <boxGeometry args={[map.widthMeters, 0.06, map.heightMeters]} />
-          <meshStandardMaterial color="#d9dedb" />
-        </mesh>
-        {map.obstacles.map((obstacle, index) => (
-          <mesh
-            key={`${obstacle.worldX}-${obstacle.worldY}-${index}`}
-            position={[obstacle.worldX, 0.5, -obstacle.worldY]}
-            rotation={[0, mapYaw, 0]}
-            castShadow
-            receiveShadow
-          >
-            <boxGeometry args={[obstacle.worldWidth, 1, obstacle.worldHeight]} />
-            <meshStandardMaterial color="#405c68" />
+        <group position={[centerX, 0, -centerY]} rotation={[0, -verticalRotation, 0]}>
+          <mesh position={[0, -0.03, 0]} rotation={[0, mapYaw, 0]} receiveShadow>
+            <boxGeometry args={[map.widthMeters, 0.06, map.heightMeters]} />
+            <meshStandardMaterial color="#d9dedb" />
           </mesh>
-        ))}
-        {path && <Path3D points={path} />}
-        {draft && (
-          <mesh position={[draft.x, 0.04, -draft.y]}>
-            <cylinderGeometry args={[0.1, 0.1, 0.03, 24]} />
-            <meshStandardMaterial color="#faad37" emissive="#9a5a00" />
-          </mesh>
-        )}
-        {robot && <RobotModel pose={robot} />}
-        <gridHelper args={[Math.max(map.widthMeters, map.heightMeters), 32, '#31515c', '#19313a']} position={[centerX, 0.005, -centerY]} />
+          {map.obstacles.map((obstacle, index) => (
+            <mesh
+              key={`${obstacle.worldX}-${obstacle.worldY}-${index}`}
+              position={[obstacle.worldX - centerX, 0.5, -(obstacle.worldY - centerY)]}
+              rotation={[0, mapYaw, 0]}
+              castShadow
+              receiveShadow
+            >
+              <boxGeometry args={[obstacle.worldWidth, 1, obstacle.worldHeight]} />
+              <meshStandardMaterial color="#405c68" />
+            </mesh>
+          ))}
+          {path && <Path3D points={path} centerX={centerX} centerY={centerY} />}
+          {draft && (
+            <mesh position={[draft.x - centerX, 0.04, -(draft.y - centerY)]}>
+              <cylinderGeometry args={[0.1, 0.1, 0.03, 24]} />
+              <meshStandardMaterial color="#faad37" emissive="#9a5a00" />
+            </mesh>
+          )}
+          {robot && <RobotModel pose={robot} centerX={centerX} centerY={centerY} />}
+          <gridHelper args={[Math.max(map.widthMeters, map.heightMeters), 32, '#31515c', '#19313a']} position={[0, 0.005, 0]} />
+        </group>
         <CameraOrbit x={centerX} y={0} z={-centerY} />
       </Canvas>
     </div>

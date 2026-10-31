@@ -29,6 +29,7 @@ export type OccupancyMapMetadata = {
   heightMeters: number
   obstacles: MapObstacle[]
   occupancyImage?: string
+  verticalRotation?: number
 }
 
 export type RobotTelemetry = {

@@ -3,6 +3,7 @@ import type {
   MapObstacle,
   OccupancyMapMetadata,
 } from '../types/runtime'
+import { inferVerticalRotationAngle } from './orientation'
 
 const OCCUPIED_THRESHOLD = 65
 
@@ -30,6 +31,7 @@ export function simulationMapToMetadata(input: SimulationMapFile): OccupancyMapM
     origin: input.origin,
     widthMeters: input.widthMeters,
     heightMeters: input.heightMeters,
+    verticalRotation: inferVerticalRotationAngle(input.imageWidth, input.imageHeight, () => true),
     obstacles: components.map((component) => {
       const worldWidth = component.size[0]
       const worldHeight = component.size[1]
@@ -86,6 +88,11 @@ export function occupancyGridToMapMetadata(
     origin: [grid.originX, grid.originY, grid.originYaw],
     widthMeters: grid.width * grid.resolution,
     heightMeters: grid.height * grid.resolution,
+    verticalRotation: inferVerticalRotationAngle(
+      grid.width,
+      grid.height,
+      (index) => (grid.data[index] ?? -1) >= 0,
+    ),
     obstacles,
     occupancyImage: occupancyGridImage(grid),
   }

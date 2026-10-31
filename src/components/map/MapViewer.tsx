@@ -10,6 +10,7 @@ import type {
   EndpointLinkedObject,
   MapAisle,
 } from '../../types/map'
+import { inferVerticalRotationAngle, rotatePointAroundCenter } from '../../features/maps/utils/orientation'
 
 export type MapEndpoint = {
   id: number
@@ -39,6 +40,9 @@ export type MapZone = {
   min_y: number
   max_x: number
   max_y: number
+  width?: number
+  height?: number
+  rotation_angle?: number
   is_active: boolean
 }
 
@@ -79,6 +83,9 @@ type MapViewerProps = {
     min_y: number
     max_x: number
     max_y: number
+    width: number
+    height: number
+    rotation_angle: number
   }) => void
 }
 
@@ -92,6 +99,9 @@ type RenderTransform = {
   scale: number
   offsetX: number
   offsetY: number
+  rotationAngle: number
+  centerX: number
+  centerY: number
 }
 
 function parseYaml(text: string): MapConfig {
@@ -305,7 +315,11 @@ function MapViewer({
     scale: 1,
     offsetX: 0,
     offsetY: 0,
+    rotationAngle: 0,
+    centerX: 0,
+    centerY: 0,
   })
+  const orientationAngleRef = useRef(0)
   const viewRef = useRef({ zoom: 1, panX: 0, panY: 0 })
   const drawRef = useRef<(() => void) | null>(null)
 
@@ -322,8 +336,7 @@ function MapViewer({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [previewRect, setPreviewRect] = useState<{
-    start: Point
-    end: Point
+    corners: Point[]
   } | null>(null)
   const [clickedPosition, setClickedPosition] =
     useState<Point | null>(null)
@@ -370,6 +383,14 @@ function MapViewer({
 
         configRef.current = config
         imageDataRef.current = parsedImage
+        orientationAngleRef.current = inferVerticalRotationAngle(
+          parsedImage.width,
+          parsedImage.height,
+          (index) => {
+            const value = parsedImage.data[index * 4] ?? 205
+            return value < 190 || value > 220
+          },
+        )
         viewRef.current = { zoom: 1, panX: 0, panY: 0 }
 
         setLoading(false)
@@ -435,9 +456,19 @@ function MapViewer({
       context.fillStyle = '#0c0d10'
       context.fillRect(0, 0, width, height)
 
+      const rotationAngle = orientationAngleRef.current
+      const rotationCosine = Math.abs(Math.cos(rotationAngle))
+      const rotationSine = Math.abs(Math.sin(rotationAngle))
+      const rotatedWidth = rotationCosine * imageData.width + rotationSine * imageData.height
+      const rotatedHeight = rotationSine * imageData.width + rotationCosine * imageData.height
+      context.save()
+      context.translate(width / 2, height / 2)
+      context.rotate(rotationAngle)
+      context.translate(-width / 2, -height / 2)
+
       const fitScale = Math.min(
-        width / imageData.width,
-        height / imageData.height,
+        width / rotatedWidth,
+        height / rotatedHeight,
       )
       const scale = fitScale * viewRef.current.zoom
 
@@ -453,14 +484,21 @@ function MapViewer({
         scale,
         offsetX,
         offsetY,
+        rotationAngle,
+        centerX: width / 2,
+        centerY: height / 2,
       }
 
       if (liveRobotPose) {
         const robotPixel = worldToPixel(liveRobotPose, config, imageData.width, imageData.height)
-        const nextRobotPosition = {
+        const robotScreen = rotatePointAroundCenter({
           x: offsetX + robotPixel.x * scale,
           y: offsetY + robotPixel.y * scale,
-          angle: 90 - liveRobotPose.yaw * 180 / Math.PI,
+        }, { x: width / 2, y: height / 2 }, rotationAngle)
+        const nextRobotPosition = {
+          x: robotScreen.x,
+          y: robotScreen.y,
+          angle: 90 - liveRobotPose.yaw * 180 / Math.PI + rotationAngle * 180 / Math.PI,
         }
         setRobotPosition((current) => current
           && Math.abs(current.x - nextRobotPosition.x) < 0.5
@@ -542,24 +580,34 @@ function MapViewer({
 
       if (showZones) {
         for (const zone of zones) {
-          const topLeft = worldToPixel(
-            { x: zone.min_x, y: zone.max_y },
-            config,
-            imageData.width,
-            imageData.height,
-          )
-
-          const bottomRight = worldToPixel(
-            { x: zone.max_x, y: zone.min_y },
-            config,
-            imageData.width,
-            imageData.height,
-          )
-
-          const x = offsetX + topLeft.x * scale
-          const y = offsetY + topLeft.y * scale
-          const zoneWidth = (bottomRight.x - topLeft.x) * scale
-          const zoneHeight = (bottomRight.y - topLeft.y) * scale
+          const centerX = (zone.min_x + zone.max_x) / 2
+          const centerY = (zone.min_y + zone.max_y) / 2
+          const hasOrientedGeometry = zone.width != null && zone.height != null
+          const halfWidth = (zone.width ?? (zone.max_x - zone.min_x)) / 2
+          const halfHeight = (zone.height ?? (zone.max_y - zone.min_y)) / 2
+          const angle = zone.rotation_angle ?? 0
+          const cosine = Math.cos(angle)
+          const sine = Math.sin(angle)
+          const worldCorners = hasOrientedGeometry
+            ? [
+                [-halfWidth, -halfHeight],
+                [halfWidth, -halfHeight],
+                [halfWidth, halfHeight],
+                [-halfWidth, halfHeight],
+              ].map(([localX, localY]) => ({
+                x: centerX + cosine * localX - sine * localY,
+                y: centerY + sine * localX + cosine * localY,
+              }))
+            : [
+                { x: zone.min_x, y: zone.min_y },
+                { x: zone.max_x, y: zone.min_y },
+                { x: zone.max_x, y: zone.max_y },
+                { x: zone.min_x, y: zone.max_y },
+              ]
+          const corners = worldCorners.map((point) => {
+            const pixel = worldToPixel(point, config, imageData.width, imageData.height)
+            return { x: offsetX + pixel.x * scale, y: offsetY + pixel.y * scale }
+          })
 
           context.fillStyle = getZoneFill(zone.zone_type)
           context.strokeStyle =
@@ -570,41 +618,39 @@ function MapViewer({
           context.lineWidth =
             selectedZoneId === zone.id ? 3 : 2
 
-          context.fillRect(x, y, zoneWidth, zoneHeight)
-          context.strokeRect(x, y, zoneWidth, zoneHeight)
+          context.beginPath()
+          corners.forEach((point, index) => {
+            if (index === 0) context.moveTo(point.x, point.y)
+            else context.lineTo(point.x, point.y)
+          })
+          context.closePath()
+          context.fill()
+          context.stroke()
 
           context.fillStyle = '#111827'
           context.font = '600 12px Inter, sans-serif'
-          context.fillText(zone.code, x + 6, y + 16)
+          context.fillText(zone.code, Math.min(...corners.map((point) => point.x)) + 6, Math.min(...corners.map((point) => point.y)) + 16)
         }
       }
 
       if (previewRect) {
-        const start = worldToPixel(
-          previewRect.start,
-          config,
-          imageData.width,
-          imageData.height,
-        )
-
-        const end = worldToPixel(
-          previewRect.end,
-          config,
-          imageData.width,
-          imageData.height,
-        )
-
-        const x = offsetX + Math.min(start.x, end.x) * scale
-        const y = offsetY + Math.min(start.y, end.y) * scale
-        const rectWidth = Math.abs(end.x - start.x) * scale
-        const rectHeight = Math.abs(end.y - start.y) * scale
+        const corners = previewRect.corners.map((point) => {
+          const pixel = worldToPixel(point, config, imageData.width, imageData.height)
+          return { x: offsetX + pixel.x * scale, y: offsetY + pixel.y * scale }
+        })
 
         context.fillStyle = 'rgba(0, 86, 210, 0.2)'
         context.strokeStyle = '#0056d2'
         context.lineWidth = 2
         context.setLineDash([6, 4])
-        context.fillRect(x, y, rectWidth, rectHeight)
-        context.strokeRect(x, y, rectWidth, rectHeight)
+        context.beginPath()
+        corners.forEach((point, index) => {
+          if (index === 0) context.moveTo(point.x, point.y)
+          else context.lineTo(point.x, point.y)
+        })
+        context.closePath()
+        context.fill()
+        context.stroke()
         context.setLineDash([])
       }
 
@@ -831,6 +877,7 @@ function MapViewer({
           }
         }
       }
+      context.restore()
     }
 
     drawRef.current = draw
@@ -897,10 +944,14 @@ function MapViewer({
       }
       const pixel = worldToPixel(point, config, imageData.width, imageData.height)
       const transform = transformRef.current
-      setRobotPosition({
+      const robotScreen = rotatePointAroundCenter({
         x: transform.offsetX + pixel.x * transform.scale,
         y: transform.offsetY + pixel.y * transform.scale,
-        angle: Math.atan2(-(end.y - start.y), end.x - start.x) * 180 / Math.PI + 90,
+      }, { x: transform.centerX, y: transform.centerY }, transform.rotationAngle)
+      setRobotPosition({
+        x: robotScreen.x,
+        y: robotScreen.y,
+        angle: Math.atan2(-(end.y - start.y), end.x - start.x) * 180 / Math.PI + 90 + transform.rotationAngle * 180 / Math.PI,
       })
     }
 
@@ -949,10 +1000,16 @@ function MapViewer({
       return null
     }
 
-    const { scale, offsetX, offsetY } = transformRef.current
+    const transform = transformRef.current
+    const { scale, offsetX, offsetY } = transform
+    const unrotatedPoint = rotatePointAroundCenter(
+      { x: screenX, y: screenY },
+      { x: transform.centerX, y: transform.centerY },
+      -transform.rotationAngle,
+    )
 
-    const pixelX = (screenX - offsetX) / scale
-    const pixelY = (screenY - offsetY) / scale
+    const pixelX = (unrotatedPoint.x - offsetX) / scale
+    const pixelY = (unrotatedPoint.y - offsetY) / scale
 
     if (
       pixelX < 0 ||
@@ -974,6 +1031,21 @@ function MapViewer({
     )
   }
 
+  const getZoneDrawCorners = (start: Point, end: Point): Point[] | null => {
+    const minX = Math.min(start.x, end.x)
+    const maxX = Math.max(start.x, end.x)
+    const minY = Math.min(start.y, end.y)
+    const maxY = Math.max(start.y, end.y)
+    const corners = [
+      { x: minX, y: minY },
+      { x: maxX, y: minY },
+      { x: maxX, y: maxY },
+      { x: minX, y: maxY },
+    ].map((point) => screenToWorld(point.x, point.y))
+
+    return corners.every((point): point is Point => point !== null) ? corners : null
+  }
+
   const getEndpointAt = (screenX: number, screenY: number) => {
     const imageData = imageDataRef.current
     const config = configRef.current
@@ -982,7 +1054,8 @@ function MapViewer({
       return undefined
     }
 
-    const { scale, offsetX, offsetY } = transformRef.current
+    const transform = transformRef.current
+    const { scale, offsetX, offsetY } = transform
 
     return endpoints.find((endpoint) => {
       const pixel = worldToPixel(
@@ -995,11 +1068,13 @@ function MapViewer({
         imageData.height,
       )
 
-      const endpointX = offsetX + pixel.x * scale
-      const endpointY = offsetY + pixel.y * scale
+      const endpointScreen = rotatePointAroundCenter({
+        x: offsetX + pixel.x * scale,
+        y: offsetY + pixel.y * scale,
+      }, { x: transform.centerX, y: transform.centerY }, transform.rotationAngle)
       const distance = Math.hypot(
-        screenX - endpointX,
-        screenY - endpointY,
+        screenX - endpointScreen.x,
+        screenY - endpointScreen.y,
       )
 
       return distance <= 16
@@ -1020,8 +1095,13 @@ function MapViewer({
 
     const centerX = container.clientWidth / 2
     const centerY = container.clientHeight / 2
-    const screenX = requestedX ?? centerX
-    const screenY = requestedY ?? centerY
+    const screenPoint = rotatePointAroundCenter(
+      { x: requestedX ?? centerX, y: requestedY ?? centerY },
+      { x: centerX, y: centerY },
+      -orientationAngleRef.current,
+    )
+    const screenX = screenPoint.x
+    const screenY = screenPoint.y
     const currentZoom = viewRef.current.zoom
     const nextZoom = Math.min(8, Math.max(1, currentZoom * factor))
 
@@ -1078,13 +1158,11 @@ function MapViewer({
       const x = event.clientX - rect.left
       const y = event.clientY - rect.top
 
-      const world = screenToWorld(x, y)
-
-      if (!world) {
+      if (!screenToWorld(x, y)) {
         return
       }
 
-      dragStartRef.current = world
+      dragStartRef.current = { x, y }
       draggingRef.current = true
 
       event.currentTarget.setPointerCapture(event.pointerId)
@@ -1117,16 +1195,12 @@ function MapViewer({
       const x = event.clientX - rect.left
       const y = event.clientY - rect.top
 
-      const world = screenToWorld(x, y)
-
-      if (!world || !dragStartRef.current) {
+      if (!dragStartRef.current) {
         return
       }
 
-      setPreviewRect({
-        start: dragStartRef.current,
-        end: world,
-      })
+      const corners = getZoneDrawCorners(dragStartRef.current, { x, y })
+      setPreviewRect(corners ? { corners } : null)
       return
     }
 
@@ -1137,8 +1211,15 @@ function MapViewer({
     const rect = event.currentTarget.getBoundingClientRect()
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
-    const deltaX = x - panStartRef.current.x
-    const deltaY = y - panStartRef.current.y
+    const screenDeltaX = x - panStartRef.current.x
+    const screenDeltaY = y - panStartRef.current.y
+    const panDelta = rotatePointAroundCenter(
+      { x: screenDeltaX, y: screenDeltaY },
+      { x: 0, y: 0 },
+      -orientationAngleRef.current,
+    )
+    const deltaX = panDelta.x
+    const deltaY = panDelta.y
 
     if (Math.hypot(deltaX, deltaY) > 3) {
       draggingRef.current = true
@@ -1173,30 +1254,44 @@ function MapViewer({
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
 
-    const world = screenToWorld(x, y)
-
-    if (!world || !dragStartRef.current) {
+    if (!dragStartRef.current) {
       dragStartRef.current = null
       setPreviewRect(null)
       return
     }
 
     const start = dragStartRef.current
-
-    const min_x = Math.min(start.x, world.x)
-    const max_x = Math.max(start.x, world.x)
-    const min_y = Math.min(start.y, world.y)
-    const max_y = Math.max(start.y, world.y)
+    const worldCorners = getZoneDrawCorners(start, { x, y })
+    if (!worldCorners) {
+      dragStartRef.current = null
+      setPreviewRect(null)
+      return
+    }
+    const widthVector = {
+      x: worldCorners[1].x - worldCorners[0].x,
+      y: worldCorners[1].y - worldCorners[0].y,
+    }
+    const heightVector = {
+      x: worldCorners[3].x - worldCorners[0].x,
+      y: worldCorners[3].y - worldCorners[0].y,
+    }
+    const min_x = Math.min(...worldCorners.map((point) => point.x))
+    const max_x = Math.max(...worldCorners.map((point) => point.x))
+    const min_y = Math.min(...worldCorners.map((point) => point.y))
+    const max_y = Math.max(...worldCorners.map((point) => point.y))
 
     if (
-      Math.abs(max_x - min_x) > 0.2 &&
-      Math.abs(max_y - min_y) > 0.2
+      Math.hypot(widthVector.x, widthVector.y) > 0.2 &&
+      Math.hypot(heightVector.x, heightVector.y) > 0.2
     ) {
       onZoneDrawComplete({
         min_x,
         min_y,
         max_x,
         max_y,
+        width: Math.hypot(widthVector.x, widthVector.y),
+        height: Math.hypot(heightVector.x, heightVector.y),
+        rotation_angle: Math.atan2(widthVector.y, widthVector.x),
       })
     }
 

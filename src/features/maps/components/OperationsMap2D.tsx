@@ -6,6 +6,7 @@ import type {
   Pose2D,
 } from '../types/runtime'
 import { mapToPixel, pixelToMap } from '../utils/coordinates'
+import { rotatePointAroundCenter } from '../utils/orientation'
 
 type Props = {
   map: OccupancyMapMetadata
@@ -23,13 +24,25 @@ export default function OperationsMap2D({
   onDraftChange,
 }: Props) {
   const dragStart = useRef<Omit<Pose2D, 'yaw'> | null>(null)
+  const rotationAngle = map.verticalRotation ?? 0
+  const rotationCosine = Math.abs(Math.cos(rotationAngle))
+  const rotationSine = Math.abs(Math.sin(rotationAngle))
+  const rotatedWidth = rotationCosine * map.imageWidth + rotationSine * map.imageHeight
+  const rotatedHeight = rotationSine * map.imageWidth + rotationCosine * map.imageHeight
 
   const eventPoint = (event: PointerEvent<SVGSVGElement>) => {
     const matrix = event.currentTarget.getScreenCTM()
     if (!matrix) return null
-    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
-    if (point.x < 0 || point.x > map.imageWidth || point.y < 0 || point.y > map.imageHeight) return null
-    return pixelToMap(point.x, point.y, map)
+    const viewPoint = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
+    const centeredPoint = rotatePointAroundCenter(
+      { x: viewPoint.x, y: viewPoint.y },
+      { x: rotatedWidth / 2, y: rotatedHeight / 2 },
+      -rotationAngle,
+    )
+    const pixelX = centeredPoint.x + (map.imageWidth - rotatedWidth) / 2
+    const pixelY = centeredPoint.y + (map.imageHeight - rotatedHeight) / 2
+    if (pixelX < 0 || pixelX > map.imageWidth || pixelY < 0 || pixelY > map.imageHeight) return null
+    return pixelToMap(pixelX, pixelY, map)
   }
 
   const pointerDown = (event: PointerEvent<SVGSVGElement>) => {
@@ -59,7 +72,7 @@ export default function OperationsMap2D({
   return (
     <svg
       className="h-full min-h-0 w-full touch-none cursor-crosshair select-none"
-      viewBox={`0 0 ${map.imageWidth} ${map.imageHeight}`}
+      viewBox={`0 0 ${rotatedWidth} ${rotatedHeight}`}
       preserveAspectRatio="xMidYMid meet"
       onPointerDown={pointerDown}
       onPointerMove={pointerMove}
@@ -68,6 +81,7 @@ export default function OperationsMap2D({
       role="application"
       aria-label="Robot navigation map"
     >
+      <g transform={`translate(${rotatedWidth / 2} ${rotatedHeight / 2}) rotate(${(rotationAngle * 180) / Math.PI}) translate(${-map.imageWidth / 2} ${-map.imageHeight / 2})`}>
       {map.occupancyImage ? (
         <image href={map.occupancyImage} width={map.imageWidth} height={map.imageHeight} preserveAspectRatio="none" className="[image-rendering:pixelated]" />
       ) : (
@@ -93,6 +107,7 @@ export default function OperationsMap2D({
           <path d="M 2.8 0 L -1.5 -1.5 L -1.5 1.5 Z" fill="#0891b2" />
         </g>
       )}
+      </g>
     </svg>
   )
 }
