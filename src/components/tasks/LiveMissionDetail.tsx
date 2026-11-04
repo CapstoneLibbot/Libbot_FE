@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import MapViewer from '@/components/map/MapViewer'
 import SdfScene3D from '@/components/map/SdfScene3D'
 import { apiGet, apiPost, type BackendMission, type BackendWorkflow, type MissionExecutionState, type RobotRuntime } from '@/lib/missionApi'
+import { armRuntime, disarmRuntime } from '@/features/maps/api/runtimeApi'
 
 type StepEvent = MissionExecutionState
 type StepProgress = 'pending' | 'running' | 'waiting' | 'completed' | 'failed'
@@ -46,6 +47,16 @@ function progressForStep(stepIds: string[], events: StepEvent[]): StepProgress {
   return progress
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null
+}
+
+function numericValue(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
 function LiveMissionDetail({ missionId }: { missionId: string }) {
   const [mission, setMission] = useState<BackendMission | null>(null)
   const [workflow, setWorkflow] = useState<BackendWorkflow | null>(null)
@@ -59,6 +70,8 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   const [simulationSpeed, setSimulationSpeed] = useState(1)
   const [speedPending, setSpeedPending] = useState(false)
   const [runPending, setRunPending] = useState(false)
+  const [armPending, setArmPending] = useState(false)
+  const [armLeaseId, setArmLeaseId] = useState<string | null>(null)
   const [waitInput, setWaitInput] = useState('')
   const [waitChoices, setWaitChoices] = useState<WaitChoice[]>([])
   const [waitChoicesLoading, setWaitChoicesLoading] = useState(false)
@@ -208,16 +221,59 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   const expectedEventType = execution?.expectedEventType?.trim().toUpperCase() ?? ''
   const waitKey = `${execution?.executionId ?? ''}:${execution?.currentStep ?? ''}:${expectedEventType}`
   const waitAlreadySubmitted = submittedWaitKey === waitKey
+  const isLibraryPatrol = workflow?.type?.toUpperCase() === 'LIBRARY_PATROL'
+  const patrolResults = events.map((event) => asRecord(event.result)).filter((result): result is Record<string, unknown> => result !== null)
+  const patrolReport = patrolResults
+    .filter((result) => String(result.action ?? '').toUpperCase() === 'GENERATE_PATROL_REPORT')
+    .map((result) => asRecord(result.data))
+    .find((result) => result !== null) ?? null
+  const latestCoverage = patrolResults
+    .filter((result) => String(result.action ?? '').toUpperCase() === 'UPDATE_PATH_COVERAGE')
+    .map((result) => asRecord(result.data)?.coverage)
+    .map(asRecord)
+    .find((result) => result !== null) ?? null
 
   const runMission = async () => {
+    if (!isSimulation && !armLeaseId) {
+      setActionError('Arm the physical robot before starting this mission.')
+      return
+    }
     setRunPending(true)
     setActionError(null)
     try {
-      await apiPost(`/api/missions/${missionId}/start`, { runtimeId: mission?.runtimeId ?? 'sim' })
+      await apiPost(`/api/missions/${missionId}/start`, { runtimeId: mission?.runtimeId ?? 'sim', armLeaseId })
     } catch (requestError) {
       setActionError(requestError instanceof Error ? requestError.message : 'Unable to start the mission.')
     } finally {
       setRunPending(false)
+    }
+  }
+
+  const armPhysicalRobot = async () => {
+    const runtimeId = mission?.runtimeId || 'real'
+    setArmPending(true)
+    setActionError(null)
+    try {
+      const lease = await armRuntime(runtimeId)
+      setArmLeaseId(lease.leaseId)
+    } catch (requestError) {
+      setActionError(requestError instanceof Error ? requestError.message : 'Unable to arm the physical robot.')
+    } finally {
+      setArmPending(false)
+    }
+  }
+
+  const disarmPhysicalRobot = async () => {
+    const runtimeId = mission?.runtimeId || 'real'
+    setArmPending(true)
+    setActionError(null)
+    try {
+      await disarmRuntime(runtimeId)
+      setArmLeaseId(null)
+    } catch (requestError) {
+      setActionError(requestError instanceof Error ? requestError.message : 'Unable to disarm the physical robot.')
+    } finally {
+      setArmPending(false)
     }
   }
 
@@ -307,11 +363,21 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {canRun && !isSimulation && !armLeaseId && (
+            <button type="button" onClick={() => void armPhysicalRobot()} disabled={armPending || !runtime?.connected || runtime.stale} className="rounded-md border border-amber-300/30 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-200 hover:bg-amber-400/15 disabled:cursor-not-allowed disabled:opacity-50">
+              {armPending ? 'Arming…' : 'Arm robot'}
+            </button>
+          )}
+          {armLeaseId && !isSimulation && (
+            <button type="button" onClick={() => void disarmPhysicalRobot()} disabled={armPending} className="rounded-md border border-white/15 px-3 py-1.5 text-xs font-semibold text-white/65 hover:bg-white/10 disabled:opacity-50">
+              {armPending ? 'Disarming…' : 'Disarm'}
+            </button>
+          )}
           {canRun && (
             <button
               type="button"
               onClick={() => void runMission()}
-              disabled={runPending}
+              disabled={runPending || (!isSimulation && !armLeaseId)}
               className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-[#07140d] hover:bg-emerald-400 disabled:cursor-wait disabled:opacity-60"
             >
               <Play className="h-3.5 w-3.5" />{runPending ? 'Starting…' : missionIsComplete || missionHasFailed ? 'Run again' : 'Run'}
@@ -473,6 +539,38 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+            {isLibraryPatrol && (
+              <section className="mb-4 border border-[#d9dce5] bg-white p-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-sm font-semibold text-[#252933]">Patrol coverage</h2>
+                  <span className="text-xs font-semibold text-primary">
+                    {latestCoverage
+                      ? `${numericValue(latestCoverage.covered_paths) ?? 0} / ${numericValue(latestCoverage.total_paths) ?? 0} paths`
+                      : 'Not started'}
+                  </span>
+                </div>
+                {latestCoverage && (
+                  <div className="mt-2 h-1.5 overflow-hidden bg-[#edf0f4]">
+                    <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, Math.max(0, numericValue(latestCoverage.coverage_percent) ?? 0))}%` }} />
+                  </div>
+                )}
+                {patrolReport ? (
+                  <div className="mt-3 space-y-2 border-t border-[#edf0f3] pt-3 text-xs text-[#596174]">
+                    <p className="font-semibold text-[#252933]">Report {String(patrolReport.report_id ?? '')}</p>
+                    <p>{numericValue(patrolReport.observation_count) ?? 0} observations · {numericValue(asRecord(patrolReport.path_coverage)?.covered_paths) ?? 0} paths covered</p>
+                    <p>Fallen books: {numericValue(patrolReport.fallen_book_count) ?? 0} · Obstacles: {numericValue(patrolReport.obstacle_count) ?? 0} · Warnings: {numericValue(patrolReport.warning_count) ?? 0}</p>
+                    {Array.isArray(patrolReport.observations) && patrolReport.observations.length > 0 && (
+                      <ul className="mt-2 space-y-1.5">
+                        {patrolReport.observations.map((item, index) => {
+                          const observation = asRecord(item)
+                          return <li key={String(observation?.event_id ?? index)} className="border-l-2 border-amber-400 pl-2">{String(observation?.category ?? 'Observation')} · {String(observation?.path_id ?? '')}</li>
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                ) : <p className="mt-2 text-xs text-[#89909d]">The report and detected observations appear here when the patrol finishes.</p>}
+              </section>
+            )}
             {orderedSteps.length ? (
               <ol className="space-y-2">
                 {orderedSteps.map((step) => {

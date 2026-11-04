@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react'
-import { ArrowLeft, Check, ChevronDown, MapPinned, Search } from 'lucide-react'
+import { ArrowLeft, Check, ChevronDown, MapPinned, Search, ShieldCheck } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { sampleBooks } from '@/lib/bookData'
 import { getJobs, saveJob } from '@/lib/jobData'
@@ -10,12 +10,13 @@ import { JobPriority } from '@/types/job'
 import type { JobPriority as JobPriorityValue, JobStepParameters } from '@/types/job'
 import { WorkflowStatus, WorkflowStepType } from '@/types/workflow'
 import type { WorkflowRecord } from '@/types/workflow'
+import LibraryPatrolMissionCreate from './LibraryPatrolMissionCreate'
 
 const inputClassName = 'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#252933] outline-none placeholder:text-[#89909d] focus:border-primary'
 const selectClassName = 'h-10 w-full appearance-none border border-[#d7d9e2] bg-white px-3 pr-9 text-sm text-[#252933] outline-none focus:border-primary'
 const textareaClassName = 'min-h-24 w-full resize-y border border-[#d7d9e2] bg-white px-3 py-2 text-sm text-[#252933] outline-none placeholder:text-[#89909d] focus:border-primary'
 
-function TaskCreate() {
+function TaskCreateForm({ onCreatePatrol }: { onCreatePatrol: () => void }) {
   const navigate = useNavigate()
   const workflows = useMemo(() => getWorkflows().filter((workflow) => workflow.status === WorkflowStatus.Active), [])
   const robots = useMemo(() => [...new Set(getJobs().map((job) => job.robotId).filter((id): id is number => id !== null))], [])
@@ -302,12 +303,17 @@ function TaskCreate() {
             <ArrowLeft className="h-4 w-4" />
             Back to Tasks
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10"><MapPinned className="h-5 w-5 text-primary" /></div>
             <div>
               <h1 className="text-2xl font-bold text-[#17181c]">Create Task</h1>
               <p className="mt-0.5 text-sm text-[#596174]">Create a robot task from a workflow and its target.</p>
             </div>
+            </div>
+            <button type="button" onClick={onCreatePatrol} className="inline-flex h-10 items-center gap-2 border border-primary/30 bg-primary/5 px-4 text-sm font-semibold text-primary hover:bg-primary/10">
+              <ShieldCheck className="h-4 w-4" />Create Library Patrol mission
+            </button>
           </div>
         </header>
 
@@ -403,6 +409,13 @@ function TaskCreate() {
       </div>
     </div>
   )
+}
+
+function TaskCreate() {
+  const [createPatrol, setCreatePatrol] = useState(false)
+  return createPatrol
+    ? <LibraryPatrolMissionCreate onBack={() => setCreatePatrol(false)} />
+    : <TaskCreateForm onCreatePatrol={() => setCreatePatrol(true)} />
 }
 
 export default TaskCreate

@@ -10,6 +10,8 @@ type SignalREventName =
   | 'RobotMapUpdated'
   | 'MissionStatusChanged'
   | 'MissionStepChanged'
+  | 'AutoChargeStarted'
+  | 'LibrarianNotification'
 
 type SignalREventHandler<T> = (payload: T) => void
 
@@ -21,6 +23,7 @@ class SignalRClient {
   > = {}
 
   private runtimeSubscriptions = new Set<string>()
+  private librarianSubscriptionCount = 0
 
   async start(): Promise<void> {
     if (
@@ -50,10 +53,19 @@ class SignalRClient {
       this.connection.on('MissionStepChanged', (payload) => {
         this.emit('MissionStepChanged', payload)
       })
+      this.connection.on('AutoChargeStarted', (payload) => {
+        this.emit('AutoChargeStarted', payload)
+      })
+      this.connection.on('LibrarianNotification', (payload) => {
+        this.emit('LibrarianNotification', payload)
+      })
       this.connection.onreconnected(() => {
         this.runtimeSubscriptions.forEach((runtimeId) => {
           void this.connection?.invoke('SubscribeRuntime', runtimeId)
         })
+        if (this.librarianSubscriptionCount > 0) {
+          void this.connection?.invoke('SubscribeLibrarian')
+        }
       })
     }
 
@@ -62,6 +74,9 @@ class SignalRClient {
 
       for (const runtimeId of this.runtimeSubscriptions) {
         await this.connection.invoke('SubscribeRuntime', runtimeId)
+      }
+      if (this.librarianSubscriptionCount > 0) {
+        await this.connection.invoke('SubscribeLibrarian')
       }
     } catch (error) {
       console.warn('Không thể kết nối SignalR.', error)
@@ -82,6 +97,21 @@ class SignalRClient {
 
     if (this.connection?.state === HubConnectionState.Connected) {
       await this.connection.invoke('UnsubscribeRuntime', runtimeId)
+    }
+  }
+
+  async subscribeLibrarian(): Promise<void> {
+    this.librarianSubscriptionCount += 1
+    await this.start()
+    if (this.connection?.state === HubConnectionState.Connected) {
+      await this.connection.invoke('SubscribeLibrarian')
+    }
+  }
+
+  async unsubscribeLibrarian(): Promise<void> {
+    this.librarianSubscriptionCount = Math.max(0, this.librarianSubscriptionCount - 1)
+    if (this.librarianSubscriptionCount === 0 && this.connection?.state === HubConnectionState.Connected) {
+      await this.connection.invoke('UnsubscribeLibrarian')
     }
   }
 

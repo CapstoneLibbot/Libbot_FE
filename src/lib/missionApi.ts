@@ -43,6 +43,7 @@ export type MissionExecutionState = {
   expectedEventType?: string | null
   expectedBookId?: string | null
   allowedValues?: string[]
+  result?: Record<string, unknown> | null
   error?: string | null
   updatedAt?: string
 }

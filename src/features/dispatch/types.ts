@@ -45,9 +45,32 @@ export type MissionExecution = {
   updatedAt?: string
 }
 
+export type AutoChargeStartedEvent = {
+  missionId: string
+  executionId?: string | null
+  runtimeId: DispatchRuntimeId
+  workflowId?: string | null
+  batteryPercent: number
+  chargerEndpointId?: string | null
+  status?: string
+  queued?: boolean
+}
+
+export type LibrarianNotificationEvent = {
+  type: string
+  runtimeId?: DispatchRuntimeId
+  missionId?: string
+  executionId?: string
+  batteryPercent?: number
+  message: string
+  createdAt?: string
+}
+
 export type CreateMissionInput = {
   workflowId: string
   priority: string
   runtimeId: DispatchRuntimeId
   initialContext: Record<string, unknown>
+  name?: string
+  description?: string
 }

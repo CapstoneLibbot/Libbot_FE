@@ -40,8 +40,10 @@ import {
   submitMissionEvent,
 } from './api'
 import type {
+  AutoChargeStartedEvent,
   DispatchRuntimeId,
   DispatchWorkflow,
+  LibrarianNotificationEvent,
   MissionExecution,
 } from './types'
 import { isTerminalMissionStatus, parseInitialContext } from './utils'
@@ -191,6 +193,36 @@ export default function DispatchWorkflowPage() {
       void signalRClient.unsubscribeRuntime(runtimeId)
     }
   }, [runtimeId, missionId])
+
+  useEffect(() => {
+    void signalRClient.subscribeLibrarian()
+    const unsubscribeAutoCharge = signalRClient.subscribe<AutoChargeStartedEvent>('AutoChargeStarted', (payload) => {
+      if (payload.runtimeId.toLowerCase() !== 'real') return
+      setRuntimeId('real')
+      setMissionId(payload.missionId)
+      setExecution({
+        missionId: payload.missionId,
+        executionId: payload.executionId ?? undefined,
+        runtimeId: 'real',
+        status: payload.status ?? (payload.queued ? 'QUEUED' : 'ACCEPTED'),
+      })
+      setError('')
+      setNotice(`Pin còn ${payload.batteryPercent.toFixed(0)}%. Robot đang tự quay về trạm sạc${payload.queued ? ' sau khi kết thúc bước hiện tại' : ''}.`)
+    })
+    const unsubscribeLibrarianNotification = signalRClient.subscribe<LibrarianNotificationEvent>('LibrarianNotification', (payload) => {
+      if (payload.runtimeId && payload.runtimeId.toLowerCase() !== 'real') return
+      if (payload.type === 'LOW_BATTERY_RETURN_BLOCKED') {
+        setError(payload.message)
+      } else {
+        setNotice(payload.message)
+      }
+    })
+    return () => {
+      unsubscribeAutoCharge()
+      unsubscribeLibrarianNotification()
+      void signalRClient.unsubscribeLibrarian()
+    }
+  }, [])
 
   useEffect(() => {
     if (!missionId || terminalMission) return
@@ -468,12 +500,16 @@ export default function DispatchWorkflowPage() {
                 {execution.error && <p className="rounded-md bg-rose-50 p-2 text-xs text-rose-700">{execution.error}</p>}
                 {execution.expectedEventType && (
                   <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
-                    <p className="text-xs font-semibold text-amber-900">Waiting for {execution.expectedEventType}</p>
+                    <p className="text-xs font-semibold text-amber-900">{execution.expectedEventType === 'CHARGER_CONNECTED' ? 'Robot is docked. Confirm the charging cable is connected.' : `Waiting for ${execution.expectedEventType}`}</p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {(execution.allowedValues ?? []).map((value) => <button key={value} type="button" onClick={() => void sendEvent({ value })} className={`${buttonClass} bg-primary text-white`}>{value}</button>)}
+                      {(execution.allowedValues ?? []).map((value) => <button key={value} type="button" onClick={() => void sendEvent({ value })} disabled={Boolean(busyAction)} className={`${buttonClass} bg-primary text-white`}>{execution.expectedEventType === 'CHARGER_CONNECTED' && value === 'CONFIRMED' ? 'Đã cắm sạc' : value}</button>)}
                     </div>
-                    <textarea value={eventText} onChange={(event) => setEventText(event.target.value)} rows={3} className={`${fieldClass} mt-2 font-mono text-xs`} />
-                    <button type="button" onClick={() => void sendEvent()} disabled={Boolean(busyAction)} className={`${buttonClass} mt-2 border border-primary text-primary`}>Submit event</button>
+                    {execution.expectedEventType !== 'CHARGER_CONNECTED' && (
+                      <>
+                        <textarea value={eventText} onChange={(event) => setEventText(event.target.value)} rows={3} className={`${fieldClass} mt-2 font-mono text-xs`} />
+                        <button type="button" onClick={() => void sendEvent()} disabled={Boolean(busyAction)} className={`${buttonClass} mt-2 border border-primary text-primary`}>Submit event</button>
+                      </>
+                    )}
                   </div>
                 )}
                 {!terminalMission && <button type="button" onClick={() => void handleCancelMission()} disabled={Boolean(busyAction)} className={`${buttonClass} border border-rose-300 text-rose-700`}><CircleStop className="h-4 w-4" /> Cancel mission</button>}
