@@ -1,0 +1,5572 @@
+{
+  "origin": [
+    -25.0,
+    -30.0,
+    0
+  ],
+  "widthMeters": 50.0,
+  "heightMeters": 60.0,
+  "floorThicknessMeters": 0.1,
+  "wallHeightMeters": 4.0,
+  "imageWidth": 500,
+  "imageHeight": 600,
+  "resolution": 0.1,
+  "robotSpawn": {
+    "x": 0.0,
+    "y": -27.2,
+    "z": 0.15,
+    "yaw": 1.57079632679
+  },
+  "simulationBookTarget": {
+    "shelfId": "bookshelf_west_inner",
+    "label": "K\u1ec7 A3 \u00b7 s\u00e1ch m\u00f4 ph\u1ecfng",
+    "x": -0.8,
+    "y": -0.5,
+    "yaw": 3.14159265359
+  },
+  "areas": [
+    {
+      "id": "reading_room",
+      "type": "reading_room",
+      "label": "Reading room",
+      "x": 0.0,
+      "y": 22.0,
+      "size": [
+        40.0,
+        14.0
+      ],
+      "color": "#E5D8BA"
+    },
+    {
+      "id": "toilet_room",
+      "type": "toilet",
+      "label": "Toilet",
+      "x": -18.0,
+      "y": -22.0,
+      "size": [
+        10.0,
+        12.0
+      ],
+      "color": "#C9E3E5"
+    }
+  ],
+  "bookshelfCount": 4,
+  "components": [
+    {
+      "name": "wall_west",
+      "category": "wall",
+      "label": "Library wall",
+      "worldX": -25.0,
+      "worldY": 0,
+      "worldZ": 2.0,
+      "size": [
+        0.25,
+        60.25,
+        4.0
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "wall_east",
+      "category": "wall",
+      "label": "Library wall",
+      "worldX": 25.0,
+      "worldY": 0,
+      "worldZ": 2.0,
+      "size": [
+        0.25,
+        60.25,
+        4.0
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "wall_north",
+      "category": "wall",
+      "label": "Library wall",
+      "worldX": 0,
+      "worldY": 30.0,
+      "worldZ": 2.0,
+      "size": [
+        50.0,
+        0.25,
+        4.0
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "wall_south_west",
+      "category": "wall",
+      "label": "Library wall",
+      "worldX": -13.25,
+      "worldY": -30.0,
+      "worldZ": 2.0,
+      "size": [
+        23.5,
+        0.25,
+        4.0
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "wall_south_east",
+      "category": "wall",
+      "label": "Library wall",
+      "worldX": 13.25,
+      "worldY": -30.0,
+      "worldZ": 2.0,
+      "size": [
+        23.5,
+        0.25,
+        4.0
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "reading_room_floor",
+      "category": "room_floor",
+      "label": "Reading room",
+      "worldX": 0.0,
+      "worldY": 22.0,
+      "worldZ": 0.004,
+      "size": [
+        40.0,
+        14.0,
+        0.008
+      ],
+      "color": "#E5D8BA"
+    },
+    {
+      "name": "reading_room_north_wall",
+      "category": "partition",
+      "label": "Reading room",
+      "worldX": 0.0,
+      "worldY": 29.0,
+      "worldZ": 1.4,
+      "size": [
+        40.0,
+        0.2,
+        2.8
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "reading_room_south_wall_a",
+      "category": "partition",
+      "label": "Reading room",
+      "worldX": -10.75,
+      "worldY": 15.0,
+      "worldZ": 1.4,
+      "size": [
+        18.5,
+        0.2,
+        2.8
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "reading_room_south_wall_b",
+      "category": "partition",
+      "label": "Reading room",
+      "worldX": 10.75,
+      "worldY": 15.0,
+      "worldZ": 1.4,
+      "size": [
+        18.5,
+        0.2,
+        2.8
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "reading_room_east_wall",
+      "category": "partition",
+      "label": "Reading room",
+      "worldX": 22.0,
+      "worldY": 20.0,
+      "worldZ": 1.4,
+      "size": [
+        0.2,
+        14.0,
+        2.8
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "reading_room_west_wall",
+      "category": "partition",
+      "label": "Reading room",
+      "worldX": 22.0,
+      "worldY": -20.0,
+      "worldZ": 1.4,
+      "size": [
+        0.2,
+        14.0,
+        2.8
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "toilet_room_floor",
+      "category": "room_floor",
+      "label": "Toilet",
+      "worldX": -18.0,
+      "worldY": -22.0,
+      "worldZ": 0.004,
+      "size": [
+        10.0,
+        12.0,
+        0.008
+      ],
+      "color": "#C9E3E5"
+    },
+    {
+      "name": "toilet_room_north_wall_a",
+      "category": "partition",
+      "label": "Toilet",
+      "worldX": -20.85,
+      "worldY": -16.0,
+      "worldZ": 1.25,
+      "size": [
+        4.3,
+        0.18,
+        2.5
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "toilet_room_north_wall_b",
+      "category": "partition",
+      "label": "Toilet",
+      "worldX": -15.15,
+      "worldY": -16.0,
+      "worldZ": 1.25,
+      "size": [
+        4.3,
+        0.18,
+        2.5
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "toilet_room_south_wall",
+      "category": "partition",
+      "label": "Toilet",
+      "worldX": -18.0,
+      "worldY": -28.0,
+      "worldZ": 1.25,
+      "size": [
+        10.0,
+        0.18,
+        2.5
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "toilet_room_east_wall",
+      "category": "partition",
+      "label": "Toilet",
+      "worldX": -22.0,
+      "worldY": -13.0,
+      "worldZ": 1.25,
+      "size": [
+        0.18,
+        12.0,
+        2.5
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "toilet_room_west_wall",
+      "category": "partition",
+      "label": "Toilet",
+      "worldX": -22.0,
+      "worldY": -23.0,
+      "worldZ": 1.25,
+      "size": [
+        0.18,
+        12.0,
+        2.5
+      ],
+      "color": "#E7DFCF"
+    },
+    {
+      "name": "bookshelf_west_outer_left_side",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.5,
+      "worldY": -4.9775,
+      "worldZ": 1.2,
+      "size": [
+        0.65,
+        0.045,
+        2.4
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "bookshelf_west_outer_right_side",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.5,
+      "worldY": 8.9775,
+      "worldZ": 1.2,
+      "size": [
+        0.65,
+        0.045,
+        2.4
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "bookshelf_west_outer_back",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.195,
+      "worldY": 2.0,
+      "worldZ": 1.2,
+      "size": [
+        0.04,
+        14.0,
+        2.4
+      ],
+      "color": "#8B5A32"
+    },
+    {
+      "name": "bookshelf_west_outer_shelf_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.5,
+      "worldY": 2.0,
+      "worldZ": 0.336,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -4.94,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -4.123529411764706,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -3.3070588235294123,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -2.4905882352941173,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -1.6741176470588237,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -0.8576470588235292,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -0.04117647058823515,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 0.7752941176470589,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 1.591764705882353,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 2.408235294117647,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 3.224705882352942,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 4.041176470588236,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 4.85764705882353,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 5.674117647058824,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 6.490588235294118,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 7.307058823529412,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 8.123529411764707,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_1_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 8.940000000000001,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_shelf_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.5,
+      "worldY": 2.0,
+      "worldZ": 0.9119999999999999,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -4.94,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -4.123529411764706,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -3.3070588235294123,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -2.4905882352941173,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -1.6741176470588237,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -0.8576470588235292,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -0.04117647058823515,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 0.7752941176470589,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 1.591764705882353,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 2.408235294117647,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 3.224705882352942,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 4.041176470588236,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 4.85764705882353,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 5.674117647058824,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 6.490588235294118,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 7.307058823529412,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 8.123529411764707,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_book_2_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 8.940000000000001,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_shelf_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.5,
+      "worldY": 2.0,
+      "worldZ": 1.488,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -4.94,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -4.123529411764706,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -3.3070588235294123,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -2.4905882352941173,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -1.6741176470588237,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -0.8576470588235292,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -0.04117647058823515,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 0.7752941176470589,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 1.591764705882353,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 2.408235294117647,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 3.224705882352942,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 4.041176470588236,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 4.85764705882353,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 5.674117647058824,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 6.490588235294118,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 7.307058823529412,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 8.123529411764707,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_book_3_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 8.940000000000001,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_shelf_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.5,
+      "worldY": 2.0,
+      "worldZ": 1.9679999999999997,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -4.94,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -4.123529411764706,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -3.3070588235294123,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -2.4905882352941173,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -1.6741176470588237,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -0.8576470588235292,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": -0.04117647058823515,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 0.7752941176470589,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 1.591764705882353,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 2.408235294117647,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 3.224705882352942,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 4.041176470588236,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 4.85764705882353,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 5.674117647058824,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 6.490588235294118,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 7.307058823529412,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 8.123529411764707,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_outer_book_4_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 1",
+      "worldX": -8.552,
+      "worldY": 8.940000000000001,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_left_side",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.0,
+      "worldY": -4.9775,
+      "worldZ": 1.2,
+      "size": [
+        0.65,
+        0.045,
+        2.4
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "bookshelf_west_inner_right_side",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.0,
+      "worldY": 8.9775,
+      "worldZ": 1.2,
+      "size": [
+        0.65,
+        0.045,
+        2.4
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "bookshelf_west_inner_back",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -1.695,
+      "worldY": 2.0,
+      "worldZ": 1.2,
+      "size": [
+        0.04,
+        14.0,
+        2.4
+      ],
+      "color": "#8B5A32"
+    },
+    {
+      "name": "bookshelf_west_inner_shelf_1",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.0,
+      "worldY": 2.0,
+      "worldZ": 0.336,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_1",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -4.94,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_2",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -4.123529411764706,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_3",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -3.3070588235294123,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_4",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -2.4905882352941173,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_5",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -1.6741176470588237,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_6",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -0.8576470588235292,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_7",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -0.04117647058823515,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_8",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 0.7752941176470589,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_9",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 1.591764705882353,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_10",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 2.408235294117647,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_11",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 3.224705882352942,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_12",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 4.041176470588236,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_13",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 4.85764705882353,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_14",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 5.674117647058824,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_15",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 6.490588235294118,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_16",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 7.307058823529412,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_17",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 8.123529411764707,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_1_18",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 8.940000000000001,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_shelf_2",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.0,
+      "worldY": 2.0,
+      "worldZ": 0.9119999999999999,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_1",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -4.94,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_2",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -4.123529411764706,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_3",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -3.3070588235294123,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_4",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -2.4905882352941173,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_5",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -1.6741176470588237,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_6",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -0.8576470588235292,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_7",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -0.04117647058823515,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_8",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 0.7752941176470589,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_9",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 1.591764705882353,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_10",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 2.408235294117647,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_11",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 3.224705882352942,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_12",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 4.041176470588236,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_13",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 4.85764705882353,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_14",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 5.674117647058824,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_15",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 6.490588235294118,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_16",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 7.307058823529412,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_17",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 8.123529411764707,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_book_2_18",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 8.940000000000001,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_shelf_3",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.0,
+      "worldY": 2.0,
+      "worldZ": 1.488,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_1",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -4.94,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_2",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -4.123529411764706,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_3",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -3.3070588235294123,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_4",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -2.4905882352941173,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_5",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -1.6741176470588237,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_6",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -0.8576470588235292,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_7",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -0.04117647058823515,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_8",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 0.7752941176470589,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_9",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 1.591764705882353,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_10",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 2.408235294117647,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_11",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 3.224705882352942,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_12",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 4.041176470588236,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_13",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 4.85764705882353,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_14",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 5.674117647058824,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_15",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 6.490588235294118,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_16",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 7.307058823529412,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_17",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 8.123529411764707,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_book_3_18",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 8.940000000000001,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_shelf_4",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.0,
+      "worldY": 2.0,
+      "worldZ": 1.9679999999999997,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_1",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -4.94,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_2",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -4.123529411764706,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_3",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -3.3070588235294123,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_4",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -2.4905882352941173,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_5",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -1.6741176470588237,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_6",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -0.8576470588235292,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_7",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": -0.04117647058823515,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_8",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 0.7752941176470589,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_9",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 1.591764705882353,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_10",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 2.408235294117647,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_11",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 3.224705882352942,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_12",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 4.041176470588236,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_13",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 4.85764705882353,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_14",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 5.674117647058824,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_15",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 6.490588235294118,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_16",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 7.307058823529412,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_17",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 8.123529411764707,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_west_inner_book_4_18",
+      "category": "bookshelf",
+      "label": "K\u1ec7 A3 \u00b7 s\u00e1ch Robotics",
+      "worldX": -2.052,
+      "worldY": 8.940000000000001,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_left_side",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 3.0,
+      "worldY": -4.9775,
+      "worldZ": 1.2,
+      "size": [
+        0.65,
+        0.045,
+        2.4
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "bookshelf_east_inner_right_side",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 3.0,
+      "worldY": 8.9775,
+      "worldZ": 1.2,
+      "size": [
+        0.65,
+        0.045,
+        2.4
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "bookshelf_east_inner_back",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 3.305,
+      "worldY": 2.0,
+      "worldZ": 1.2,
+      "size": [
+        0.04,
+        14.0,
+        2.4
+      ],
+      "color": "#8B5A32"
+    },
+    {
+      "name": "bookshelf_east_inner_shelf_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 3.0,
+      "worldY": 2.0,
+      "worldZ": 0.336,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -4.94,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -4.123529411764706,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -3.3070588235294123,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -2.4905882352941173,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -1.6741176470588237,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -0.8576470588235292,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -0.04117647058823515,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 0.7752941176470589,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 1.591764705882353,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 2.408235294117647,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 3.224705882352942,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 4.041176470588236,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 4.85764705882353,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 5.674117647058824,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 6.490588235294118,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 7.307058823529412,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 8.123529411764707,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_1_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 8.940000000000001,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_shelf_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 3.0,
+      "worldY": 2.0,
+      "worldZ": 0.9119999999999999,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -4.94,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -4.123529411764706,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -3.3070588235294123,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -2.4905882352941173,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -1.6741176470588237,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -0.8576470588235292,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -0.04117647058823515,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 0.7752941176470589,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 1.591764705882353,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 2.408235294117647,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 3.224705882352942,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 4.041176470588236,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 4.85764705882353,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 5.674117647058824,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 6.490588235294118,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 7.307058823529412,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 8.123529411764707,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_book_2_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 8.940000000000001,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_shelf_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 3.0,
+      "worldY": 2.0,
+      "worldZ": 1.488,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -4.94,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -4.123529411764706,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -3.3070588235294123,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -2.4905882352941173,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -1.6741176470588237,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -0.8576470588235292,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -0.04117647058823515,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 0.7752941176470589,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 1.591764705882353,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 2.408235294117647,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 3.224705882352942,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 4.041176470588236,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 4.85764705882353,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 5.674117647058824,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 6.490588235294118,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 7.307058823529412,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 8.123529411764707,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_book_3_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 8.940000000000001,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_shelf_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 3.0,
+      "worldY": 2.0,
+      "worldZ": 1.9679999999999997,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -4.94,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -4.123529411764706,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -3.3070588235294123,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -2.4905882352941173,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -1.6741176470588237,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -0.8576470588235292,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": -0.04117647058823515,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 0.7752941176470589,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 1.591764705882353,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 2.408235294117647,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 3.224705882352942,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 4.041176470588236,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 4.85764705882353,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 5.674117647058824,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 6.490588235294118,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 7.307058823529412,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 8.123529411764707,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_inner_book_4_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 3",
+      "worldX": 2.948,
+      "worldY": 8.940000000000001,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_left_side",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.5,
+      "worldY": -4.9775,
+      "worldZ": 1.2,
+      "size": [
+        0.65,
+        0.045,
+        2.4
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "bookshelf_east_outer_right_side",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.5,
+      "worldY": 8.9775,
+      "worldZ": 1.2,
+      "size": [
+        0.65,
+        0.045,
+        2.4
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "bookshelf_east_outer_back",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.805,
+      "worldY": 2.0,
+      "worldZ": 1.2,
+      "size": [
+        0.04,
+        14.0,
+        2.4
+      ],
+      "color": "#8B5A32"
+    },
+    {
+      "name": "bookshelf_east_outer_shelf_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.5,
+      "worldY": 2.0,
+      "worldZ": 0.336,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -4.94,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -4.123529411764706,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -3.3070588235294123,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -2.4905882352941173,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -1.6741176470588237,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -0.8576470588235292,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -0.04117647058823515,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 0.7752941176470589,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 1.591764705882353,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 2.408235294117647,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 3.224705882352942,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 4.041176470588236,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 4.85764705882353,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 5.674117647058824,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 6.490588235294118,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 7.307058823529412,
+      "worldZ": 0.50048,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 8.123529411764707,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_1_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 8.940000000000001,
+      "worldZ": 0.524,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_shelf_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.5,
+      "worldY": 2.0,
+      "worldZ": 0.9119999999999999,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -4.94,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -4.123529411764706,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -3.3070588235294123,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -2.4905882352941173,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -1.6741176470588237,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -0.8576470588235292,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -0.04117647058823515,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 0.7752941176470589,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 1.591764705882353,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 2.408235294117647,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 3.224705882352942,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 4.041176470588236,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 4.85764705882353,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 5.674117647058824,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 6.490588235294118,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 7.307058823529412,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 8.123529411764707,
+      "worldZ": 1.0999999999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_book_2_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 8.940000000000001,
+      "worldZ": 1.0764799999999999,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_shelf_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.5,
+      "worldY": 2.0,
+      "worldZ": 1.488,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -4.94,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -4.123529411764706,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -3.3070588235294123,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -2.4905882352941173,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -1.6741176470588237,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -0.8576470588235292,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -0.04117647058823515,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 0.7752941176470589,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 1.591764705882353,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 2.408235294117647,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 3.224705882352942,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 4.041176470588236,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 4.85764705882353,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 5.674117647058824,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 6.490588235294118,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 7.307058823529412,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 8.123529411764707,
+      "worldZ": 1.65248,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_book_3_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 8.940000000000001,
+      "worldZ": 1.676,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_shelf_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.5,
+      "worldY": 2.0,
+      "worldZ": 1.9679999999999997,
+      "size": [
+        0.65,
+        14.0,
+        0.04
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_1",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -4.94,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_2",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -4.123529411764706,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_3",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -3.3070588235294123,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_4",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -2.4905882352941173,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_5",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -1.6741176470588237,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_6",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -0.8576470588235292,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_7",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": -0.04117647058823515,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_8",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 0.7752941176470589,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_9",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 1.591764705882353,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_10",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 2.408235294117647,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_11",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 3.224705882352942,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_12",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 4.041176470588236,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_13",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 4.85764705882353,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_14",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 5.674117647058824,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#765D8B"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_15",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 6.490588235294118,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D07A45"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_16",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 7.307058823529412,
+      "worldZ": 2.1324799999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.28896
+      ],
+      "color": "#3D7794"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_17",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 8.123529411764707,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#B95D46"
+    },
+    {
+      "name": "bookshelf_east_outer_book_4_18",
+      "category": "bookshelf",
+      "label": "Bookshelf 4",
+      "worldX": 8.448,
+      "worldY": 8.940000000000001,
+      "worldZ": 2.1559999999999997,
+      "size": [
+        0.44200000000000006,
+        0.34,
+        0.336
+      ],
+      "color": "#D7A84D"
+    },
+    {
+      "name": "librarian_counter_cabinet",
+      "category": "counter",
+      "label": "Librarian counter",
+      "worldX": 11.0,
+      "worldY": -26.4,
+      "worldZ": 0.48400000000000004,
+      "size": [
+        5.2,
+        1.4400000000000002,
+        0.9680000000000001
+      ],
+      "color": "#8B5A32"
+    },
+    {
+      "name": "librarian_counter_countertop",
+      "category": "counter",
+      "label": "Librarian counter",
+      "worldX": 11.0,
+      "worldY": -26.4,
+      "worldZ": 1.034,
+      "size": [
+        5.3,
+        1.6800000000000002,
+        0.08
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "librarian_counter_service_panel",
+      "category": "counter",
+      "label": "Librarian counter",
+      "worldX": 11.0,
+      "worldY": -27.151999999999997,
+      "worldZ": 0.803,
+      "size": [
+        3.5360000000000005,
+        0.035,
+        0.22
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "librarian_counter_terminal",
+      "category": "counter",
+      "label": "Librarian counter",
+      "worldX": 11.0,
+      "worldY": -26.144,
+      "worldZ": 1.135,
+      "size": [
+        0.22,
+        0.16,
+        0.035
+      ],
+      "color": "#344B54"
+    },
+    {
+      "name": "toilet_fixture_pedestal",
+      "category": "toilet_fixture",
+      "label": "Toilet",
+      "worldX": -20.561999999999998,
+      "worldY": -22.0,
+      "worldZ": 0.1435,
+      "size": [
+        0.759,
+        0.6084,
+        0.287
+      ],
+      "color": "#F4F5F3"
+    },
+    {
+      "name": "toilet_fixture_bowl",
+      "category": "toilet_fixture",
+      "label": "Toilet",
+      "worldX": -20.7,
+      "worldY": -22.0,
+      "worldZ": 0.35259999999999997,
+      "size": [
+        1.15,
+        0.78,
+        0.2296
+      ],
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "toilet_fixture_cistern",
+      "category": "toilet_fixture",
+      "label": "Toilet",
+      "worldX": -20.953,
+      "worldY": -22.0,
+      "worldZ": 0.6478,
+      "size": [
+        0.6325,
+        0.5616,
+        0.3444
+      ],
+      "color": "#F4F5F3"
+    },
+    {
+      "name": "toilet_sink_pedestal",
+      "category": "sink",
+      "label": "Wash basin",
+      "worldX": -14.969999999999999,
+      "worldY": -25.5,
+      "worldZ": 0.324,
+      "size": [
+        0.368,
+        0.22319999999999998,
+        0.648
+      ],
+      "color": "#F4F5F3"
+    },
+    {
+      "name": "toilet_sink_basin",
+      "category": "sink",
+      "label": "Wash basin",
+      "worldX": -15.2,
+      "worldY": -25.5,
+      "worldZ": 0.738,
+      "size": [
+        1.15,
+        0.62,
+        0.162
+      ],
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "toilet_sink_water",
+      "category": "sink",
+      "label": "Wash basin",
+      "worldX": -15.2,
+      "worldY": -25.5,
+      "worldZ": 0.792,
+      "size": [
+        0.598,
+        0.2976,
+        0.027
+      ],
+      "color": "#6FA9B7"
+    },
+    {
+      "name": "reading_table_west_tabletop",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": -15.0,
+      "worldY": 27.2,
+      "worldZ": 0.725,
+      "size": [
+        3.2,
+        1.4,
+        0.07
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "reading_table_west_leg_-1_-1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": -16.55,
+      "worldY": 26.55,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_table_west_leg_-1_1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": -16.55,
+      "worldY": 27.849999999999998,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_table_west_leg_1_-1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": -13.45,
+      "worldY": 26.55,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_table_west_leg_1_1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": -13.45,
+      "worldY": 27.849999999999998,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_west_1_seat",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -16.0,
+      "worldY": 25.85,
+      "worldZ": 0.44,
+      "size": [
+        0.52,
+        0.52,
+        0.07
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "reading_chair_west_1_back",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -16.225,
+      "worldY": 25.85,
+      "worldZ": 0.645,
+      "size": [
+        0.07,
+        0.52,
+        0.41
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "reading_chair_west_1_leg_-1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -16.22,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_west_1_leg_-1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -16.22,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_west_1_leg_1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -15.78,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_west_1_leg_1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -15.78,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_west_2_seat",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -14.0,
+      "worldY": 25.85,
+      "worldZ": 0.44,
+      "size": [
+        0.52,
+        0.52,
+        0.07
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "reading_chair_west_2_back",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -14.225,
+      "worldY": 25.85,
+      "worldZ": 0.645,
+      "size": [
+        0.07,
+        0.52,
+        0.41
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "reading_chair_west_2_leg_-1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -14.22,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_west_2_leg_-1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -14.22,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_west_2_leg_1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -13.78,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_west_2_leg_1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -13.78,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_table_center_tabletop",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": 0.0,
+      "worldY": 27.2,
+      "worldZ": 0.725,
+      "size": [
+        3.2,
+        1.4,
+        0.07
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "reading_table_center_leg_-1_-1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": -1.55,
+      "worldY": 26.55,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_table_center_leg_-1_1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": -1.55,
+      "worldY": 27.849999999999998,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_table_center_leg_1_-1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": 1.55,
+      "worldY": 26.55,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_table_center_leg_1_1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": 1.55,
+      "worldY": 27.849999999999998,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_center_1_seat",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -1.0,
+      "worldY": 25.85,
+      "worldZ": 0.44,
+      "size": [
+        0.52,
+        0.52,
+        0.07
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "reading_chair_center_1_back",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -1.225,
+      "worldY": 25.85,
+      "worldZ": 0.645,
+      "size": [
+        0.07,
+        0.52,
+        0.41
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "reading_chair_center_1_leg_-1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -1.22,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_center_1_leg_-1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -1.22,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_center_1_leg_1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -0.78,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_center_1_leg_1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": -0.78,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_center_2_seat",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 1.0,
+      "worldY": 25.85,
+      "worldZ": 0.44,
+      "size": [
+        0.52,
+        0.52,
+        0.07
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "reading_chair_center_2_back",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 0.775,
+      "worldY": 25.85,
+      "worldZ": 0.645,
+      "size": [
+        0.07,
+        0.52,
+        0.41
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "reading_chair_center_2_leg_-1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 0.78,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_center_2_leg_-1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 0.78,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_center_2_leg_1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 1.22,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_center_2_leg_1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 1.22,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_table_east_tabletop",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": 15.0,
+      "worldY": 27.2,
+      "worldZ": 0.725,
+      "size": [
+        3.2,
+        1.4,
+        0.07
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "reading_table_east_leg_-1_-1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": 13.45,
+      "worldY": 26.55,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_table_east_leg_-1_1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": 13.45,
+      "worldY": 27.849999999999998,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_table_east_leg_1_-1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": 16.55,
+      "worldY": 26.55,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_table_east_leg_1_1",
+      "category": "reading_table",
+      "label": "Reading area table",
+      "worldX": 16.55,
+      "worldY": 27.849999999999998,
+      "worldZ": 0.345,
+      "size": [
+        0.065,
+        0.065,
+        0.69
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_east_1_seat",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 14.0,
+      "worldY": 25.85,
+      "worldZ": 0.44,
+      "size": [
+        0.52,
+        0.52,
+        0.07
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "reading_chair_east_1_back",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 13.775,
+      "worldY": 25.85,
+      "worldZ": 0.645,
+      "size": [
+        0.07,
+        0.52,
+        0.41
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "reading_chair_east_1_leg_-1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 13.78,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_east_1_leg_-1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 13.78,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_east_1_leg_1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 14.22,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_east_1_leg_1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 14.22,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_east_2_seat",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 16.0,
+      "worldY": 25.85,
+      "worldZ": 0.44,
+      "size": [
+        0.52,
+        0.52,
+        0.07
+      ],
+      "color": "#B78049"
+    },
+    {
+      "name": "reading_chair_east_2_back",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 15.775,
+      "worldY": 25.85,
+      "worldZ": 0.645,
+      "size": [
+        0.07,
+        0.52,
+        0.41
+      ],
+      "color": "#66855C"
+    },
+    {
+      "name": "reading_chair_east_2_leg_-1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 15.78,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_east_2_leg_-1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 15.78,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_east_2_leg_1_-1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 16.22,
+      "worldY": 25.630000000000003,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    },
+    {
+      "name": "reading_chair_east_2_leg_1_1",
+      "category": "chair",
+      "label": "Reading chair",
+      "worldX": 16.22,
+      "worldY": 26.07,
+      "worldZ": 0.185,
+      "size": [
+        0.05,
+        0.05,
+        0.37
+      ],
+      "color": "#694326"
+    }
+  ]
+}

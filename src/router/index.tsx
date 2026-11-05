@@ -7,18 +7,17 @@ import {
 } from 'react-router'
 
 import Sidebar from '../components/layout/Sidebar'
-import OperationBanner from '../components/layout/OperationBanner'
-import Overview from '../pages/overview/Overview'
+import DispatchWorkflowPage from '../features/dispatch/DispatchWorkflowPage'
 import AreaDetail from '../pages/areas/AreaDetail'
 import AisleDetail from '../pages/aisles/AisleDetail'
 import FloorList from '../pages/floors/FloorList'
 import FloorDetail from '../pages/floors/FloorDetail'
 import ListMap from '../pages/maps/ListMap'
-import MapDetail from '../pages/maps/MapDetail'
+import CreateMap from '../pages/maps/CreateMap'
+import RobotMapDetail from '../pages/maps/RobotMapDetail'
 import ShelfDetail from '../pages/shelves/ShelfDetail'
 import ShelfList from '../pages/shelves/ShelfList'
 import BookList from '../pages/books/BookList'
-import BookDetail from '../pages/books/BookDetail'
 import InventoryPage from '../pages/inventory/InventoryPage'
 import InventoryResultsPage from '../pages/inventory/InventoryResultsPage'
 import TaskCreate from '../pages/tasks/TaskCreate'
@@ -49,11 +48,8 @@ function AppLayout() {
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
 
-      <main className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <OperationBanner />
-        <div className="app-page-content min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
-          <Outlet />
-        </div>
+      <main className="h-full min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
+        <Outlet />
       </main>
     </div>
   )
@@ -66,7 +62,7 @@ function AppRouter() {
         <Route element={<AppLayout />}>
           <Route
             path="/"
-            element={<Overview />}
+            element={<PlaceholderPage title="Overview" />}
           />
 
           <Route
@@ -75,8 +71,18 @@ function AppRouter() {
           />
 
           <Route
+            path="/maps/create"
+            element={<CreateMap />}
+          />
+
+          <Route
+            path="/maps/robot/:id"
+            element={<RobotMapDetail />}
+          />
+
+          <Route
             path="/maps/:id"
-            element={<MapDetail />}
+            element={<RobotMapDetail />}
           />
 
           <Route
@@ -93,13 +99,15 @@ function AppRouter() {
 
           <Route path="/floors/:id" element={<FloorDetail />} />
 
-          <Route path="/aisles" element={<AisleDetail />} />
+          <Route
+            path="/aisles/:id"
+            element={<AisleDetail />}
+          />
 
-          <Route path="/aisles/:id" element={<AisleDetail />} />
-
-          <Route path="/shelves" element={<ShelfList />} />
-
-          <Route path="/shelf" element={<Navigate to="/shelves" replace />} />
+          <Route
+            path="/shelf"
+            element={<ShelfList />}
+          />
 
           <Route
             path="/shelves/:id"
@@ -109,6 +117,11 @@ function AppRouter() {
           <Route
             path="/tasks"
             element={<TaskList />}
+          />
+
+          <Route
+            path="/dispatch"
+            element={<DispatchWorkflowPage />}
           />
 
           <Route
@@ -137,11 +150,16 @@ function AppRouter() {
           />
 
           <Route
+            path="/rows"
+            element={<PlaceholderPage title="Row" />}
+          />
+
+          <Route path="/iii-row" element={<Navigate to="/rows" replace />} />
+
+          <Route
             path="/book"
             element={<BookList />}
           />
-
-          <Route path="/book/:id" element={<BookDetail />} />
 
           <Route
             path="/inventory"

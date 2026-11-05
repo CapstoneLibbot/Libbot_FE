@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CheckSquare, ChevronDown, Plus, Search, X } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import LiveMissionList from '@/components/tasks/LiveMissionList'
 import { getJobs } from '@/lib/jobData'
 import { getWorkflows } from '@/lib/workflowData'
 import { JobPriority, JobStatus } from '@/types/job'
@@ -98,6 +99,8 @@ function TaskList() {
             Create Task
           </button>
         </div>
+
+        <LiveMissionList />
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_190px_170px_150px_auto]">
           <div className="relative">

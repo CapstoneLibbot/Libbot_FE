@@ -23,6 +23,11 @@ export default defineConfig({
         target: 'http://localhost:5205',
         changeOrigin: true,
       },
+      '/robotHub': {
+        target: 'http://localhost:5205',
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 })
