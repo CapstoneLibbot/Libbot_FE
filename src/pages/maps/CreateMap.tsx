@@ -647,7 +647,7 @@ function CreateMap() {
             <div className="grid gap-4 p-4 2xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,.75fr)]">
               <LiveOccupancyMap
                 grid={grid}
-                orientVertically
+                orientVertically={false}
                 robot={mapPose}
                 mappingActive={mappingActive}
               />
