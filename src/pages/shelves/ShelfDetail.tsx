@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft, BookOpen, LibraryBig, MapPin, Pencil, Plus, Target, X } from 'lucide-react'
 
 import { initialAisles, initialBookCategories, initialBookItems, initialBooks, initialShelfLevels, initialShelves } from '../../lib/mapData'
-import { ShelfFormDialog, StatusBadge } from './ShelfList'
+import type { MapShelf } from '../../types/map'
+
+type ShelfFormData = Pick<MapShelf, 'endpoint_id' | 'code' | 'name' | 'description' | 'status'>
 
 function ShelfDetail() {
   const { id } = useParams()
@@ -52,10 +54,38 @@ function ShelfDetail() {
         <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-[#596174]"><Legend color="bg-[#22a06b]" label="Correct: expected level = current level" /><Legend color="bg-[#e8871e]" label="Misplaced: expected and current levels differ" /><Legend color="bg-[#d92d20]" label="Missing: current level is empty" /></div>
       </section>
       {selectedLevelId && <ShelfLevelBooksDialog levelId={selectedLevelId} onClose={() => setSelectedLevelId(null)} />}
-      {isShelfEditorOpen && <ShelfFormDialog title="Update Shelf" initial={shelf} onClose={() => setIsShelfEditorOpen(false)} onSubmit={(data) => { Object.assign(shelf, data); setVersion((value) => value + 1); setIsShelfEditorOpen(false) }} />}
+      {isShelfEditorOpen && <ShelfFormDialog initial={shelf} onClose={() => setIsShelfEditorOpen(false)} onSubmit={(data) => { Object.assign(shelf, data); setVersion((value) => value + 1); setIsShelfEditorOpen(false) }} />}
       {editingLevelId !== null && <ShelfLevelFormDialog shelfId={shelf.id} level={editingLevelId === 'CREATE' ? undefined : initialShelfLevels.find((level) => level.id === editingLevelId)} onClose={() => setEditingLevelId(null)} onSubmit={(data) => { if (editingLevelId === 'CREATE') initialShelfLevels.push({ id: Math.max(0, ...initialShelfLevels.map((level) => level.id)) + 1, shelf_id: shelf.id, ...data }); else { const level = initialShelfLevels.find((item) => item.id === editingLevelId); if (level) Object.assign(level, data) }; setVersion((value) => value + 1); setEditingLevelId(null) }} />}
     </div>
   )
+}
+
+function StatusBadge({ status }: { status: MapShelf['status'] }) {
+  const normalized = ({ 1: 'ACTIVE', 2: 'INACTIVE', 3: 'MAINTENANCE' } as const)[status]
+  const styles = {
+    ACTIVE: 'bg-[#d9f7e7] text-[#087443]',
+    INACTIVE: 'bg-[#eef0f3] text-[#596174]',
+    MAINTENANCE: 'bg-[#fff0d8] text-[#a65000]',
+  }
+  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${styles[normalized]}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{normalized.charAt(0) + normalized.slice(1).toLowerCase()}</span>
+}
+
+function ShelfFormDialog({ initial, onClose, onSubmit }: { initial: MapShelf; onClose: () => void; onSubmit: (data: ShelfFormData) => void }) {
+  const [form, setForm] = useState<ShelfFormData>({
+    endpoint_id: initial.endpoint_id,
+    code: initial.code,
+    name: initial.name,
+    description: initial.description,
+    status: initial.status,
+  })
+  const input = 'mt-1.5 h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm'
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    onSubmit(form)
+  }
+
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#151922]/45 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}><section role="dialog" aria-modal="true" aria-labelledby="shelf-form-title" className="w-full max-w-lg border border-[#d9dce5] bg-white shadow-xl"><header className="flex items-start justify-between border-b border-[#e4e6eb] px-5 py-4"><h2 id="shelf-form-title" className="text-lg font-semibold">Update Shelf</h2><button type="button" onClick={onClose} aria-label="Close shelf form" className="flex h-8 w-8 items-center justify-center text-[#687386] hover:bg-[#f1f2f5]"><X className="h-4 w-4" /></button></header><form onSubmit={handleSubmit} className="space-y-4 p-5"><label className="block text-sm font-medium">Endpoint ID<input required min={1} type="number" value={form.endpoint_id} onChange={(event) => setForm({ ...form, endpoint_id: Number(event.target.value) })} className={input} /></label><label className="block text-sm font-medium">Code<input required maxLength={50} value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value })} className={input} /></label><label className="block text-sm font-medium">Name<input required maxLength={100} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} className={input} /></label><label className="block text-sm font-medium">Description<textarea maxLength={500} value={form.description ?? ''} onChange={(event) => setForm({ ...form, description: event.target.value || null })} className={`${input} h-20 py-2`} /></label><label className="block text-sm font-medium">Status<select value={form.status} onChange={(event) => setForm({ ...form, status: Number(event.target.value) as MapShelf['status'] })} className={input}><option value={1}>Active</option><option value={2}>Inactive</option><option value={3}>Maintenance</option></select></label><footer className="flex justify-end gap-2 border-t border-[#e4e6eb] pt-4"><button type="button" onClick={onClose} className="h-10 border border-[#d7d9e2] px-4 text-sm font-medium hover:bg-[#f5f5f7]">Cancel</button><button type="submit" className="h-10 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90">Save</button></footer></form></section></div>
 }
 
 function ShelfLevelRow({ level, onSelect, onEdit }: { level: (typeof initialShelfLevels)[number]; onSelect: () => void; onEdit: () => void }) {
