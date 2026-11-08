@@ -430,7 +430,6 @@ function CreateMap() {
     }
 
     setBusy(true)
-    await stop(false)
 
     try {
       await setMapping(RUNTIME_ID, enabled, leaseId)
