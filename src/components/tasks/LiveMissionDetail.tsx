@@ -222,6 +222,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   const waitKey = `${execution?.executionId ?? ''}:${execution?.currentStep ?? ''}:${expectedEventType}`
   const waitAlreadySubmitted = submittedWaitKey === waitKey
   const isLibraryPatrol = workflow?.type?.toUpperCase() === 'LIBRARY_PATROL'
+  const isBookshelfInventory = workflow?.type?.toUpperCase() === 'BOOKSHELF_INVENTORY'
   const patrolResults = events.map((event) => asRecord(event.result)).filter((result): result is Record<string, unknown> => result !== null)
   const patrolReport = patrolResults
     .filter((result) => String(result.action ?? '').toUpperCase() === 'GENERATE_PATROL_REPORT')
@@ -232,6 +233,11 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     .map((result) => asRecord(result.data)?.coverage)
     .map(asRecord)
     .find((result) => result !== null) ?? null
+  const inventoryReport = patrolResults
+    .filter((result) => String(result.action ?? '').toUpperCase() === 'GENERATE_REPORT')
+    .map((result) => asRecord(result.data))
+    .find((result) => result !== null) ?? null
+  const inventoryReportDetails = asRecord(inventoryReport?.details)
 
   const runMission = async () => {
     if (!isSimulation && !armLeaseId) {
@@ -539,6 +545,32 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+            {isBookshelfInventory && (
+              <section className="mb-4 border border-[#d9dce5] bg-white p-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-sm font-semibold text-[#252933]">Bookshelf inventory</h2>
+                  {inventoryReport && mission && (
+                    <Link
+                      to={`/inventory-results?missionId=${encodeURIComponent(missionId)}&runtimeId=${encodeURIComponent(mission.runtimeId ?? 'sim')}`}
+                      className="text-xs font-semibold text-primary hover:underline"
+                    >View full report</Link>
+                  )}
+                </div>
+                {inventoryReport ? (
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                    <InventoryMetric label="Shelves" value={inventoryReport.totalShelves} />
+                    <InventoryMetric label="QR codes" value={inventoryReport.totalBooksScanned} />
+                    <InventoryMetric label="Available" value={inventoryReport.totalAvailable} />
+                    <InventoryMetric label="Misplaced" value={inventoryReport.totalMisplaced} />
+                    <InventoryMetric label="Missing" value={inventoryReport.totalMissing} />
+                    <InventoryMetric label="Unknown" value={inventoryReport.totalUnknown} />
+                    <InventoryMetric label="Ambiguous" value={Array.isArray(inventoryReportDetails?.ambiguous_qr_codes) ? inventoryReportDetails.ambiguous_qr_codes.length : 0} />
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-[#89909d]">The shelf and QR summary will appear when the inventory report is ready.</p>
+                )}
+              </section>
+            )}
             {isLibraryPatrol && (
               <section className="mb-4 border border-[#d9dce5] bg-white p-3.5">
                 <div className="flex items-center justify-between gap-3">
@@ -622,6 +654,15 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
           </div>
         </aside>
       </div>
+    </div>
+  )
+}
+
+function InventoryMetric({ label, value }: { label: string; value: unknown }) {
+  return (
+    <div className="border border-[#edf0f3] bg-[#fafbfc] px-2.5 py-2">
+      <span className="block text-[10px] font-medium uppercase tracking-wide text-[#79808d]">{label}</span>
+      <span className="mt-1 block text-sm font-semibold text-[#252933]">{numericValue(value) ?? 0}</span>
     </div>
   )
 }

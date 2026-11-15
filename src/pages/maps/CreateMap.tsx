@@ -385,7 +385,7 @@ function CreateMap() {
         showNotice(messageOf(error), 'error')
         void stop()
       })
-    }, 150)
+    }, 100)
 
     return () => window.clearInterval(timer)
   }, [showNotice, speed, stop])
