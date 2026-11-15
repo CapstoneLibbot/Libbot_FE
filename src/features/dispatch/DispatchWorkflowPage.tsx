@@ -29,7 +29,7 @@ import type {
   Pose2D,
   RobotRuntime,
 } from '../maps/types/runtime'
-import { occupancyGridToMapMetadata, simulationMapToMetadata } from '../maps/utils/occupancyGrid'
+import { occupancyGridToMapMetadata } from '../maps/utils/occupancyGrid'
 import {
   apiErrorMessage,
   cancelMission,
@@ -63,7 +63,7 @@ export default function DispatchWorkflowPage() {
   const [runtimeId, setRuntimeId] = useState<DispatchRuntimeId>('sim')
   const [runtime, setRuntime] = useState<RobotRuntime | null>(null)
   const [map, setMap] = useState<OccupancyMapMetadata | null>(null)
-  const [mapLabel, setMapLabel] = useState('Simulation library map')
+  const [mapLabel, setMapLabel] = useState('')
   const [mapLoading, setMapLoading] = useState(true)
   const [mapError, setMapError] = useState('')
   const [view, setView] = useState<ViewMode>('SPLIT')
@@ -130,34 +130,14 @@ export default function DispatchWorkflowPage() {
     setMapLoading(true)
     setMapError('')
     setMap(null)
-
-    if (runtimeId === 'sim') {
-      const controller = new AbortController()
-      void fetch('/maps/library-map.json', { signal: controller.signal })
-        .then((response) => {
-          if (!response.ok) throw new Error(`HTTP ${response.status}`)
-          return response.json() as Promise<Parameters<typeof simulationMapToMetadata>[0]>
-        })
-        .then((nextMap) => {
-          if (active) {
-            setMap(simulationMapToMetadata(nextMap))
-            setMapLabel('Simulation library map')
-          }
-        })
-        .catch((cause) => {
-          if (active && !controller.signal.aborted) setMapError(apiErrorMessage(cause, 'Could not load simulation map.'))
-        })
-        .finally(() => { if (active) setMapLoading(false) })
-      return () => {
-        active = false
-        controller.abort()
-      }
-    }
+    setDraft(null)
 
     void (async () => {
       try {
-        const latest = await getLatestSavedRobotMap()
-        const targetId = runtime?.telemetry?.activeMapId ?? latest?.id
+        const activeMapId = runtime?.id.toLowerCase() === runtimeId
+          ? runtime.telemetry?.activeMapId
+          : null
+        const targetId = activeMapId || (await getLatestSavedRobotMap())?.id
         if (!targetId) throw new Error('No saved robot map is available.')
         const details = await getSavedRobotMapDetails(targetId)
         if (!active) return
@@ -171,7 +151,7 @@ export default function DispatchWorkflowPage() {
     })()
 
     return () => { active = false }
-  }, [runtimeId, runtime?.telemetry?.activeMapId])
+  }, [runtimeId, runtime?.id, runtime?.telemetry?.activeMapId])
 
   useEffect(() => {
     void signalRClient.subscribeRuntime(runtimeId)
