@@ -11,7 +11,7 @@ import {
   Map,
   MapPin,
   Layers3,
-  Rows3,
+  Route,
   Send,
   Settings,
   Warehouse,
@@ -54,14 +54,14 @@ const menuItems = [
     path: '/floors',
   },
   {
-    label: 'III Row',
-    icon: Rows3,
-    path: '/rows',
+    label: 'Aisle',
+    icon: Route,
+    path: '/aisles',
   },
   {
     label: 'Shelf',
     icon: Warehouse,
-    path: '/shelf',
+    path: '/shelves',
   },
   {
     label: 'Book',

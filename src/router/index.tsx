@@ -7,6 +7,8 @@ import {
 } from 'react-router'
 
 import Sidebar from '../components/layout/Sidebar'
+import OperationBanner from '../components/layout/OperationBanner'
+import Overview from '../pages/overview/Overview'
 import DispatchWorkflowPage from '../features/dispatch/DispatchWorkflowPage'
 import AreaDetail from '../pages/areas/AreaDetail'
 import AisleDetail from '../pages/aisles/AisleDetail'
@@ -18,6 +20,7 @@ import RobotMapDetail from '../pages/maps/RobotMapDetail'
 import ShelfDetail from '../pages/shelves/ShelfDetail'
 import ShelfList from '../pages/shelves/ShelfList'
 import BookList from '../pages/books/BookList'
+import BookDetail from '../pages/books/BookDetail'
 import InventoryPage from '../pages/inventory/InventoryPage'
 import InventoryResultsPage from '../pages/inventory/InventoryResultsPage'
 import TaskCreate from '../pages/tasks/TaskCreate'
@@ -48,8 +51,11 @@ function AppLayout() {
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
 
-      <main className="h-full min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
-        <Outlet />
+      <main className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <OperationBanner />
+        <div className="app-page-content min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+          <Outlet />
+        </div>
       </main>
     </div>
   )
@@ -62,7 +68,7 @@ function AppRouter() {
         <Route element={<AppLayout />}>
           <Route
             path="/"
-            element={<PlaceholderPage title="Overview" />}
+            element={<Overview />}
           />
 
           <Route
@@ -100,12 +106,22 @@ function AppRouter() {
           <Route path="/floors/:id" element={<FloorDetail />} />
 
           <Route
+            path="/aisles"
+            element={<AisleDetail />}
+          />
+
+          <Route
             path="/aisles/:id"
             element={<AisleDetail />}
           />
 
           <Route
             path="/shelf"
+            element={<ShelfList />}
+          />
+
+          <Route
+            path="/shelves"
             element={<ShelfList />}
           />
 
@@ -151,14 +167,19 @@ function AppRouter() {
 
           <Route
             path="/rows"
-            element={<PlaceholderPage title="Row" />}
+            element={<Navigate to="/aisles" replace />}
           />
 
-          <Route path="/iii-row" element={<Navigate to="/rows" replace />} />
+          <Route path="/iii-row" element={<Navigate to="/aisles" replace />} />
 
           <Route
             path="/book"
             element={<BookList />}
+          />
+
+          <Route
+            path="/book/:id"
+            element={<BookDetail />}
           />
 
           <Route
