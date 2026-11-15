@@ -29,6 +29,11 @@ import TaskList from '../pages/tasks/TaskList'
 import WorkflowCreate from '../pages/workflows/WorkflowCreate'
 import WorkflowDetail from '../pages/workflows/WorkflowDetail'
 import WorkflowList from '../pages/workflows/WorkflowList'
+import BookTransactionsHub from '../pages/book-transactions/BookTransactionsHub'
+import ReceiptCreate from '../pages/book-transactions/ReceiptCreate'
+import ReceiptDetail from '../pages/book-transactions/ReceiptDetail'
+import IssueCreate from '../pages/book-transactions/IssueCreate'
+import IssueDetail from '../pages/book-transactions/IssueDetail'
 
 function PlaceholderPage({
   title,
@@ -180,6 +185,73 @@ function AppRouter() {
           <Route
             path="/book/:id"
             element={<BookDetail />}
+          />
+
+          {/* Book Transactions Routes */}
+          <Route
+            path="/book-transactions"
+            element={<BookTransactionsHub />}
+          />
+
+          <Route
+            path="/book-transactions/receipts/new"
+            element={<ReceiptCreate />}
+          />
+
+          <Route
+            path="/book-transactions/receipts/:id"
+            element={<ReceiptDetail />}
+          />
+
+          <Route
+            path="/book-transactions/issues/new"
+            element={<IssueCreate />}
+          />
+
+          <Route
+            path="/book-transactions/issues/:id"
+            element={<IssueDetail />}
+          />
+
+          {/* Aliases & Redirects */}
+          <Route
+            path="/circulation"
+            element={<Navigate to="/book-transactions" replace />}
+          />
+
+          <Route
+            path="/circulation/receipts/new"
+            element={<Navigate to="/book-transactions/receipts/new" replace />}
+          />
+
+          <Route
+            path="/circulation/receipts/:id"
+            element={<Navigate to="/book-transactions/receipts/:id" replace />}
+          />
+
+          <Route
+            path="/circulation/issues/new"
+            element={<Navigate to="/book-transactions/issues/new" replace />}
+          />
+
+          <Route
+            path="/circulation/issues/:id"
+            element={<Navigate to="/book-transactions/issues/:id" replace />}
+          />
+
+          <Route
+            path="/transactions"
+            element={<Navigate to="/book-transactions" replace />}
+          />
+
+          <Route
+            path="/receipts"
+            element={<Navigate to="/book-transactions" replace />}
+          />
+
+          <Route
+            path="/issues"
+            element={<Navigate to="/book-transactions?tab=issues" replace />}
           />
 
           <Route

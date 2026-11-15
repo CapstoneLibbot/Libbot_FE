@@ -1,40 +1,705 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  AlertCircle,
+  ArrowLeft,
+  BookOpen,
+  Calendar,
+  Camera,
+  CheckCircle2,
+  HelpCircle,
+  Layers,
+  Loader2,
+  MapPin,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { Link, useParams } from 'react-router'
-import { ArrowLeft, BookOpen, Camera, Pencil, Plus, X } from 'lucide-react'
-import { initialBookCategories, initialBookItems, initialBooks, initialShelfLevels, initialShelves } from '../../lib/mapData'
+
+import { bookApi } from '@/features/books/api/bookApi'
+import { bookItemApi } from '@/features/book-items/api/bookItemApi'
+import { shelfApi } from '@/features/shelves/api/shelfApi'
+import type { BookRecord } from '@/features/books/types/book'
+import type { BookItemRecord, BookItemWriteRequest } from '@/features/book-items/types/bookItem'
+import type { ShelfRecord } from '@/features/shelves/types/shelf'
+import type { BookItemStatus } from '@/types/enums'
+import { getErrorMessage } from '@/services/http/error'
 import { BookFormDialog, type BookFormData } from './BookList'
 
-function BookDetail() {
-  const { id } = useParams()
-  const [bookEditor, setBookEditor] = useState(false)
-  const [itemEditor, setItemEditor] = useState<number | 'CREATE' | null>(null)
-  const [, setVersion] = useState(0)
-  const book = id ? initialBooks.find((item) => item.id === Number(id)) : undefined
-  if (!book) return <NotFound />
-  const category = initialBookCategories.find((item) => item.id === book.category_id)
-  const items = initialBookItems.filter((item) => item.book_id === book.id)
-  const summary = { correct: items.filter((item) => item.current_shelf_level_id === item.expected_shelf_level_id).length, misplaced: items.filter((item) => item.current_shelf_level_id !== null && item.current_shelf_level_id !== 0 && item.current_shelf_level_id !== item.expected_shelf_level_id).length, missing: items.filter((item) => item.current_shelf_level_id === null).length, storage: items.filter((item) => item.current_shelf_level_id === 0).length }
+export default function BookDetail() {
+  const { id } = useParams<{ id: string }>()
+  const [book, setBook] = useState<BookRecord | null>(null)
+  const [items, setItems] = useState<BookItemRecord[]>([])
+  const [shelves, setShelves] = useState<ShelfRecord[]>([])
 
-  return <div className="min-h-full bg-[#f9f7fd] p-5 text-[#17181c] sm:p-8">
-    <Link to="/book" className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"><ArrowLeft className="h-4 w-4" />Books</Link>
-    <header className="mt-6 flex flex-wrap items-center justify-between gap-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary"><BookOpen className="h-5 w-5" /></div><div><p className="text-xs font-medium uppercase text-[#687386]">Book #{book.id}</p><h1 className="text-2xl font-bold tracking-tight">{book.title}</h1></div></div><button type="button" onClick={() => setBookEditor(true)} className="flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium hover:bg-[#f1eff5]"><Pencil className="h-4 w-4" />Update Book</button></header>
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorNotice, setErrorNotice] = useState<string | null>(null)
 
-    <section className="mt-8 grid max-w-5xl gap-5 lg:grid-cols-[minmax(0,1fr)_280px]"><div className="overflow-hidden border border-[#d9dce5] bg-white"><dl className="divide-y divide-[#d9dce5]"><Detail label="ID" value={book.id.toString()} /><Detail label="ISBN" value={book.isbn || '—'} /><Detail label="Title" value={book.title} /><Detail label="Author" value={book.author || '—'} /><Detail label="Category" value={category?.name || 'Uncategorized'} /><Detail label="Publisher" value={book.publisher || '—'} /><Detail label="Publication year" value={book.publication_year?.toString() || '—'} /><Detail label="Description" value={book.description || '—'} /></dl></div><div className="flex min-h-[300px] items-center justify-center overflow-hidden border border-[#d9dce5] bg-white p-4">{book.image_url ? <img src={book.image_url} alt={`Cover of ${book.title}`} className="max-h-[360px] w-full object-contain" /> : <div className="text-center text-[#89909f]"><Camera className="mx-auto h-12 w-12" /><p className="mt-3 text-sm font-medium">No cover image</p></div>}</div></section>
+  const [bookEditorOpen, setBookEditorOpen] = useState(false)
+  const [itemEditor, setItemEditor] = useState<BookItemRecord | 'CREATE' | null>(null)
+  const [itemSaving, setItemSaving] = useState(false)
+  const [itemFormError, setItemFormError] = useState('')
+  const [deletingItemId, setDeletingItemId] = useState('')
 
-    <section className="mt-9"><div className="flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2"><BookOpen className="h-5 w-5 text-primary" /><div><h2 className="text-lg font-semibold">Book items</h2><p className="mt-0.5 text-sm text-[#687386]">{items.length} physical cop{items.length === 1 ? 'y' : 'ies'} registered in the library.</p></div></div><button type="button" onClick={() => setItemEditor('CREATE')} className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"><Plus className="h-4 w-4" />Create Book Item</button></div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-4"><Summary label="Correct" value={summary.correct} tone="text-[#087443]" /><Summary label="Misplaced" value={summary.misplaced} tone="text-[#a65000]" /><Summary label="Missing" value={summary.missing} tone="text-[#b42318]" /><Summary label="In storage" value={summary.storage} tone="text-[#596174]" /></div>
-      <div className="mt-4 overflow-hidden border border-[#d9dce5] bg-white"><div className="overflow-x-auto"><table className="w-full min-w-[1100px] text-left text-sm"><thead><tr className="border-b border-[#d9dce5] bg-[#f5f4f8]"><Head>Item ID</Head><Head>Barcode</Head><Head>Expected shelf level</Head><Head>Current position</Head><Head>Placement</Head><Head>Item status</Head><Head>Last inventory</Head><Head>Actions</Head></tr></thead><tbody>{items.length ? items.map((item) => <ItemRow key={item.id} item={item} onEdit={() => setItemEditor(item.id)} />) : <tr><td colSpan={8} className="px-6 py-14 text-center">No book items found.</td></tr>}</tbody></table></div></div>
-    </section>
-    {bookEditor && <BookFormDialog title="Update Book" initial={book as BookFormData} onClose={() => setBookEditor(false)} onSubmit={(data) => { Object.assign(book, data); setVersion((value) => value + 1); setBookEditor(false) }} />}
-    {itemEditor !== null && <BookItemDialog bookId={book.id} item={itemEditor === 'CREATE' ? undefined : initialBookItems.find((item) => item.id === itemEditor)} onClose={() => setItemEditor(null)} onSubmit={(data) => { if (itemEditor === 'CREATE') initialBookItems.push({ id: Math.max(0, ...initialBookItems.map((item) => item.id)) + 1, book_id: book.id, ...data }); else { const item = initialBookItems.find((entry) => entry.id === itemEditor); if (item) Object.assign(item, data) }; setVersion((value) => value + 1); setItemEditor(null) }} />}
-  </div>
+  const loadData = useCallback(async () => {
+    if (!id) return
+    setIsLoading(true)
+    setErrorNotice(null)
+    try {
+      const [bookData, itemsData, shelvesData] = await Promise.all([
+        bookApi.getBookById(id, 'items,category'),
+        bookItemApi.getBookItems({ bookId: id, pageSize: 100 }),
+        shelfApi.getShelves({ page: 1, pageSize: 100, expand: 'levels' }).catch(() => ({
+          items: [] as ShelfRecord[],
+          page: 1,
+          pageSize: 100,
+          totalCount: 0,
+          totalPages: 0,
+          sortBy: 'name',
+          sortOrder: 'asc',
+        })),
+      ])
+      setBook(bookData)
+      setItems(itemsData.items || [])
+      setShelves(shelvesData.items || [])
+    } catch (err) {
+      setErrorNotice(getErrorMessage(err))
+    } finally {
+      setIsLoading(false)
+    }
+  }, [id])
+
+  useEffect(() => {
+    void loadData()
+  }, [loadData])
+
+  // Map levelId -> { shelfName, levelName, levelNumber }
+  const levelLookup = useMemo(() => {
+    const map = new Map<string, { shelfName: string; levelName: string; levelNumber: number }>()
+    shelves.forEach((s) => {
+      s.levels?.forEach((lvl) => {
+        map.set(lvl.id, {
+          shelfName: s.name,
+          levelName: lvl.name || `Level ${lvl.levelNumber}`,
+          levelNumber: lvl.levelNumber,
+        })
+      })
+    })
+    return map
+  }, [shelves])
+
+  const handleUpdateBook = async (formData: BookFormData) => {
+    if (!id) return
+    try {
+      const updated = await bookApi.updateBook(id, {
+        title: formData.title,
+        author: formData.author || '',
+        isbn: formData.isbn || '',
+        categoryId: formData.category_id ? String(formData.category_id) : null,
+        publisher: formData.publisher,
+        publicationYear: formData.publication_year,
+        image: formData.image_url,
+        description: formData.description,
+      })
+      setBook((prev) => (prev ? { ...prev, ...updated } : updated))
+      setBookEditorOpen(false)
+    } catch (err) {
+      alert(getErrorMessage(err, 'Could not update book'))
+    }
+  }
+
+  const handleSaveItem = async (payload: BookItemWriteRequest) => {
+    if (!book) return
+    setItemSaving(true)
+    setItemFormError('')
+    try {
+      if (itemEditor === 'CREATE') {
+        const created = await bookItemApi.createBookItem({
+          ...payload,
+          bookId: book.id,
+        })
+        setItems((prev) => [created, ...prev])
+        setBook((prev) => (prev ? { ...prev, totalCopies: (prev.totalCopies ?? items.length) + 1 } : prev))
+      } else if (itemEditor) {
+        const updated = await bookItemApi.updateBookItem(itemEditor.id, payload)
+        setItems((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
+      }
+      setItemEditor(null)
+    } catch (err) {
+      setItemFormError(getErrorMessage(err, 'Could not save book item'))
+    } finally {
+      setItemSaving(false)
+    }
+  }
+
+  const handleDeleteItem = async (item: BookItemRecord) => {
+    if (!window.confirm(`Are you sure you want to delete book item with barcode "${item.barcode}"?`)) return
+    setDeletingItemId(item.id)
+    try {
+      await bookItemApi.deleteBookItem(item.id)
+      setItems((prev) => prev.filter((i) => i.id !== item.id))
+      setBook((prev) =>
+        prev ? { ...prev, totalCopies: Math.max(0, (prev.totalCopies ?? items.length) - 1) } : prev,
+      )
+    } catch (err) {
+      alert(getErrorMessage(err, 'Could not delete book item'))
+    } finally {
+      setDeletingItemId('')
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="ml-2 text-sm text-[#596174]">Loading book details and physical copies...</span>
+      </div>
+    )
+  }
+
+  if (errorNotice || !book) {
+    return (
+      <div className="min-h-full bg-[#f9f7fd] p-6 text-[#17181c] md:p-8">
+        <Link to="/book" className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary">
+          <ArrowLeft className="h-4 w-4" /> Back to Books
+        </Link>
+        <div className="mt-6 max-w-xl border border-[#efc7c4] bg-[#fff1f0] p-5 text-[#a12820]">
+          <h2 className="text-base font-semibold">Book Not Found</h2>
+          <p className="mt-1 text-sm">{errorNotice || 'This book does not exist or has been deleted.'}</p>
+          <button
+            type="button"
+            onClick={() => void loadData()}
+            className="mt-3 inline-flex items-center gap-2 text-sm font-semibold underline"
+          >
+            <RefreshCw className="h-4 w-4" /> Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const totalCopies = book.totalCopies ?? items.length
+  const availableCopies = book.availableCopies ?? items.filter((i) => i.status === 'AVAILABLE').length
+  const correctCount = items.filter(
+    (i) => i.expectedShelfLevelId && i.expectedShelfLevelId === i.currentShelfLevelId,
+  ).length
+  const misplacedCount = items.filter(
+    (i) =>
+      i.currentShelfLevelId &&
+      i.expectedShelfLevelId &&
+      i.currentShelfLevelId !== i.expectedShelfLevelId,
+  ).length
+  const missingCount = items.filter((i) => !i.currentShelfLevelId || i.status === 'MISSING').length
+
+  return (
+    <div className="min-h-full bg-[#f9f7fd] p-5 text-[#17181c] sm:p-8">
+      <div className="mx-auto max-w-[1200px] space-y-6">
+        {/* Breadcrumb */}
+        <Link
+          to="/book"
+          className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Books List
+        </Link>
+
+        {/* Header */}
+        <header className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <BookOpen className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase text-[#687386]">ISBN: {book.isbn || 'None'}</p>
+              <h1 className="text-2xl font-bold tracking-tight">{book.title}</h1>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setBookEditorOpen(true)}
+            className="flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium hover:bg-[#f1eff5]"
+          >
+            <Pencil className="h-4 w-4" />
+            Edit Book Details
+          </button>
+        </header>
+
+        {/* Book Details & Cover Grid */}
+        <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="overflow-hidden border border-[#d9dce5] bg-white">
+            <div className="border-b border-[#ececf1] bg-[#faf9fc] px-5 py-3">
+              <h2 className="text-sm font-semibold text-[#2b303b]">Cataloging Information</h2>
+            </div>
+            <dl className="divide-y divide-[#d9dce5] text-sm">
+              <Detail label="Book ID" value={book.id} />
+              <Detail label="ISBN Standard" value={book.isbn || '—'} />
+              <Detail label="Title" value={book.title} />
+              <Detail label="Author" value={book.author || '—'} />
+              <Detail
+                label="Category"
+                value={book.category?.name || 'Uncategorized'}
+              />
+              <Detail label="Publisher" value={book.publisher || '—'} />
+              <Detail
+                label="Publication Year"
+                value={book.publicationYear ? String(book.publicationYear) : '—'}
+              />
+              <Detail label="Description" value={book.description || '—'} />
+            </dl>
+          </div>
+
+          <div className="flex min-h-[300px] items-center justify-center overflow-hidden border border-[#d9dce5] bg-white p-4">
+            {book.image ? (
+              <img
+                src={book.image}
+                alt={`Cover of ${book.title}`}
+                className="max-h-[360px] w-full object-contain"
+              />
+            ) : (
+              <div className="text-center text-[#89909f]">
+                <Camera className="mx-auto h-12 w-12" />
+                <p className="mt-3 text-sm font-medium">No cover image</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Physical Book Items Section */}
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Layers className="h-5 w-5 text-primary" />
+              <div>
+                <h2 className="text-lg font-semibold">Physical Book Items (Copies)</h2>
+                <p className="text-xs text-[#687386]">
+                  {totalCopies} physical cop{totalCopies === 1 ? 'y' : 'ies'} registered ({availableCopies} available for loan)
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setItemFormError('')
+                setItemEditor('CREATE')
+              }}
+              className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4" />
+              Add New Book Item
+            </button>
+          </div>
+
+          {/* Quick Stats Grid */}
+          <div className="grid gap-3 sm:grid-cols-4">
+            <SummaryCard label="Total Copies" value={totalCopies} tone="text-[#17181c]" />
+            <SummaryCard label="Correct Location" value={correctCount} tone="text-[#087443]" />
+            <SummaryCard label="Misplaced Location" value={misplacedCount} tone="text-[#a65000]" />
+            <SummaryCard label="Missing / Not Found" value={missingCount} tone="text-[#b42318]" />
+          </div>
+
+          {/* Table */}
+          <div className="overflow-hidden border border-[#d9dce5] bg-white">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#d9dce5] bg-[#f5f4f8] text-[11px] font-semibold uppercase text-[#3f4654]">
+                    <th className="px-4 py-3">Barcode</th>
+                    <th className="px-4 py-3">Expected Shelf Level</th>
+                    <th className="px-4 py-3">Actual Position</th>
+                    <th className="px-4 py-3">Placement</th>
+                    <th className="px-4 py-3">Physical Status</th>
+                    <th className="px-4 py-3">Last Surveyed</th>
+                    <th className="w-24 px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.length ? (
+                    items.map((item) => (
+                      <ItemTableRow
+                        key={item.id}
+                        item={item}
+                        levelLookup={levelLookup}
+                        isDeleting={deletingItemId === item.id}
+                        onEdit={() => {
+                          setItemFormError('')
+                          setItemEditor(item)
+                        }}
+                        onDelete={() => void handleDeleteItem(item)}
+                      />
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-14 text-center text-[#687386]">
+                        <BookOpen className="mx-auto h-8 w-8 text-[#89909f]" />
+                        <p className="mt-2 font-medium">No physical book items found</p>
+                        <p className="text-xs text-[#7b8190]">
+                          Click &quot;Add New Book Item&quot; to register a barcode and assign a shelf location for this book.
+                        </p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* Book Metadata Edit Dialog */}
+      {bookEditorOpen && (
+        <BookFormDialog
+          title="Update Book"
+          initial={{
+            title: book.title,
+            author: book.author || null,
+            isbn: book.isbn || null,
+            category_id: book.categoryId || null,
+            publisher: book.publisher || null,
+            publication_year: book.publicationYear || null,
+            image_url: book.image || null,
+            description: book.description || null,
+          }}
+          onClose={() => setBookEditorOpen(false)}
+          onSubmit={handleUpdateBook}
+        />
+      )}
+
+      {/* Book Item Create / Edit Dialog */}
+      {itemEditor !== null && (
+        <BookItemFormDialog
+          bookId={book.id}
+          item={itemEditor === 'CREATE' ? undefined : itemEditor}
+          shelves={shelves}
+          saving={itemSaving}
+          errorMessage={itemFormError}
+          onClose={() => setItemEditor(null)}
+          onSubmit={handleSaveItem}
+        />
+      )}
+    </div>
+  )
 }
 
-function ItemRow({ item, onEdit }: { item: (typeof initialBookItems)[number]; onEdit: () => void }) { const placement = item.current_shelf_level_id === null ? ['Missing', 'bg-[#fff0f0] text-[#b42318]'] : item.current_shelf_level_id === 0 ? ['In storage', 'bg-[#eef0f3] text-[#596174]'] : item.current_shelf_level_id === item.expected_shelf_level_id ? ['Correct', 'bg-[#d9f7e7] text-[#087443]'] : ['Misplaced', 'bg-[#fff0d8] text-[#a65000]']; return <tr className="border-b border-[#d9dce5] last:border-b-0"><td className="px-4 py-4 font-mono text-xs">{item.id}</td><td className="px-4 py-4 font-mono text-xs">{item.barcode}</td><td className="px-4 py-4"><Location id={item.expected_shelf_level_id} /></td><td className="px-4 py-4">{item.current_shelf_level_id === null ? 'Not found' : item.current_shelf_level_id === 0 ? 'Storage' : <Location id={item.current_shelf_level_id} />}</td><td className="px-4 py-4"><span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${placement[1]}`}>{placement[0]}</span></td><td className="px-4 py-4">{item.status}</td><td className="px-4 py-4 text-xs">{item.last_inventory_at ? new Date(item.last_inventory_at).toLocaleDateString('en-GB') : '—'}</td><td className="px-4 py-4"><button type="button" onClick={onEdit} className="flex h-8 w-8 items-center justify-center text-[#596174] hover:bg-[#eff5ff] hover:text-primary"><Pencil className="h-4 w-4" /></button></td></tr> }
-function Location({ id }: { id: number }) { const level = initialShelfLevels.find((item) => item.id === id); const shelf = level && initialShelves.find((item) => item.id === level.shelf_id); return level ? <span className="text-xs">Level {level.level_number} · {level.name}<span className="block text-[#687386]">{shelf?.code} · {shelf?.name}</span></span> : <>Level #{id}</> }
-function BookItemDialog({ bookId, item, onClose, onSubmit }: { bookId: number; item?: (typeof initialBookItems)[number]; onClose: () => void; onSubmit: (data: Omit<(typeof initialBookItems)[number], 'id' | 'book_id'>) => void }) { const [form, setForm] = useState<Omit<(typeof initialBookItems)[number], 'id' | 'book_id'>>(item ? { expected_shelf_level_id: item.expected_shelf_level_id, current_shelf_level_id: item.current_shelf_level_id, barcode: item.barcode, last_inventory_at: item.last_inventory_at, status: item.status } : { expected_shelf_level_id: initialShelfLevels[0]?.id || 0, current_shelf_level_id: initialShelfLevels[0]?.id || 0, barcode: '', last_inventory_at: null, status: 'AVAILABLE' }); const input = 'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm'; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#151922]/45 p-4"><section className="w-full max-w-xl border border-[#d9dce5] bg-white shadow-xl"><header className="flex justify-between border-b border-[#e4e6eb] px-5 py-4"><div><h2 className="text-lg font-semibold">{item ? 'Update Book Item' : 'Create Book Item'}</h2><p className="text-sm text-[#687386]">Book #{bookId}</p></div><button type="button" onClick={onClose}><X className="h-4 w-4" /></button></header><form onSubmit={(event) => { event.preventDefault(); onSubmit(form) }} className="space-y-4 p-5"><div className="grid gap-4 sm:grid-cols-2"><label className="sm:col-span-2">Barcode<input required value={form.barcode} onChange={(event) => setForm({ ...form, barcode: event.target.value })} className={`${input} mt-1.5`} /></label><label>Expected shelf level<select value={form.expected_shelf_level_id} onChange={(event) => setForm({ ...form, expected_shelf_level_id: Number(event.target.value) })} className={`${input} mt-1.5`}>{initialShelfLevels.map((level) => <option key={level.id} value={level.id}>Level {level.level_number} · {level.name}</option>)}</select></label><label>Current position<select value={form.current_shelf_level_id === null ? 'NULL' : form.current_shelf_level_id} onChange={(event) => setForm({ ...form, current_shelf_level_id: event.target.value === 'NULL' ? null : Number(event.target.value) })} className={`${input} mt-1.5`}><option value="NULL">Not found</option><option value={0}>Storage</option>{initialShelfLevels.map((level) => <option key={level.id} value={level.id}>Level {level.level_number} · {level.name}</option>)}</select></label><label>Status<select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })} className={`${input} mt-1.5`}><option>AVAILABLE</option><option>MISSING</option><option>MISPLACED</option><option>DAMAGED</option><option>LOST</option></select></label></div><footer className="flex justify-end gap-2 border-t border-[#e4e6eb] pt-4"><button type="button" onClick={onClose} className="h-10 border px-4">Cancel</button><button type="submit" className="h-10 bg-primary px-4 text-white">Save</button></footer></form></section></div> }
-function Detail({ label, value }: { label: string; value: string }) { return <div className="grid grid-cols-[150px_1fr] gap-4 px-4 py-4 text-sm"><dt className="text-[#687386]">{label}</dt><dd>{value}</dd></div> }
-function Head({ children }: { children: React.ReactNode }) { return <th className="px-4 py-3 text-[11px] font-semibold uppercase">{children}</th> }
-function Summary({ label, value, tone }: { label: string; value: number; tone: string }) { return <div className="border border-[#d9dce5] bg-white px-4 py-3"><p className="text-xs uppercase text-[#687386]">{label}</p><p className={`text-2xl font-semibold ${tone}`}>{value}</p></div> }
-function NotFound() { return <div className="p-8"><h1 className="text-xl font-semibold">Book not found</h1><Link to="/book" className="text-primary">Back to Books</Link></div> }
-export default BookDetail
+function ItemTableRow({
+  item,
+  levelLookup,
+  isDeleting,
+  onEdit,
+  onDelete,
+}: {
+  item: BookItemRecord
+  levelLookup: Map<string, { shelfName: string; levelName: string; levelNumber: number }>
+  isDeleting: boolean
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const expected = item.expectedShelfLevelId ? levelLookup.get(item.expectedShelfLevelId) : null
+  const current = item.currentShelfLevelId ? levelLookup.get(item.currentShelfLevelId) : null
+
+  const isMatched = item.expectedShelfLevelId && item.expectedShelfLevelId === item.currentShelfLevelId
+
+  return (
+    <tr className="border-b border-[#ececf1] last:border-b-0 hover:bg-[#faf9fc]">
+      <td className="px-4 py-3.5 font-mono text-xs font-semibold text-primary">
+        {item.barcode}
+      </td>
+      <td className="px-4 py-3.5 text-xs text-[#596174]">
+        {expected ? (
+          <div>
+            <span className="font-semibold text-[#17181c]">{expected.shelfName}</span>
+            <span className="block text-[#687386]">{expected.levelName}</span>
+          </div>
+        ) : (
+          <span className="text-[#89909d]">Unassigned</span>
+        )}
+      </td>
+      <td className="px-4 py-3.5 text-xs text-[#596174]">
+        {current ? (
+          <div>
+            <span className="font-semibold text-[#17181c]">{current.shelfName}</span>
+            <span className="block text-[#687386]">{current.levelName}</span>
+          </div>
+        ) : (
+          <span className="inline-flex items-center gap-1 text-[#b42318]">
+            <HelpCircle className="h-3 w-3" /> Not found
+          </span>
+        )}
+      </td>
+      <td className="px-4 py-3.5">
+        {isMatched ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#d9f7e7] px-2.5 py-0.5 text-[11px] font-medium text-[#087443]">
+            <CheckCircle2 className="h-3 w-3" /> Correct location
+          </span>
+        ) : item.currentShelfLevelId ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0d8] px-2.5 py-0.5 text-[11px] font-medium text-[#a65000]">
+            <MapPin className="h-3 w-3" /> Misplaced level
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0f0] px-2.5 py-0.5 text-[11px] font-medium text-[#b42318]">
+            Missing
+          </span>
+        )}
+      </td>
+      <td className="px-4 py-3.5">
+        <BookItemStatusBadge status={item.status} />
+      </td>
+      <td className="px-4 py-3.5 text-xs text-[#596174]">
+        {item.lastInventoryAtUtc ? (
+          <span className="inline-flex items-center gap-1">
+            <Calendar className="h-3 w-3" />
+            {new Date(item.lastInventoryAtUtc).toLocaleDateString()}
+          </span>
+        ) : (
+          '—'
+        )}
+      </td>
+      <td className="px-4 py-3.5">
+        <div className="flex justify-end gap-1">
+          <button
+            type="button"
+            onClick={onEdit}
+            title="Edit copy"
+            className="flex h-8 w-8 items-center justify-center text-[#596174] hover:bg-[#eff5ff] hover:text-primary"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={isDeleting}
+            title="Delete copy"
+            className="flex h-8 w-8 items-center justify-center text-[#8d4a46] hover:bg-[#fff1f0] hover:text-[#b42318] disabled:opacity-50"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      </td>
+    </tr>
+  )
+}
+
+function BookItemStatusBadge({ status }: { status: string }) {
+  const norm = status.toUpperCase()
+  const styles: Record<string, string> = {
+    AVAILABLE: 'bg-[#d9f7e7] text-[#087443]',
+    MISPLACED: 'bg-[#fff0d8] text-[#a65000]',
+    MISSING: 'bg-[#fff0f0] text-[#b42318]',
+    LOST: 'bg-[#f4f3f6] text-[#717684]',
+    DAMAGED: 'bg-[#ffebee] text-[#c62828]',
+  }
+  const labels: Record<string, string> = {
+    AVAILABLE: 'Available',
+    MISPLACED: 'Misplaced',
+    MISSING: 'Missing',
+    LOST: 'Lost',
+    DAMAGED: 'Damaged',
+  }
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+        styles[norm] || 'bg-gray-100 text-gray-700'
+      }`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {labels[norm] || status}
+    </span>
+  )
+}
+
+interface BookItemFormDialogProps {
+  bookId: string
+  item?: BookItemRecord
+  shelves: ShelfRecord[]
+  saving: boolean
+  errorMessage: string
+  onClose: () => void
+  onSubmit: (data: BookItemWriteRequest) => Promise<void>
+}
+
+function BookItemFormDialog({
+  bookId,
+  item,
+  shelves,
+  saving,
+  errorMessage,
+  onClose,
+  onSubmit,
+}: BookItemFormDialogProps) {
+  const [barcode, setBarcode] = useState(item?.barcode ?? '')
+  const [expectedLevelId, setExpectedLevelId] = useState<string>(item?.expectedShelfLevelId ?? '')
+  const [currentLevelId, setCurrentLevelId] = useState<string>(item?.currentShelfLevelId ?? '')
+  const [status, setStatus] = useState<BookItemStatus | string>(item?.status ?? 'AVAILABLE')
+
+  const inputClass =
+    'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#17181c] outline-none focus:border-primary'
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    void onSubmit({
+      bookId,
+      barcode: barcode.trim(),
+      expectedShelfLevelId: expectedLevelId || null,
+      currentShelfLevelId: currentLevelId === 'NULL' || !currentLevelId ? null : currentLevelId,
+      status,
+    })
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#151922]/45 p-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget && !saving) onClose()
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="book-item-dialog-title"
+        className="w-full max-w-xl border border-[#d9dce5] bg-white shadow-xl"
+      >
+        <header className="flex justify-between border-b border-[#e4e6eb] px-5 py-4">
+          <div>
+            <h2 id="book-item-dialog-title" className="text-lg font-semibold">
+              {item ? 'Update Book Item' : 'Add New Book Item'}
+            </h2>
+            <p className="text-xs text-[#687386]">Book ID: {bookId}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="flex h-8 w-8 items-center justify-center text-[#687386] hover:bg-[#f1f2f5]"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </header>
+
+        <form onSubmit={handleSubmit} className="space-y-4 p-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">
+              Barcode <span className="text-[#b42318]">*</span>
+              <input
+                required
+                maxLength={50}
+                value={barcode}
+                onChange={(e) => setBarcode(e.target.value)}
+                placeholder="e.g. LIB-BK-0001..."
+                className={inputClass}
+              />
+            </label>
+
+            <label className="block space-y-1.5 text-sm font-medium">
+              Expected Shelf Level
+              <select
+                value={expectedLevelId}
+                onChange={(e) => setExpectedLevelId(e.target.value)}
+                className={`${inputClass} appearance-none`}
+              >
+                <option value="">Unassigned position</option>
+                {shelves.map((s) => (
+                  <optgroup key={s.id} label={`Shelf: ${s.name}`}>
+                    {s.levels?.map((lvl) => (
+                      <option key={lvl.id} value={lvl.id}>
+                        {s.name} → Level {lvl.levelNumber} ({lvl.name})
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
+
+            <label className="block space-y-1.5 text-sm font-medium">
+              Actual Recorded Position
+              <select
+                value={currentLevelId || 'NULL'}
+                onChange={(e) => setCurrentLevelId(e.target.value)}
+                className={`${inputClass} appearance-none`}
+              >
+                <option value="NULL">Not found / Missing</option>
+                {shelves.map((s) => (
+                  <optgroup key={s.id} label={`Shelf: ${s.name}`}>
+                    {s.levels?.map((lvl) => (
+                      <option key={lvl.id} value={lvl.id}>
+                        {s.name} → Level {lvl.levelNumber} ({lvl.name})
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
+
+            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">
+              Physical Status
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className={`${inputClass} appearance-none`}
+              >
+                <option value="AVAILABLE">Available for Loan (AVAILABLE)</option>
+                <option value="MISPLACED">Misplaced Location (MISPLACED)</option>
+                <option value="MISSING">Missing / Not Found (MISSING)</option>
+                <option value="LOST">Lost (LOST)</option>
+                <option value="DAMAGED">Damaged (DAMAGED)</option>
+              </select>
+            </label>
+          </div>
+
+          {errorMessage && (
+            <div role="alert" className="flex items-center gap-2 border border-[#efc7c4] bg-[#fff1f0] px-3 py-2 text-sm text-[#a12820]">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          <footer className="flex justify-end gap-2 border-t border-[#e4e6eb] pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="h-10 border border-[#d7d9e2] px-4 text-sm font-medium hover:bg-[#f5f5f7]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
+            >
+              {saving && <RefreshCw className="h-4 w-4 animate-spin" />}
+              {saving ? 'Saving...' : item ? 'Save changes' : 'Add Item'}
+            </button>
+          </footer>
+        </form>
+      </section>
+    </div>
+  )
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[160px_1fr] gap-4 px-5 py-3.5">
+      <dt className="text-[#687386]">{label}</dt>
+      <dd className="font-medium text-[#17181c]">{value}</dd>
+    </div>
+  )
+}
+
+function SummaryCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: number
+  tone: string
+}) {
+  return (
+    <div className="border border-[#d9dce5] bg-white px-4 py-3">
+      <p className="text-xs uppercase text-[#687386]">{label}</p>
+      <p className={`mt-1 text-2xl font-semibold ${tone}`}>{value}</p>
+    </div>
+  )
+}

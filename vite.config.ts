@@ -20,11 +20,11 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5205',
+        target: 'http://127.0.0.1:5205',
         changeOrigin: true,
       },
       '/robotHub': {
-        target: 'http://localhost:5205',
+        target: 'http://127.0.0.1:5205',
         changeOrigin: true,
         ws: true,
       },

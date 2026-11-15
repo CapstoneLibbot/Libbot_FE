@@ -1,17 +1,25 @@
 import { useState } from 'react'
 import { AlertTriangle, Boxes, FileBarChart, RefreshCw } from 'lucide-react'
-import { inventoryApi } from '@/lib/inventoryApi'
-import type { InventoryReportResult, InventoryRuntime } from '@/lib/inventoryApi'
+import { inventoryApi } from '@/features/inventory/api/inventoryApi'
+import type {
+  InventoryReportRequest,
+  InventoryReportResult,
+  InventoryReportType,
+  InventoryRuntime,
+  InventoryScopeType,
+} from '@/features/inventory/types/inventory'
+import { getErrorMessage } from '@/services/http/error'
 
-const inputClassName = 'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#17181c] outline-none placeholder:text-[#89909d] focus:border-primary'
+const inputClassName =
+  'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#17181c] outline-none placeholder:text-[#89909d] focus:border-primary'
 const selectClassName = `${inputClassName} appearance-none`
 const missionPattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
 
-function InventoryResultsPage() {
+export default function InventoryResultsPage() {
   const [missionId, setMissionId] = useState('')
   const [runtimeId, setRuntimeId] = useState<InventoryRuntime>('real')
-  const [scopeType, setScopeType] = useState<'SHELF' | 'AREA'>('SHELF')
-  const [reportType, setReportType] = useState<'INVENTORY' | 'MISPLACED_BOOK_DETECTION'>('INVENTORY')
+  const [scopeType, setScopeType] = useState<InventoryScopeType>('SHELF')
+  const [reportType, setReportType] = useState<InventoryReportType>('INVENTORY')
   const [report, setReport] = useState<InventoryReportResult | null>(null)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -22,15 +30,16 @@ function InventoryResultsPage() {
     setError('')
     setReport(null)
     try {
-      const result = await inventoryApi.generateReport({
+      const payload: InventoryReportRequest = {
         missionId: missionId.trim(),
         runtimeId,
         scopeType,
         reportType,
-      })
+      }
+      const result = await inventoryApi.generateReport(payload)
       setReport(result)
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Could not generate the report.')
+      setError(getErrorMessage(requestError, 'Could not generate the inventory report'))
     } finally {
       setSubmitting(false)
     }
@@ -40,33 +49,142 @@ function InventoryResultsPage() {
     <div className="min-h-full bg-[#f9f7fd] p-5 text-[#17181c] sm:p-8">
       <div className="mx-auto max-w-[1180px] space-y-5">
         <header className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"><FileBarChart className="h-5 w-5" /></div>
-          <div><h1 className="text-2xl font-bold">Inventory Results</h1><p className="mt-0.5 text-sm text-[#596174]">Generate a report from a completed inventory mission</p></div>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <FileBarChart className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Inventory Results</h1>
+            <p className="mt-0.5 text-sm text-[#596174]">
+              Generate a report from a completed inventory mission
+            </p>
+          </div>
         </header>
 
-        <form onSubmit={(event) => void handleSubmit(event)} className="max-w-3xl space-y-5 border border-[#d9dce5] bg-white p-5 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e4e6eb] pb-4"><h2 className="text-base font-semibold">Generate report</h2><div className="inline-flex border border-[#d7d9e2] bg-[#f5f4f8] p-1" role="group" aria-label="Inventory runtime">{(['real', 'sim'] as const).map((runtime) => <button key={runtime} type="button" aria-pressed={runtimeId === runtime} onClick={() => setRuntimeId(runtime)} className={runtimeId === runtime ? 'h-8 min-w-20 bg-white px-3 text-xs font-semibold text-primary shadow-sm' : 'h-8 min-w-20 px-3 text-xs font-medium text-[#596174] hover:text-[#17181c]'}>{runtime.toUpperCase()}</button>)}</div></div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">Mission ID <span className="text-[#b42318]">*</span><input required pattern={missionPattern} title="Enter a valid mission GUID" value={missionId} onChange={(event) => setMissionId(event.target.value)} placeholder="00000000-0000-0000-0000-000000000000" className={inputClassName} /></label>
-            <label className="block space-y-1.5 text-sm font-medium">Scope<select value={scopeType} onChange={(event) => setScopeType(event.target.value as 'SHELF' | 'AREA')} className={selectClassName}><option value="SHELF">Shelf</option><option value="AREA">Area</option></select></label>
-            <label className="block space-y-1.5 text-sm font-medium">Report type<select value={reportType} onChange={(event) => setReportType(event.target.value as 'INVENTORY' | 'MISPLACED_BOOK_DETECTION')} className={selectClassName}><option value="INVENTORY">Inventory</option><option value="MISPLACED_BOOK_DETECTION">Misplaced book detection</option></select></label>
+        <form
+          onSubmit={(event) => void handleSubmit(event)}
+          className="max-w-3xl space-y-5 border border-[#d9dce5] bg-white p-5 sm:p-6"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e4e6eb] pb-4">
+            <h2 className="text-base font-semibold">Generate Report</h2>
+            <div
+              className="inline-flex border border-[#d7d9e2] bg-[#f5f4f8] p-1"
+              role="group"
+              aria-label="Runtime environment"
+            >
+              {(['real', 'sim'] as const).map((runtime) => (
+                <button
+                  key={runtime}
+                  type="button"
+                  aria-pressed={runtimeId === runtime}
+                  onClick={() => setRuntimeId(runtime)}
+                  className={
+                    runtimeId === runtime
+                      ? 'h-8 min-w-20 bg-white px-3 text-xs font-semibold text-primary shadow-sm'
+                      : 'h-8 min-w-20 px-3 text-xs font-medium text-[#596174] hover:text-[#17181c]'
+                  }
+                >
+                  {runtime.toUpperCase()}
+                </button>
+              ))}
+            </div>
           </div>
-          {error && <p role="alert" className="border border-[#efc7c4] bg-[#fff1f0] px-3 py-2 text-sm text-[#a12820]">{error}</p>}
-          <div className="flex justify-end border-t border-[#e4e6eb] pt-4"><button type="submit" disabled={submitting} className="inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60">{submitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileBarChart className="h-4 w-4" />}{submitting ? 'Generating...' : 'Generate report'}</button></div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">
+              Mission ID <span className="text-[#b42318]">*</span>
+              <input
+                required
+                pattern={missionPattern}
+                title="Please enter a valid GUID format"
+                value={missionId}
+                onChange={(event) => setMissionId(event.target.value)}
+                placeholder="00000000-0000-0000-0000-000000000000"
+                className={inputClassName}
+              />
+            </label>
+
+            <label className="block space-y-1.5 text-sm font-medium">
+              Inventory Scope
+              <select
+                value={scopeType}
+                onChange={(event) => setScopeType(event.target.value as InventoryScopeType)}
+                className={selectClassName}
+              >
+                <option value="SHELF">Shelf (SHELF)</option>
+                <option value="AREA">Area (AREA)</option>
+              </select>
+            </label>
+
+            <label className="block space-y-1.5 text-sm font-medium">
+              Report Type
+              <select
+                value={reportType}
+                onChange={(event) => setReportType(event.target.value as InventoryReportType)}
+                className={selectClassName}
+              >
+                <option value="INVENTORY">Inventory Summary</option>
+                <option value="MISPLACED_BOOK_DETECTION">Misplaced Book Detection</option>
+              </select>
+            </label>
+          </div>
+
+          {error && (
+            <p role="alert" className="border border-[#efc7c4] bg-[#fff1f0] px-3 py-2 text-sm text-[#a12820]">
+              {error}
+            </p>
+          )}
+
+          <div className="flex justify-end border-t border-[#e4e6eb] pt-4">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
+            >
+              {submitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileBarChart className="h-4 w-4" />}
+              {submitting ? 'Generating...' : 'Generate Report'}
+            </button>
+          </div>
         </form>
 
-        {report && <section aria-live="polite" className="space-y-4">
-          <header className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-base font-semibold">Report summary</h2><p className="mt-1 font-mono text-xs text-[#687386]">{report.reportId}</p></div><span className="border border-[#d9dce5] bg-white px-2.5 py-1 text-xs font-semibold text-[#414856]">{report.reportType} / {report.runtimeId.toUpperCase()}</span></header>
-          {runtimeId === 'sim' && <p className="border border-[#ecd9a8] bg-[#fff8e8] px-3 py-2 text-sm text-[#765600]">Simulation reports are temporary and are not saved to the database.</p>}
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="border border-[#d9dce5] bg-white px-4 py-4"><p className="text-xs font-medium uppercase text-[#687386]">Books scanned</p><p className="mt-2 text-2xl font-semibold">{report.totalBooksScanned}</p></div>
-            <div className="border border-[#e7cfcc] bg-white px-4 py-4"><p className="flex items-center gap-2 text-xs font-medium uppercase text-[#8d4a46]"><AlertTriangle className="h-4 w-4" /> Misplaced</p><p className="mt-2 text-2xl font-semibold text-[#a12820]">{report.totalMisplaced}</p></div>
-            <div className="border border-[#d9dce5] bg-white px-4 py-4"><p className="flex items-center gap-2 text-xs font-medium uppercase text-[#687386]"><Boxes className="h-4 w-4" /> Missing</p><p className="mt-2 text-2xl font-semibold">{report.totalMissing}</p></div>
-          </div>
-        </section>}
+        {report && (
+          <section aria-live="polite" className="space-y-4">
+            <header className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold">Report Summary</h2>
+                <p className="mt-1 font-mono text-xs text-[#687386]">Report ID: {report.reportId}</p>
+              </div>
+              <span className="border border-[#d9dce5] bg-white px-2.5 py-1 text-xs font-semibold text-[#414856]">
+                {report.reportType} / {report.runtimeId.toUpperCase()}
+              </span>
+            </header>
+
+            {runtimeId === 'sim' && (
+              <p className="border border-[#ecd9a8] bg-[#fff8e8] px-3 py-2 text-sm text-[#765600]">
+                Simulation reports are temporary and are not saved to the database.
+              </p>
+            )}
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="border border-[#d9dce5] bg-white px-4 py-4">
+                <p className="text-xs font-medium uppercase text-[#687386]">Total Books Scanned</p>
+                <p className="mt-2 text-2xl font-semibold">{report.totalBooksScanned}</p>
+              </div>
+              <div className="border border-[#e7cfcc] bg-white px-4 py-4">
+                <p className="flex items-center gap-2 text-xs font-medium uppercase text-[#8d4a46]">
+                  <AlertTriangle className="h-4 w-4" /> Misplaced Books
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[#a12820]">{report.totalMisplaced}</p>
+              </div>
+              <div className="border border-[#d9dce5] bg-white px-4 py-4">
+                <p className="flex items-center gap-2 text-xs font-medium uppercase text-[#687386]">
+                  <Boxes className="h-4 w-4" /> Missing Books
+                </p>
+                <p className="mt-2 text-2xl font-semibold">{report.totalMissing}</p>
+              </div>
+            </div>
+          </section>
+        )}
       </div>
     </div>
   )
 }
-
-export default InventoryResultsPage

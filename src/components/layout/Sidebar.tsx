@@ -2,6 +2,7 @@ import { NavLink } from 'react-router'
 import {
   Activity,
   AlertTriangle,
+  ArrowLeftRight,
   BookOpen,
   Boxes,
   ClipboardList,
@@ -67,6 +68,11 @@ const menuItems = [
     label: 'Book',
     icon: BookOpen,
     path: '/book',
+  },
+  {
+    label: 'Book Transactions',
+    icon: ArrowLeftRight,
+    path: '/book-transactions',
   },
   {
     label: 'Inventory',
