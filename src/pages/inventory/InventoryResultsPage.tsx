@@ -6,7 +6,6 @@ import type {
   InventoryReportResult,
   InventoryReportType,
   InventoryRuntime,
-  InventoryScopeType,
 } from '@/features/inventory/types/inventory'
 import { getErrorMessage } from '@/services/http/error'
 
@@ -18,7 +17,6 @@ const missionPattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]
 export default function InventoryResultsPage() {
   const [missionId, setMissionId] = useState('')
   const [runtimeId, setRuntimeId] = useState<InventoryRuntime>('real')
-  const [scopeType, setScopeType] = useState<InventoryScopeType>('SHELF')
   const [reportType, setReportType] = useState<InventoryReportType>('INVENTORY')
   const [report, setReport] = useState<InventoryReportResult | null>(null)
   const [error, setError] = useState('')
@@ -33,7 +31,7 @@ export default function InventoryResultsPage() {
       const payload: InventoryReportRequest = {
         missionId: missionId.trim(),
         runtimeId,
-        scopeType,
+        scopeType: 'SHELF',
         reportType,
       }
       const result = await inventoryApi.generateReport(payload)
@@ -103,17 +101,10 @@ export default function InventoryResultsPage() {
               />
             </label>
 
-            <label className="block space-y-1.5 text-sm font-medium">
+            <div className="block space-y-1.5 text-sm font-medium">
               Inventory Scope
-              <select
-                value={scopeType}
-                onChange={(event) => setScopeType(event.target.value as InventoryScopeType)}
-                className={selectClassName}
-              >
-                <option value="SHELF">Shelf (SHELF)</option>
-                <option value="AREA">Area (AREA)</option>
-              </select>
-            </label>
+              <p className={selectClassName + ' flex items-center'}>Shelf (SHELF)</p>
+            </div>
 
             <label className="block space-y-1.5 text-sm font-medium">
               Report Type

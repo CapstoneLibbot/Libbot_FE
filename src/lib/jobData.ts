@@ -151,164 +151,6 @@ const sampleFeedback: FeedbackRecord[] = [
   { id: 1, jobId: 1001, rating: 5, comment: 'Robot dẫn đường nhanh và tìm đúng vị trí sách.' },
 ]
 
-export function createRunningAreaSample() {
-  const workflow = getWorkflowById(2)!
-  const route = [
-    { x: 8.654, y: 23.246 },
-    { x: 8.7, y: 23.15 },
-    { x: 10.3, y: 22.55 },
-    { x: 11.9, y: 22.55 },
-    { x: 13.5, y: 22.55 },
-    { x: 15.1, y: 22.15 },
-    { x: 16.7, y: 20.55 },
-    { x: 18.3, y: 18.95 },
-    { x: 19.9, y: 17.55 },
-    { x: 21.5, y: 15.95 },
-    { x: 23.1, y: 14.75 },
-    { x: 24.7, y: 13.95 },
-    { x: 26.3, y: 13.15 },
-    { x: 27.9, y: 11.55 },
-    { x: 29.5, y: 10.55 },
-    { x: 31.1, y: 10.55 },
-    { x: 32.7, y: 10.35 },
-    { x: 34.3, y: 9.55 },
-    { x: 35.9, y: 8.95 },
-    { x: 37.5, y: 8.15 },
-    { x: 39.1, y: 7.35 },
-    { x: 40.1, y: 6.95 },
-  ]
-  const targetArea = { id: 2, name: 'Reading desk area A' }
-  const workflowSteps = workflow.tasks
-    .slice()
-    .sort((first, second) => first.sequenceNo - second.sequenceNo)
-    .flatMap((task) => task.steps.slice().sort((first, second) => first.sequenceNo - second.sequenceNo))
-  const jobStepIds = new Map(workflowSteps.map((step, index) => [step.id, 22001 + index]))
-  const taskIds = new Map(workflow.tasks.map((task, index) => [task.id, 20001 + index]))
-  const getStepId = (globalSequenceNo: number) => jobStepIds.get(workflowSteps[globalSequenceNo - 1].id)!
-  const parametersBySequence: Record<number, JobStepParameters> = {
-    1: { ui_screen: 'FACILITY_INFO', data: { facility_id: targetArea.id, name: targetArea.name, type: 'AREA', description: 'Reading desk area A.', location: 'EP-104', actions: ['VIEW_LOCATION', 'RATE'] } },
-    2: { wait_for: 'USER_TOUCH', event_type: 'FACILITY_ACTION', action: 'VIEW_LOCATION', result_variable: 'facility_action', timeout_sec: 10 },
-    3: { condition_type: 'DATA_MATCH', operator: 'EQUAL', condition: 'facility_action == RATE', on_true_step: getStepId(12), on_false_step: getStepId(4) },
-    4: { ui_screen: 'MAP_LOCATION', data: { floor: 'Floor 1', facility: targetArea.name, highlight_facility: targetArea.id } },
-    5: { wait_for: 'USER_TOUCH', event_type: 'MAP_ACTION', action: 'START_GUIDANCE', result_variable: 'map_action', timeout_sec: 10 },
-    6: { condition_type: 'DATA_MATCH', operator: 'EQUAL', condition: 'map_action == RATE', on_true_step: getStepId(12), on_false_step: getStepId(7) },
-    7: { ui_screen: 'NAV_GUIDE', data: { destination: targetArea.name, show_route: true } },
-    8: { endpoint_id: 'EP-104', speed_mode: 'SLOW_GUIDE', obstacle_policy: 'WAIT_RESUME', start_position: route[0] },
-  }
-  const startedAt = new Date('2026-10-02T08:20:00.000Z')
-  let globalSequenceNo = 0
-  const tasks: JobTaskRecord[] = workflow.tasks
-    .slice()
-    .sort((first, second) => first.sequenceNo - second.sequenceNo)
-    .map((workflowTask) => {
-      const jobTaskId = taskIds.get(workflowTask.id)!
-      const taskStatus = workflowTask.sequenceNo === 1
-        ? JobStatus.Completed
-        : workflowTask.sequenceNo === 2 ? JobStatus.Running : JobStatus.Pending
-
-      return {
-        id: jobTaskId,
-        jobId: 1002,
-        workflowTaskId: workflowTask.id,
-        name: workflowTask.name,
-        status: taskStatus,
-        startedAt: workflowTask.sequenceNo === 3 ? null : startedAt.toISOString(),
-        completedAt: workflowTask.sequenceNo === 1 ? new Date(startedAt.getTime() + 240_000).toISOString() : null,
-        description: workflowTask.description,
-        steps: workflowTask.steps
-          .slice()
-          .sort((first, second) => first.sequenceNo - second.sequenceNo)
-          .map((workflowStep) => {
-            globalSequenceNo += 1
-            const stepStatus = globalSequenceNo < 8
-              ? JobStatus.Completed
-              : globalSequenceNo === 8 ? JobStatus.Running : JobStatus.Pending
-
-            return {
-              id: jobStepIds.get(workflowStep.id)!,
-              jobTaskId,
-              taskStepId: workflowStep.id,
-              name: workflowStep.name,
-              stepType: workflowStep.stepType,
-              sequenceNo: workflowStep.sequenceNo,
-              status: stepStatus,
-              description: workflowStep.description,
-              parameters: parametersBySequence[globalSequenceNo] ?? {},
-            }
-          }),
-      }
-    })
-
-  const events: JobEventRecord[] = []
-  let eventSequenceNo = 0
-  let taskSequenceNo = 0
-  for (const workflowTask of workflow.tasks.slice().sort((first, second) => first.sequenceNo - second.sequenceNo)) {
-    taskSequenceNo += 1
-    for (const workflowStep of workflowTask.steps.slice().sort((first, second) => first.sequenceNo - second.sequenceNo)) {
-      eventSequenceNo += 1
-      if (eventSequenceNo > 8) break
-      const currentStep = eventSequenceNo === 8
-      const result: Record<string, unknown> = currentStep
-        ? {
-            route_points: route,
-            route_progress_ratio: 0.42,
-            current_position: { x: 21.375, y: 16.075 },
-            distance_m: 40.3,
-            travelled_m: 16.9,
-            obstacle_policy: 'WAIT_RESUME',
-            robot_heading: 'WEST',
-          }
-        : eventSequenceNo === 3 || eventSequenceNo === 6
-          ? { condition_result: false }
-          : eventSequenceNo === 2
-            ? { facility_action: 'VIEW_LOCATION' }
-            : eventSequenceNo === 5
-              ? { map_action: 'START_GUIDANCE' }
-              : { step_completed: true }
-
-      events.push({
-        id: 13000 + eventSequenceNo,
-        jobId: 1002,
-        eventType: currentStep ? 'STEP_STARTED' : 'STEP_COMPLETED',
-        eventTime: new Date(startedAt.getTime() + eventSequenceNo * 60_000).toISOString(),
-        data: {
-          taskSequenceNo: taskSequenceNo,
-          taskName: workflowTask.name,
-          stepSequenceNo: workflowStep.sequenceNo,
-          workflowTaskId: workflowTask.id,
-          taskStepId: workflowStep.id,
-          jobTaskId: taskIds.get(workflowTask.id)!,
-          jobStepId: jobStepIds.get(workflowStep.id)!,
-          stepName: workflowStep.name,
-          stepType: workflowStep.stepType,
-          parameters: parametersBySequence[eventSequenceNo] ?? {},
-          result,
-        },
-      })
-    }
-  }
-
-  return {
-    job: {
-      id: 1002,
-      workflowId: workflow.id,
-      createdBy: 1,
-      robotId: 12,
-      name: 'Guide visitor to a facility',
-      priority: JobPriority.Normal,
-      status: JobStatus.Running,
-      description: `Guide a visitor to ${targetArea.name}.`,
-      startedAt: startedAt.toISOString(),
-      completedAt: null,
-      createdAt: startedAt.toISOString(),
-      tasks,
-    } satisfies JobRecord,
-    events,
-  }
-}
-
-const runningAreaSample = createRunningAreaSample()
-
 export function createCompletedInventorySample() {
   const workflow = getWorkflowById(3)!
   const shelfIds = [3, 4, 5, 6, 9, 10]
@@ -545,9 +387,6 @@ export const sampleJobs: JobRecord[] = [
     tasks: createCompletedBookTasks(bookWorkflow),
   },
   {
-    ...runningAreaSample.job,
-  },
-  {
     ...completedInventorySample.job,
   },
   {
@@ -558,7 +397,7 @@ export const sampleJobs: JobRecord[] = [
     name: 'Complete library patrol',
     priority: JobPriority.Low,
     status: JobStatus.Completed,
-    description: 'Patrol assigned areas and report observations.',
+    description: 'Patrol designated endpoints and report observations.',
     startedAt: '2026-10-01T21:00:00.000Z',
     completedAt: '2026-10-01T21:30:00.000Z',
     createdAt: '2026-10-01T20:55:00.000Z',
@@ -597,7 +436,7 @@ export function getJobs(): JobRecord[] {
 
     const jobs = JSON.parse(storedJobs) as JobRecord[]
     const sampleIds = new Set(sampleJobs.map((job) => job.id))
-    return [...sampleJobs, ...jobs.filter((job) => !sampleIds.has(job.id))]
+    return [...sampleJobs, ...jobs.filter((job) => !sampleIds.has(job.id) && job.workflowId !== 2)]
   } catch {
     return sampleJobs
   }
@@ -686,7 +525,6 @@ export function getJobById(id: number): JobRecord | undefined {
 
 export function getJobEvents(jobId: number): JobEventRecord[] {
   if (jobId === 1001) return sampleJobEvents
-  if (jobId === 1002) return runningAreaSample.events
   if (jobId === 1003) return completedInventorySample.events
 
   try {
@@ -701,7 +539,7 @@ export function getJobEvents(jobId: number): JobEventRecord[] {
 }
 
 export function getFeedback(jobId: number): FeedbackRecord | undefined {
-  if (jobId === 1002 || jobId === 1003) return undefined
+  if (jobId === 1003) return undefined
 
   try {
     const stored = localStorage.getItem(FEEDBACK_STORAGE_KEY)

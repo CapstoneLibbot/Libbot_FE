@@ -1,11 +1,3 @@
-export type MapArea = {
-  id: number
-  endpoint_id: number
-  code: string
-  name: string
-  description: string | null
-}
-
 export type Floor = {
   id: number
   code: string
@@ -74,7 +66,7 @@ export type Book = {
 }
 
 export type EndpointLinkedObject = {
-  kind: 'AREA' | 'AISLE' | 'SHELF'
+  kind: 'AISLE' | 'SHELF'
   id: number
   name: string
 } | null

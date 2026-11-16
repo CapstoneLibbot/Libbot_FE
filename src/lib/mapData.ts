@@ -6,7 +6,6 @@ import type {
   Book,
   BookCategory,
   MapAisle,
-  MapArea,
   MapShelf,
   ShelfLevel,
 } from '../types/map'
@@ -16,14 +15,14 @@ export const initialFloors: Floor[] = [
     id: 1,
     code: 'FL-001',
     name: 'Ground Floor',
-    description: 'Library entrance, reception, and self-service area.',
+    description: 'Library entrance, reception, and self-service spaces.',
     status: 'ACTIVE',
   },
   {
     id: 2,
     code: 'FL-002',
     name: 'First Floor',
-    description: 'Main reading room and book collection area.',
+    description: 'Main reading room and book collection.',
     status: 'ACTIVE',
   },
   {
@@ -50,11 +49,6 @@ export const initialEndpointGroups: EndpointGroup[] = [
   },
   {
     id: 2,
-    name: 'Area Navigation',
-    description: 'Endpoints assigned to library areas.',
-  },
-  {
-    id: 3,
     name: 'Aisle Navigation',
     description: 'Endpoints marking aisle start and end positions.',
   },
@@ -63,9 +57,6 @@ export const initialEndpointGroups: EndpointGroup[] = [
 export const initialEndpointGroupMembers: EndpointGroupMember[] = [
   { id: 1, endpoint_group_id: 1, endpoint_id: 101 },
   { id: 2, endpoint_group_id: 1, endpoint_id: 102 },
-  { id: 3, endpoint_group_id: 2, endpoint_id: 103 },
-  { id: 4, endpoint_group_id: 2, endpoint_id: 104 },
-  { id: 5, endpoint_group_id: 2, endpoint_id: 105 },
   { id: 6, endpoint_group_id: 1, endpoint_id: 106 },
   { id: 7, endpoint_group_id: 1, endpoint_id: 107 },
   { id: 8, endpoint_group_id: 1, endpoint_id: 108 },
@@ -74,38 +65,14 @@ export const initialEndpointGroupMembers: EndpointGroupMember[] = [
   { id: 11, endpoint_group_id: 1, endpoint_id: 111 },
   { id: 12, endpoint_group_id: 1, endpoint_id: 112 },
   { id: 13, endpoint_group_id: 1, endpoint_id: 113 },
-  { id: 14, endpoint_group_id: 3, endpoint_id: 114 },
-  { id: 15, endpoint_group_id: 3, endpoint_id: 115 },
-  { id: 16, endpoint_group_id: 3, endpoint_id: 116 },
-  { id: 17, endpoint_group_id: 3, endpoint_id: 117 },
-  { id: 18, endpoint_group_id: 3, endpoint_id: 118 },
-  { id: 19, endpoint_group_id: 3, endpoint_id: 119 },
-  { id: 20, endpoint_group_id: 3, endpoint_id: 120 },
-  { id: 21, endpoint_group_id: 3, endpoint_id: 121 },
-]
-
-export const initialAreas: MapArea[] = [
-  {
-    id: 1,
-    endpoint_id: 103,
-    code: 'AR-001',
-    name: 'Desk of Librarian',
-    description: 'Area assigned to the librarian desk endpoint.',
-  },
-  {
-    id: 2,
-    endpoint_id: 104,
-    code: 'AR-002',
-    name: 'Reading desk area A',
-    description: 'Reading desk area A.',
-  },
-  {
-    id: 3,
-    endpoint_id: 105,
-    code: 'AR-003',
-    name: 'Reading desk area B',
-    description: 'Reading desk area B.',
-  },
+  { id: 14, endpoint_group_id: 2, endpoint_id: 114 },
+  { id: 15, endpoint_group_id: 2, endpoint_id: 115 },
+  { id: 16, endpoint_group_id: 2, endpoint_id: 116 },
+  { id: 17, endpoint_group_id: 2, endpoint_id: 117 },
+  { id: 18, endpoint_group_id: 2, endpoint_id: 118 },
+  { id: 19, endpoint_group_id: 2, endpoint_id: 119 },
+  { id: 20, endpoint_group_id: 2, endpoint_id: 120 },
+  { id: 21, endpoint_group_id: 2, endpoint_id: 121 },
 ]
 
 export const initialAisles: MapAisle[] = [

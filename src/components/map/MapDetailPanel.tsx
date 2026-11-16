@@ -28,7 +28,6 @@ type MapInfo = {
 type Tab = 'detail' | 'endpoint' | 'zone'
 
 const linkedObjectPath = {
-  AREA: 'areas',
   AISLE: 'aisles',
   SHELF: 'shelves',
 } as const

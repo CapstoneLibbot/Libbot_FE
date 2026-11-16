@@ -4,11 +4,11 @@
 
 ## 1. Tổng quan
 
-LiBot FE là giao diện quản lý robot thư viện, được xây dựng bằng React và TypeScript. Ứng dụng hiện có khung điều hướng chung, màn danh sách bản đồ, màn chi tiết bản đồ tương tác, và các màn danh sách/chi tiết Area, Aisle, Shelf. Những mục nghiệp vụ khác đã có route nhưng hiện chỉ hiển thị trang placeholder.
+LiBot FE là giao diện quản lý robot thư viện, được xây dựng bằng React và TypeScript. Ứng dụng hiện có khung điều hướng chung, màn danh sách bản đồ, màn chi tiết bản đồ tương tác, và các màn danh sách/chi tiết Aisle, Shelf. Những mục nghiệp vụ khác đã có route nhưng hiện chỉ hiển thị trang placeholder.
 
 Các luồng dữ liệu hiện có:
 
-- Dữ liệu Area, Aisle, Shelf, endpoint group và một phần cấu hình bản đồ nằm trong `src/lib/mapData.ts` hoặc dữ liệu mẫu khai báo ngay trong trang.
+- Dữ liệu Aisle, Shelf, endpoint group và một phần cấu hình bản đồ nằm trong `src/lib/mapData.ts` hoặc dữ liệu mẫu khai báo ngay trong trang.
 - Raster bản đồ và metadata YAML là file tĩnh trong `public/maps/`.
 - Tạo endpoint/zone trên màn bản đồ chỉ cập nhật React state trong phiên hiện tại; tải lại trang sẽ mất dữ liệu.
 - Không có API client, xác thực, global state library, test script hoặc persistence layer được khai báo trong project hiện tại.
@@ -57,7 +57,6 @@ Các cấu hình đáng chú ý:
 │   │   ├── mapData.ts         # Mock data và quan hệ map entities
 │   │   └── utils.ts           # cn(...classes)
 │   ├── pages/
-│   │   ├── areas/AreaDetail.tsx
 │   │   ├── aisles/AisleDetail.tsx
 │   │   ├── floors/FloorDetail.tsx  # File hiện rỗng
 │   │   ├── maps/ListMap.tsx
@@ -105,23 +104,23 @@ Luồng khởi chạy:
 
 | URL | Component | Tình trạng và hành vi |
 | --- | --- | --- |
-| `/` | `PlaceholderPage` | Overview chưa triển khai |
+| `/` | `Overview` | Tổng quan trạng thái vận hành và kiểm kê |
 | `/maps` | `ListMap` | Danh sách mock, tìm kiếm theo ID/tên, lọc status/version; click dòng mở chi tiết |
 | `/maps/:id` | `MapDetail` | Canvas map, xem endpoint/zone và tạo mới trong state cục bộ |
-| `/areas` | `AreaDetail` | Danh sách Area mock |
-| `/areas/:id` | `AreaDetail` | Chi tiết theo ID; không tìm thấy thì có thông báo và link quay lại |
 | `/floors/:id` | `PlaceholderPage` | Chưa dùng `FloorDetail.tsx` (file rỗng) |
-| `/aisles/:id` | `AisleDetail` | Chi tiết Aisle; component cũng có nhánh danh sách nhưng route danh sách `/aisles` chưa khai báo |
-| `/shelves/:id` | `ShelfDetail` | Chi tiết Shelf; component cũng có nhánh danh sách nhưng route danh sách `/shelves` chưa khai báo |
+| `/aisles` | `AisleDetail` | Danh sách Aisle |
+| `/aisles/:id` | `AisleDetail` | Chi tiết Aisle |
+| `/shelves` | `ShelfList` | Danh sách Shelf; nhấn vào hàng kệ để mở chi tiết |
+| `/shelves/:id` | `ShelfDetail` | Chi tiết Shelf |
 | `/tasks` | `TaskList` | Danh sách Task (Job trong model dữ liệu) với ID, Workflow ID, Created By, Robot ID, Name, Priority và Status; tìm kiếm/lọc trên mock data |
-| `/tasks/create` | `TaskCreate` | Chọn map trước workflow, sau đó nhập target theo workflow (tìm/chọn sách hoặc Area); target được lưu ở JobStep cùng snapshot JobTask/JobStep trong mock data |
+| `/tasks/create` | `TaskCreate` | Chọn map trước workflow, sau đó nhập target theo workflow (sách, kệ hoặc endpoint); target được lưu ở JobStep cùng snapshot JobTask/JobStep trong mock data |
 | `/tasks/:id` | `TaskDetail` | Xem JobEvent theo từng Step trên map, route robot và feedback (nếu có) |
 | `/workflows` | `WorkflowList` | Danh sách workflow mock gồm ID, tên, trạng thái; hỗ trợ tìm kiếm, lọc trạng thái và tạo mới |
 | `/workflows/create` | `WorkflowCreate` | Tạo workflow cùng task/step theo thứ tự và StepType; chỉ lưu định nghĩa, chưa gán tham số runtime; lưu mock trong `localStorage` |
 | `/workflows/:id` | `WorkflowDetail` | Xem thông tin workflow cùng danh sách task/step theo thứ tự; không hiển thị tham số runtime |
 | `/iii-row`, `/book`, `/inventory`, `/inventory-results`, `/alerts`, `/history`, `/reports`, `/settings` | `PlaceholderPage` | Chưa triển khai nghiệp vụ |
 
-Sidebar được khai báo riêng trong `src/components/layout/Sidebar.tsx`. Mục Shelf hiện trỏ tới `/shelf`, trong khi route chi tiết đang là `/shelves/:id`; `/shelf` hiện không khớp route và sẽ redirect về `/`. Khi làm tiếp Shelf, cần thống nhất URL và cập nhật cả Sidebar lẫn router.
+Sidebar được khai báo riêng trong `src/components/layout/Sidebar.tsx`. Mục Shelf mở danh sách tại `/shelves`; chọn một hàng kệ sẽ mở `/shelves/:id`. Route `/shelf` cũng được giữ làm alias cho trang danh sách.
 
 ## 7. Luồng nghiệp vụ đã có
 
@@ -143,7 +142,7 @@ Các giới hạn hiện tại: Create Map và Filter là nút giao diện chưa
 - Ở tab Zone, bật Draw Zone rồi kéo trên map để tạo hình chữ nhật; submit form thêm zone và chọn zone mới.
 - Tất cả dữ liệu tạo mới chỉ sống trong state React, không gọi API, không ghi file/local storage.
 
-Các kiểu `MapEndpoint`, `MapZone` được định nghĩa trong `MapViewer.tsx`; các kiểu đối tượng liên quan Area/Aisle/Shelf và endpoint group ở `src/types/map.ts`.
+Các kiểu `MapEndpoint`, `MapZone` được định nghĩa trong `MapViewer.tsx`; các kiểu đối tượng liên quan Aisle/Shelf và endpoint group ở `src/types/map.ts`.
 
 Lưu ý khi mở rộng: `:id` trong URL hiện chỉ thay đổi ID hiển thị trên header/panel. Raster, endpoint/zone seed vẫn của map mẫu ID 1; endpoint/zone mới cũng gắn `sampleMap.id`. Cần thay bằng truy vấn theo ID khi tích hợp dữ liệu thật.
 
@@ -162,16 +161,15 @@ Parser hiện chỉ hỗ trợ binary PGM `P5`, max value 255. Map YAML mẫu l�
 
 `src/components/map/MapDetailPanel.tsx` là presentational panel nhận props và callback từ `MapDetail`. Panel hiển thị metadata, danh sách endpoint/zone, bộ lọc group, trạng thái được chọn và nút tạo/vẽ. Nên đặt logic state/submit ở page và để component dùng chung nhận dữ liệu qua props như pattern này.
 
-### 7.4. Area, Aisle, Shelf
+### 7.4. Aisle, Shelf
 
-Các dữ liệu ví dụ tập trung trong `src/lib/mapData.ts`:
+Các dữ liệu ví dụ Aisle/Shelf tập trung trong `src/lib/mapData.ts`:
 
-- Area liên kết với endpoint qua `endpoint_id`.
 - Aisle có hai đầu mút qua `endpointA_id`, `endpointB_id`, đồng thời có `floor_id` và status.
 - Shelf liên kết endpoint qua `endpoint_id` và aisle qua `aisle_id`.
-- Endpoint có thể có `linked_object` với `kind` là `AREA`, `AISLE` hoặc `SHELF`; MapDetailPanel dùng kind để điều hướng đến trang tương ứng.
+- Endpoint có thể có `linked_object` với `kind` là `AISLE` hoặc `SHELF`; MapDetailPanel dùng kind để điều hướng đến trang tương ứng.
 
-`AreaDetail`, `AisleDetail`, `ShelfDetail` hiển thị bảng khi không có `id` và hiển thị chi tiết khi có `id`. Tuy nhiên hiện router chỉ mount Area list và các trang Aisle/Shelf dạng có ID. Đây là các trang đọc dữ liệu mock, chưa có sửa/xóa/tạo.
+`AisleDetail`, `ShelfDetail` hiển thị bảng khi không có `id` và hiển thị chi tiết khi có `id`. Đây là các trang đọc dữ liệu mock, chưa có sửa/xóa/tạo.
 
 ## 8. Quy ước khi phát triển trang mới
 
@@ -187,10 +185,10 @@ Các dữ liệu ví dụ tập trung trong `src/lib/mapData.ts`:
 
 ## 9. Điểm cần lưu ý khi tiếp tục dự án
 
-- Đồng bộ route Shelf (`/shelf` trong Sidebar so với `/shelves/:id` trong router) và bổ sung route danh sách cần thiết.
+- Route danh sách Shelf là `/shelves`; chi tiết từng kệ dùng `/shelves/:id`.
 - `FloorDetail.tsx` hiện rỗng; `/floors/:id` đang dùng placeholder.
 - Nút Create Map, Filter và pagination của danh sách map chưa thực hiện nghiệp vụ.
 - ID map trong trang chi tiết chưa chọn đúng dataset; map seed và YAML hiện cố định map tầng 1.
 - Dữ liệu endpoint/zone tạo từ UI không được lưu sau khi tải lại trang.
-- Route `*` redirect về `/`, vì vậy URL sai như `/shelf` không hiển thị trang 404.
+- Route `*` redirect về `/`, vì vậy URL không khớp sẽ không hiển thị trang 404.
 - Chưa có backend/API, quản lý quyền, test, lint hoặc quy ước env được thiết lập trong package hiện tại.

@@ -315,7 +315,21 @@ export default function ShelfList() {
                       return (
                         <tr
                           key={shelf.id}
-                          className="border-b border-[#ececf1] last:border-0 hover:bg-[#fafafd]"
+                          role="link"
+                          tabIndex={0}
+                          aria-label={`Open shelf details for ${shelf.name}`}
+                          onClick={(event) => {
+                            if (event.target instanceof Element && event.target.closest('a, button')) return
+                            navigate(`/shelves/${shelf.id}`)
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.target !== event.currentTarget) return
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault()
+                              navigate(`/shelves/${shelf.id}`)
+                            }
+                          }}
+                          className="cursor-pointer border-b border-[#ececf1] last:border-0 hover:bg-[#fafafd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                         >
                           <td className="px-4 py-3 font-medium">
                             <Link

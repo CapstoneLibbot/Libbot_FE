@@ -830,7 +830,7 @@ function CreateZoneDialog({
         })
       }}
     >
-      <FormField label="Zone name"><input name="name" required autoFocus className={inputClass} placeholder="Reading area" defaultValue={zone?.name ?? ''} /></FormField>
+      <FormField label="Zone name"><input name="name" required autoFocus className={inputClass} placeholder="Reading zone" defaultValue={zone?.name ?? ''} /></FormField>
       <FormField label="Zone type">
         <select value={zoneType} onChange={(event) => setZoneType(event.target.value as ZoneCreateInput['zoneType'])} className={inputClass}>
           {zoneTypes.map((type) => <option key={type} value={type}>{zoneDisplayName(type)}</option>)}

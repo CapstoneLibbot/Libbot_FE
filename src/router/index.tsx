@@ -10,7 +10,6 @@ import Sidebar from '../components/layout/Sidebar'
 import OperationBanner from '../components/layout/OperationBanner'
 import Overview from '../pages/overview/Overview'
 import DispatchWorkflowPage from '../features/dispatch/DispatchWorkflowPage'
-import AreaDetail from '../pages/areas/AreaDetail'
 import AisleDetail from '../pages/aisles/AisleDetail'
 import FloorList from '../pages/floors/FloorList'
 import FloorDetail from '../pages/floors/FloorDetail'
@@ -94,16 +93,6 @@ function AppRouter() {
           <Route
             path="/maps/:id"
             element={<RobotMapDetail />}
-          />
-
-          <Route
-            path="/areas"
-            element={<AreaDetail />}
-          />
-
-          <Route
-            path="/areas/:id"
-            element={<AreaDetail />}
           />
 
           <Route path="/floors" element={<FloorList />} />

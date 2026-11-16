@@ -13,7 +13,7 @@ type WaitChoice = { value: string; label: string; detail?: string }
 type SimulationBookTarget = { shelfId: string; label: string; x: number; y: number; yaw: number }
 type SimulationSceneMetadata = {
   robotSpawn?: RobotPose
-  areas?: { label: string; x: number; y: number }[]
+  rooms?: { label: string; x: number; y: number }[]
   simulationBookTarget?: SimulationBookTarget
 }
 
@@ -127,7 +127,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
       })
       .then((scene) => {
         setSpawnPose(scene.robotSpawn ?? null)
-        setRoomLabels(scene.areas ?? [])
+        setRoomLabels(scene.rooms ?? [])
         setSimulationBookTarget(scene.simulationBookTarget ?? null)
       })
       .catch((requestError: unknown) => {
@@ -161,7 +161,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   useEffect(() => {
     const eventType = execution?.expectedEventType?.trim().toUpperCase()
     if (normalizeStatus(execution?.status) !== 'WAITING' || mission?.runtimeId !== 'sim'
-      || !eventType || !['BOOK_SELECTED', 'FACILITY_SELECTED'].includes(eventType)) {
+      || eventType !== 'BOOK_SELECTED') {
       setWaitChoices([])
       setWaitChoicesLoading(false)
       return
@@ -169,15 +169,16 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
 
     let active = true
     setWaitChoicesLoading(true)
-    const path = eventType === 'BOOK_SELECTED'
-      ? '/api/workflow-data/simulation/books/search'
-      : '/api/workflow-data/simulation/facilities/search'
-    apiGet<{ books?: { bookId: string; title: string; author?: string }[]; facilities?: { facilityId: string; name: string; type?: string }[] }>(path)
+    apiGet<{ books?: { bookId: string; title: string; author?: string }[] }>(
+      '/api/workflow-data/simulation/books/search',
+    )
       .then((result) => {
         if (!active) return
-        const choices = eventType === 'BOOK_SELECTED'
-          ? (result.books ?? []).map((book) => ({ value: book.bookId, label: book.title, detail: book.author }))
-          : (result.facilities ?? []).map((facility) => ({ value: facility.facilityId, label: facility.name, detail: facility.type }))
+        const choices = (result.books ?? []).map((book) => ({
+          value: book.bookId,
+          label: book.title,
+          detail: book.author,
+        }))
         setWaitChoices(choices)
       })
       .catch(() => { if (active) setWaitChoices([]) })
@@ -314,10 +315,9 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
       || waitAlreadySubmitted || eventPending) return
 
     let automaticValue: string | undefined
-    if (expectedEventType === 'BOOK_SELECTED' || expectedEventType === 'FACILITY_SELECTED') {
-      if (expectedEventType === 'BOOK_SELECTED' && execution?.expectedBookId) {
-        automaticValue = execution.expectedBookId
-      } else {
+    if (expectedEventType === 'BOOK_SELECTED') {
+      if (execution?.expectedBookId) automaticValue = execution.expectedBookId
+      else {
         if (waitChoicesLoading) return
         automaticValue = waitChoices[0]?.value
       }
@@ -522,7 +522,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                     {!execution?.allowedValues?.length && !waitChoicesLoading && waitChoices.length === 0 && (
                       <form className="mt-3 flex gap-2" onSubmit={(event) => { event.preventDefault(); void submitWaitEvent(waitInput) }}>
                         <input value={waitInput} onChange={(event) => setWaitInput(event.target.value)}
-                          aria-label="Workflow choice" placeholder={expectedEventType === 'BOOK_SELECTED' ? 'Book ID' : expectedEventType === 'FACILITY_SELECTED' ? 'Facility ID' : 'Giá trị lựa chọn'}
+                          aria-label="Workflow choice" placeholder={expectedEventType === 'BOOK_SELECTED' ? 'Book ID' : 'Giá trị lựa chọn'}
                           className="h-9 min-w-0 flex-1 border border-[#cbd2dc] bg-white px-2.5 text-xs text-[#252933] outline-none focus:border-cyan-700" />
                         <button type="submit" disabled={!waitInput.trim() || eventPending}
                           className="inline-flex h-9 items-center gap-1.5 bg-cyan-800 px-3 text-xs font-semibold text-white hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-50">

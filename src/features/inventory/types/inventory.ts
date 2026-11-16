@@ -1,5 +1,5 @@
 export type InventoryRuntime = 'real' | 'sim'
-export type InventoryScopeType = 'SHELF' | 'AREA'
+export type InventoryScopeType = 'SHELF'
 export type InventoryReportType = 'INVENTORY' | 'MISPLACED_BOOK_DETECTION'
 
 export interface InventoryScanRequest {

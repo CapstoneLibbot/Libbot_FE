@@ -21,7 +21,7 @@ export interface InventoryScanResult {
 export interface InventoryReportRequest {
   missionId: string
   runtimeId: InventoryRuntime
-  scopeType: 'SHELF' | 'AREA'
+  scopeType: 'SHELF'
   reportType: 'INVENTORY' | 'MISPLACED_BOOK_DETECTION'
 }
 

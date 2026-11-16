@@ -3,7 +3,7 @@ import { ArrowLeft, Check, ChevronDown, MapPinned, Search, ShieldCheck } from 'l
 import { Link, useNavigate } from 'react-router'
 import { sampleBooks } from '@/lib/bookData'
 import { getJobs, saveJob } from '@/lib/jobData'
-import { initialAreas, initialShelves } from '@/lib/mapData'
+import { initialShelves } from '@/lib/mapData'
 import { initialEndpoints, sampleMap } from '@/pages/maps/MapDetail'
 import { getWorkflows } from '@/lib/workflowData'
 import { JobPriority } from '@/types/job'
@@ -29,8 +29,6 @@ function TaskCreateForm({ onCreatePatrol }: { onCreatePatrol: () => void }) {
   const [priority, setPriority] = useState<JobPriorityValue>(JobPriority.Normal)
   const [bookQuery, setBookQuery] = useState('')
   const [bookId, setBookId] = useState('')
-  const [areaQuery, setAreaQuery] = useState('')
-  const [areaId, setAreaId] = useState('')
   const [shelfIds, setShelfIds] = useState<number[]>([])
   const [patrolEndpointIds, setPatrolEndpointIds] = useState<number[]>([])
   const [chargingEndpointId, setChargingEndpointId] = useState('')
@@ -39,23 +37,14 @@ function TaskCreateForm({ onCreatePatrol }: { onCreatePatrol: () => void }) {
   const selectedMap = mapId === String(sampleMap.id) ? sampleMap : null
   const selectedWorkflow = workflows.find((workflow) => workflow.id === Number(workflowId)) ?? null
   const selectedBook = sampleBooks.find((book) => book.id === Number(bookId))
-  const selectedArea = initialAreas.find((area) => area.id === Number(areaId))
-
   const matchingBooks = sampleBooks.filter((book) => {
     const query = bookQuery.trim().toLowerCase()
     return !query || [book.id.toString(), book.title, book.author, book.classification].some((value) => value.toLowerCase().includes(query))
   })
 
-  const matchingAreas = initialAreas.filter((area) => {
-    const query = areaQuery.trim().toLowerCase()
-    return !query || [area.id.toString(), area.name, area.code, area.description ?? ''].some((value) => value.toLowerCase().includes(query))
-  })
-
   const clearTarget = () => {
     setBookQuery('')
     setBookId('')
-    setAreaQuery('')
-    setAreaId('')
     setShelfIds([])
     setPatrolEndpointIds([])
     setChargingEndpointId('')
@@ -95,22 +84,6 @@ function TaskCreateForm({ onCreatePatrol }: { onCreatePatrol: () => void }) {
         return {
           stepId: firstStep.id,
           parameters: { action: 'GET_BOOK_DETAIL', payload: { book_id: selectedBook.id } },
-        }
-      case 2:
-        if (!selectedArea) throw new Error('Select an area for this task.')
-        if (firstStep.stepType !== WorkflowStepType.Display) throw new Error('The area workflow must start with DISPLAY.')
-        return {
-          stepId: firstStep.id,
-          parameters: {
-            ui_screen: 'FACILITY_INFO',
-            data: {
-              facility_id: selectedArea.id,
-              name: selectedArea.name,
-              type: 'AREA',
-              description: selectedArea.description,
-              location: selectedArea.endpoint_id,
-            },
-          },
         }
       case 3:
         if (shelfIds.length === 0) throw new Error('Select at least one shelf to inventory.')
@@ -205,38 +178,6 @@ function TaskCreateForm({ onCreatePatrol }: { onCreatePatrol: () => void }) {
               <p className="mt-1 text-xs text-[#687386]">book_id {selectedBook.id} · Destination endpoint EP-{selectedBook.endpointId}</p>
             </div>
           )}
-        </div>
-      )
-    }
-
-    if (selectedWorkflow.id === 2) {
-      return (
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-semibold text-[#252933]">Select an area</h3>
-            <p className="mt-1 text-xs text-[#687386]">The selected area ID and information are passed to the facility workflow.</p>
-          </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#687386]" />
-            <input value={areaQuery} onChange={(event) => setAreaQuery(event.target.value)} placeholder="Search by area name, code or ID..." aria-label="Search areas" className={`${inputClassName} pl-9`} />
-          </div>
-          <div className="overflow-hidden border border-[#d9dce5] bg-white">
-            <div className="divide-y divide-[#e9e9ee]">
-              {matchingAreas.length > 0 ? matchingAreas.map((area) => (
-                <button key={area.id} type="button" onClick={() => setAreaId(String(area.id))} aria-pressed={areaId === String(area.id)} className={`flex w-full items-start justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#f8f9fb] ${areaId === String(area.id) ? 'bg-[#eff5ff] ring-1 ring-inset ring-primary' : ''}`}>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-[#252933]">{area.name}</span>
-                    <span className="mt-1 block text-xs text-[#687386]">{area.code} · Endpoint EP-{area.endpoint_id}</span>
-                    {area.description && <span className="mt-1 block text-xs text-[#687386]">{area.description}</span>}
-                  </span>
-                  {areaId === String(area.id) && <Check className="mt-1 h-4 w-4 shrink-0 text-primary" />}
-                </button>
-              )) : (
-                <p className="px-4 py-8 text-center text-sm text-[#687386]">No areas match your search.</p>
-              )}
-            </div>
-          </div>
-          {selectedArea && <p className="border-l-2 border-primary bg-[#f4f7fc] px-4 py-3 text-sm font-semibold text-[#252933]">Selected: {selectedArea.name} · facility_id {selectedArea.id}</p>}
         </div>
       )
     }

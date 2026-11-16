@@ -405,7 +405,7 @@ export function FloorFormDialog({
               onChange={(event) =>
                 setData({ ...data, description: event.target.value || null })
               }
-              placeholder="Notes about this area..."
+              placeholder="Notes about this floor..."
               className={`${input} h-20 py-2`}
             />
           </label>

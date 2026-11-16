@@ -10,7 +10,6 @@ import {
   History,
   LayoutDashboard,
   Map,
-  MapPin,
   Layers3,
   Route,
   Send,
@@ -43,11 +42,6 @@ const menuItems = [
     label: 'Map',
     icon: Map,
     path: '/maps',
-  },
-  {
-    label: 'Area',
-    icon: MapPin,
-    path: '/areas',
   },
   {
     label: 'Floor',

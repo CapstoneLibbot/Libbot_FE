@@ -92,34 +92,6 @@ const sampleWorkflows: WorkflowRecord[] = [
     ],
   }),
   createSampleWorkflow({
-    id: 2,
-    name: 'Search & Guide to Facility/Area',
-    description: 'Tìm và dẫn độc giả đến quầy thủ thư, phòng đọc hoặc khu vực tiện ích.',
-    createdAt: '2026-10-02T09:05:00.000Z',
-    tasks: [
-      { name: 'Show selected area information', description: 'Hiển thị thông tin của khu vực đã được chọn.', stepCount: 3 },
-      { name: 'Guide the visitor to the area', description: 'Xử lý lựa chọn vị trí, dẫn đường và thông báo khi đến nơi.', stepCount: 8 },
-      { name: 'Collect visitor feedback', description: 'Hiển thị màn hình đánh giá, nhận và lưu đánh giá.', stepCount: 4 },
-    ],
-    steps: [
-      { name: 'Show facility information', description: 'Hiển thị thông tin khu vực theo facility_id được truyền vào Job.', stepType: WorkflowStepType.Display },
-      { name: 'Wait for facility action', description: 'Chờ khách chọn xem vị trí hoặc đánh giá.', stepType: WorkflowStepType.Wait },
-      { name: 'Evaluate facility action', description: 'Nếu chọn đánh giá thì chuyển tới phần rating; nếu không thì hiển thị vị trí.', stepType: WorkflowStepType.Evaluate },
-      { name: 'Show facility location', description: 'Hiển thị vị trí tiện ích trên bản đồ.', stepType: WorkflowStepType.Display },
-      { name: 'Wait for map action', description: 'Chờ bắt đầu dẫn đường hoặc gửi đánh giá.', stepType: WorkflowStepType.Wait },
-      { name: 'Evaluate map action', description: 'Nếu chọn đánh giá thì chuyển tới phần rating; nếu không thì bắt đầu dẫn đường.', stepType: WorkflowStepType.Evaluate },
-      { name: 'Show navigation route', description: 'Hiển thị lộ trình đến tiện ích.', stepType: WorkflowStepType.Display },
-      { name: 'Navigate to facility', description: 'Điều hướng robot đến khu vực đã chọn.', stepType: WorkflowStepType.Move },
-      { name: 'Show arrival screen', description: 'Thông báo robot đã đến khu vực.', stepType: WorkflowStepType.Display },
-      { name: 'Announce arrival', description: 'Phát thông báo robot đã đến nơi.', stepType: WorkflowStepType.Notify },
-      { name: 'Wait before rating', description: 'Chờ 15 giây trước khi tiếp tục.', stepType: WorkflowStepType.Wait },
-      { name: 'Show rating screen', description: 'Hiển thị màn hình đánh giá trải nghiệm.', stepType: WorkflowStepType.Display },
-      { name: 'Wait for rating submission', description: 'Chờ khách gửi đánh giá; hết thời gian thì về Home.', stepType: WorkflowStepType.Wait },
-      { name: 'Save rating', description: 'Lưu đánh giá vào nghiệp vụ.', stepType: WorkflowStepType.ProcessData },
-      { name: 'Return to home screen', description: 'Đưa giao diện robot về màn hình chính.', stepType: WorkflowStepType.Display },
-    ],
-  }),
-  createSampleWorkflow({
     id: 3,
     name: 'Bookshelf Inventory',
     description: 'Di chuyển qua các kệ, quét sách, đối soát và lập báo cáo kiểm kê.',
@@ -209,7 +181,10 @@ export function getWorkflows(): WorkflowRecord[] {
 
     const stored = JSON.parse(storedWorkflows) as WorkflowRecord[]
     const sampleIds = new Set(sampleWorkflows.map((workflow) => workflow.id))
-    const workflows = [...sampleWorkflows, ...stored.filter((workflow) => !sampleIds.has(workflow.id))]
+    const workflows = [
+      ...sampleWorkflows,
+      ...stored.filter((workflow) => workflow.id !== 2 && !sampleIds.has(workflow.id)),
+    ]
     return workflows.map((workflow) => ({
       ...workflow,
       tasks: workflow.tasks.map((task) => ({

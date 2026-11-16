@@ -21,7 +21,7 @@ type SdfScene = {
   bookshelfCount: number
   robotSpawn: RobotPose
   simulationBookTarget?: RobotPose & { shelfId: string; label: string }
-  areas?: { id: string; type: string; label: string; x: number; y: number; size: [number, number]; color: string }[]
+  rooms?: { id: string; type: string; label: string; x: number; y: number; size: [number, number]; color: string }[]
   components: SceneComponent[]
 }
 
@@ -249,19 +249,19 @@ function drawScene(
     })
   }
 
-  for (const area of scene.areas ?? []) {
-    const labelPoint = project(area.x, area.y, 0.08)
+  for (const room of scene.rooms ?? []) {
+    const labelPoint = project(room.x, room.y, 0.08)
     context.font = '700 12px Inter, sans-serif'
     context.textAlign = 'center'
     context.textBaseline = 'middle'
-    const labelWidth = context.measureText(area.label).width
+    const labelWidth = context.measureText(room.label).width
     context.fillStyle = 'rgba(255, 255, 255, 0.88)'
     context.fillRect(labelPoint.x - labelWidth / 2 - 7, labelPoint.y - 11, labelWidth + 14, 22)
     context.strokeStyle = 'rgba(30, 41, 59, 0.65)'
     context.lineWidth = 1
     context.strokeRect(labelPoint.x - labelWidth / 2 - 7, labelPoint.y - 11, labelWidth + 14, 22)
     context.fillStyle = '#1f2937'
-    context.fillText(area.label, labelPoint.x, labelPoint.y)
+    context.fillText(room.label, labelPoint.x, labelPoint.y)
   }
   context.textAlign = 'start'
   context.textBaseline = 'alphabetic'
