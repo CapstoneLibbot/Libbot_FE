@@ -4,7 +4,20 @@ import { Link } from 'react-router'
 import MapViewer from '@/components/map/MapViewer'
 import SdfScene3D from '@/components/map/SdfScene3D'
 import { apiGet, apiPost, type BackendMission, type BackendWorkflow, type MissionExecutionState, type RobotRuntime } from '@/lib/missionApi'
-import { armRuntime, disarmRuntime } from '@/features/maps/api/runtimeApi'
+import { inventoryApi, type InventoryScanResult } from '@/lib/inventoryApi'
+import LiveOccupancyMap from '@/features/maps/components/LiveOccupancyMap'
+import RealtimeCamera from '@/features/maps/components/RealtimeCamera'
+import {
+  armRuntime,
+  disarmRuntime,
+  getSavedMapEndpoints,
+  getSavedMaps,
+  getSavedMapZones,
+  getSavedRobotMapDetails,
+  type SavedMapEndpoint,
+  type SavedMapZone,
+  type SavedRobotMapDetails,
+} from '@/features/maps/api/runtimeApi'
 
 type StepEvent = MissionExecutionState
 type StepProgress = 'pending' | 'running' | 'waiting' | 'completed' | 'failed'
@@ -19,6 +32,15 @@ type SimulationSceneMetadata = {
 
 function normalizeStatus(value?: string | null) {
   return (value ?? 'UNKNOWN').trim().toUpperCase()
+}
+
+function inventoryScanLabel(scan: InventoryScanResult) {
+  const scanStatus = scan.status?.trim().toUpperCase()
+  if (scanStatus === 'AMBIGUOUS') return 'Mã trùng trên nhiều tầng'
+  if (scanStatus === 'MISPLACED' || scan.misplaced) return 'Sai kệ'
+  if (scanStatus === 'SCANNED') return 'Đang xác minh'
+  if (scanStatus === 'UNKNOWN' || !scan.known) return 'Không có trong CSDL'
+  return 'Đã nhận diện'
 }
 
 function stepIdentifier(step: BackendWorkflow['steps'][number]) {
@@ -63,10 +85,16 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   const [execution, setExecution] = useState<MissionExecutionState | null>(null)
   const [events, setEvents] = useState<StepEvent[]>([])
   const [runtime, setRuntime] = useState<RobotRuntime | null>(null)
+  const [inventoryMap, setInventoryMap] = useState<SavedRobotMapDetails | null>(null)
+  const [inventoryMapEndpoints, setInventoryMapEndpoints] = useState<SavedMapEndpoint[]>([])
+  const [inventoryMapZones, setInventoryMapZones] = useState<SavedMapZone[]>([])
+  const [inventoryMapLoading, setInventoryMapLoading] = useState(false)
+  const [inventoryMapError, setInventoryMapError] = useState<string | null>(null)
+  const [inventoryScans, setInventoryScans] = useState<InventoryScanResult[]>([])
   const [spawnPose, setSpawnPose] = useState<RobotPose | null>(null)
   const [simulationBookTarget, setSimulationBookTarget] = useState<SimulationBookTarget | null>(null)
   const [roomLabels, setRoomLabels] = useState<{ label: string; x: number; y: number }[]>([])
-  const [mapViewMode, setMapViewMode] = useState<'2d' | 'gazebo3d'>('gazebo3d')
+  const [mapViewMode, setMapViewMode] = useState<'2d' | 'gazebo3d'>('2d')
   const [simulationSpeed, setSimulationSpeed] = useState(1)
   const [speedPending, setSpeedPending] = useState(false)
   const [runPending, setRunPending] = useState(false)
@@ -136,6 +164,71 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
       })
     return () => controller.abort()
   }, [])
+
+  useEffect(() => {
+    if (workflow?.type?.toUpperCase() !== 'BOOKSHELF_INVENTORY') {
+      setInventoryMap(null)
+      setInventoryMapEndpoints([])
+      setInventoryMapZones([])
+      return
+    }
+
+    let active = true
+    setInventoryMapLoading(true)
+    setInventoryMapError(null)
+    const loadLibraryMap = async () => {
+      try {
+        const maps = await getSavedMaps()
+        const selectedMap = maps.find((map) => map.name.trim().toLowerCase() === 'libotmapv4')
+        if (!selectedMap) throw new Error('Không tìm thấy map LiBotmapV4 trong database.')
+
+        const [details, endpoints, zones] = await Promise.all([
+          getSavedRobotMapDetails(selectedMap.id),
+          getSavedMapEndpoints(selectedMap.id),
+          getSavedMapZones(selectedMap.id),
+        ])
+        if (!active) return
+        setInventoryMap(details)
+        setInventoryMapEndpoints(endpoints.filter((endpoint) => endpoint.isActive))
+        setInventoryMapZones(zones.filter((zone) => zone.isActive))
+      } catch (requestError) {
+        if (!active) return
+        setInventoryMap(null)
+        setInventoryMapError(requestError instanceof Error ? requestError.message : 'Không tải được map LiBotmapV4.')
+      } finally {
+        if (active) setInventoryMapLoading(false)
+      }
+    }
+
+    void loadLibraryMap()
+    return () => { active = false }
+  }, [workflow?.type])
+
+  useEffect(() => {
+    if (workflow?.type?.toUpperCase() !== 'BOOKSHELF_INVENTORY' || !mission) {
+      setInventoryScans([])
+      return
+    }
+
+    let active = true
+    let nextPoll: number | undefined
+    const runtimeId = mission.runtimeId?.toLowerCase() === 'real' ? 'real' : 'sim'
+    const refreshScans = async () => {
+      try {
+        const scans = await inventoryApi.getScans(missionId, runtimeId)
+        if (active) setInventoryScans(scans)
+      } catch {
+        // Keep the last scan result visible while the robot or backend reconnects.
+      }
+      if (active) nextPoll = window.setTimeout(refreshScans, 1200)
+    }
+
+    void refreshScans()
+    return () => {
+      active = false
+      if (nextPoll !== undefined) window.clearTimeout(nextPoll)
+    }
+  }, [missionId, mission?.runtimeId, workflow?.type])
 
   useEffect(() => {
     let active = true
@@ -223,6 +316,9 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   const waitAlreadySubmitted = submittedWaitKey === waitKey
   const isLibraryPatrol = workflow?.type?.toUpperCase() === 'LIBRARY_PATROL'
   const isBookshelfInventory = workflow?.type?.toUpperCase() === 'BOOKSHELF_INVENTORY'
+  const poseForMap = isBookshelfInventory ? liveRobotPose : robotPose
+  const isAiScanning = isBookshelfInventory && missionInProgress && currentStep?.type.toUpperCase() === 'SCAN'
+  const latestInventoryScan = inventoryScans[inventoryScans.length - 1] ?? null
   const patrolResults = events.map((event) => asRecord(event.result)).filter((result): result is Record<string, unknown> => result !== null)
   const patrolReport = patrolResults
     .filter((result) => String(result.action ?? '').toUpperCase() === 'GENERATE_PATROL_REPORT')
@@ -401,14 +497,18 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
           <div className="flex h-full min-h-[420px] flex-col">
             <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#121318] px-4 py-2.5">
               <div>
-                <h2 className="text-sm font-semibold">Library simulation</h2>
-                <p className="mt-0.5 text-xs text-white/45">50 × 60 m · robot position updates live</p>
+                <h2 className="text-sm font-semibold">{isBookshelfInventory ? inventoryMap?.map.name ?? 'LiBotmapV4' : 'Library simulation'}</h2>
+                <p className="mt-0.5 text-xs text-white/45">
+                  {isBookshelfInventory && inventoryMap
+                    ? `${(inventoryMap.grid.width * inventoryMap.grid.resolution).toFixed(1)} × ${(inventoryMap.grid.height * inventoryMap.grid.resolution).toFixed(1)} m · ${inventoryMapEndpoints.length} endpoints · robot position updates live`
+                    : isBookshelfInventory ? 'Đang tải occupancy map LiBotmapV4…' : '50 × 60 m · robot position updates live'}
+                </p>
               </div>
               <div className="flex min-w-0 items-center gap-3">
                 <span className="hidden items-center gap-1.5 text-xs text-white/45 lg:inline-flex">
                   <Radio className="h-3.5 w-3.5" />
                   {runtime?.telemetry?.navigationState ?? 'Awaiting telemetry'}
-                  {robotPose && ` · X ${robotPose.x.toFixed(1)} · Y ${robotPose.y.toFixed(1)} m`}
+                  {poseForMap && ` · X ${poseForMap.x.toFixed(1)} · Y ${poseForMap.y.toFixed(1)} m`}
                 </span>
                 <div className="flex shrink-0 items-center gap-1 rounded-md border border-white/10 bg-black/20 p-1">
                   <button
@@ -419,14 +519,16 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                   >
                     2D map
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setMapViewMode('gazebo3d')}
-                    aria-pressed={mapViewMode === 'gazebo3d'}
-                    className={`rounded px-2.5 py-1.5 text-[11px] font-medium transition ${mapViewMode === 'gazebo3d' ? 'bg-cyan-400/15 text-cyan-200' : 'text-white/50 hover:text-white'}`}
-                  >
-                    Gazebo 3D
-                  </button>
+                  {!isBookshelfInventory && (
+                    <button
+                      type="button"
+                      onClick={() => setMapViewMode('gazebo3d')}
+                      aria-pressed={mapViewMode === 'gazebo3d'}
+                      className={`rounded px-2.5 py-1.5 text-[11px] font-medium transition ${mapViewMode === 'gazebo3d' ? 'bg-cyan-400/15 text-cyan-200' : 'text-white/50 hover:text-white'}`}
+                    >
+                      Gazebo 3D
+                    </button>
+                  )}
                 </div>
                 {mission?.runtimeId === 'sim' && (
                   <div aria-label="Gazebo simulation speed" className="flex shrink-0 items-center gap-1 rounded-md border border-white/10 bg-black/20 p-1">
@@ -448,7 +550,20 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
               </div>
             </div>
             <div className="min-h-[340px] flex-1">
-              {mapViewMode === '2d' ? (
+              {isBookshelfInventory ? inventoryMap ? (
+                <LiveOccupancyMap
+                  grid={inventoryMap.grid}
+                  robot={liveRobotPose ?? undefined}
+                  endpoints={inventoryMapEndpoints}
+                  zones={inventoryMapZones}
+                  showEndpoints
+                  showZones
+                />
+              ) : (
+                <div className="grid h-full min-h-[340px] place-items-center bg-[#101820] px-6 text-center text-sm text-white/65">
+                  {inventoryMapLoading ? 'Đang tải map LiBotmapV4 từ database…' : inventoryMapError ?? 'Không tải được map LiBotmapV4.'}
+                </div>
+              ) : mapViewMode === '2d' ? (
                 <MapViewer
                   yamlUrl="/maps/library_sim.yaml"
                   endpoints={[]}
@@ -569,6 +684,43 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                 ) : (
                   <p className="mt-2 text-xs text-[#89909d]">The shelf and QR summary will appear when the inventory report is ready.</p>
                 )}
+                <div className="mt-3">
+                  <RealtimeCamera
+                    runtimeId={mission?.runtimeId || 'sim'}
+                    connected={Boolean(runtime?.connected && !runtime.stale)}
+                    mappingActive={false}
+                    scanActive={isAiScanning}
+                    latestScan={latestInventoryScan ? {
+                      barcode: latestInventoryScan.barcode,
+                      known: latestInventoryScan.known,
+                      misplaced: latestInventoryScan.misplaced,
+                      status: latestInventoryScan.status,
+                    } : null}
+                  />
+                </div>
+                <div className="mt-3 border border-[#e2e5eb] bg-[#fafbfc] p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-xs font-semibold">Kết quả AI đọc barcode</h3>
+                    <span className="text-[10px] text-[#687386]">{inventoryScans.length} mã</span>
+                  </div>
+                  {inventoryScans.length > 0 ? (
+                    <ul className="mt-2 space-y-1.5">
+                      {[...inventoryScans].slice(-5).reverse().map((scan) => (
+                        <li key={`${scan.barcode}-${scan.scannedAt}`} className="flex items-center justify-between gap-2 border-t border-[#e7e9ee] pt-1.5 text-[10px]">
+                          <span className="min-w-0 truncate font-mono font-semibold">{scan.barcode}</span>
+                          <span className="shrink-0 text-[#687386]">
+                            {inventoryScanLabel(scan)}
+                            {scan.levelNumber ? ` · Tầng ${scan.levelNumber}` : ''}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2 text-[10px] text-[#687386]">
+                      {isAiScanning ? 'Camera IMX500 đang quét QR/barcode trên kệ…' : 'Chưa có barcode nào được camera ghi nhận.'}
+                    </p>
+                  )}
+                </div>
               </section>
             )}
             {isLibraryPatrol && (
