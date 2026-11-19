@@ -1464,8 +1464,8 @@ function MapViewer({
         <button
           type="button"
           onClick={() => zoomAt(1.25)}
-          title="Zoom in"
-          aria-label="Zoom in"
+          title="Phóng to"
+          aria-label="Phóng to"
           className="flex h-8 w-8 items-center justify-center rounded text-white/75 hover:bg-white/10 hover:text-white"
         >
           <Plus className="h-4 w-4" />
@@ -1473,8 +1473,8 @@ function MapViewer({
         <button
           type="button"
           onClick={() => zoomAt(0.8)}
-          title="Zoom out"
-          aria-label="Zoom out"
+          title="Thu nhỏ"
+          aria-label="Thu nhỏ"
           className="flex h-8 w-8 items-center justify-center rounded text-white/75 hover:bg-white/10 hover:text-white"
         >
           <Minus className="h-4 w-4" />
@@ -1482,8 +1482,8 @@ function MapViewer({
         <button
           type="button"
           onClick={resetView}
-          title="Reset map view"
-          aria-label="Reset map view"
+          title="Đặt lại chế độ xem bản đồ"
+          aria-label="Đặt lại chế độ xem bản đồ"
           className="flex h-8 w-8 items-center justify-center rounded text-white/75 hover:bg-white/10 hover:text-white"
         >
           <RotateCcw className="h-4 w-4" />

@@ -30,6 +30,17 @@ interface ReceiptLockedViewProps {
   onUpdate: (updated: BookReceiptRecord) => void
 }
 
+function receiptStatusLabel(status: BookReceiptStatus) {
+  switch (status) {
+    case 'DRAFT': return 'Bản nháp'
+    case 'PENDING': return 'Chờ duyệt'
+    case 'APPROVED': return 'Đã duyệt'
+    case 'COMPLETED': return 'Hoàn tất'
+    case 'CANCELLED': return 'Đã hủy'
+    default: return status
+  }
+}
+
 export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedViewProps) {
   const navigate = useNavigate()
   const [actionError, setActionError] = useState<string | null>(null)
@@ -44,7 +55,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
       const updated = await bookTransactionApi.updateReceiptStatus(receipt.id, newStatus)
       onUpdate(updated)
     } catch (err: any) {
-      setActionError(err?.message || `Failed to update status to ${newStatus}`)
+      setActionError(err?.message || `Không thể cập nhật trạng thái phiếu thành ${receiptStatusLabel(newStatus)}.`)
     } finally {
       setIsUpdating(false)
     }
@@ -73,7 +84,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
           title: item.title,
           isbn: item.isbn,
           copiesCount: 0,
-          shelfSummary: item.expectedShelfName || 'Unassigned',
+          shelfSummary: item.expectedShelfName || 'Chưa phân kệ',
           items: [],
         })
       }
@@ -107,23 +118,23 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
     if (type === 'NEW_ACQUISITION') {
       return (
         <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 border border-blue-200">
-          <PackagePlus className="h-3.5 w-3.5 text-blue-600" /> New Acquisition
+          <PackagePlus className="h-3.5 w-3.5 text-blue-600" /> Nhập sách mới
         </span>
       )
     }
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200">
-        <ArrowDownLeft className="h-3.5 w-3.5 text-emerald-600" /> Borrow Return
+        <ArrowDownLeft className="h-3.5 w-3.5 text-emerald-600" /> Sách mượn trả lại
       </span>
     )
   }
 
   // Stepper steps
   const steps: { key: BookReceiptStatus; label: string }[] = [
-    { key: 'DRAFT', label: 'Draft' },
-    { key: 'PENDING', label: 'Pending' },
-    { key: 'APPROVED', label: 'Approved' },
-    { key: 'COMPLETED', label: 'Completed' },
+    { key: 'DRAFT', label: 'Bản nháp' },
+    { key: 'PENDING', label: 'Chờ duyệt' },
+    { key: 'APPROVED', label: 'Đã duyệt' },
+    { key: 'COMPLETED', label: 'Hoàn tất' },
   ]
 
   const getStepIndex = (st: BookReceiptStatus) => {
@@ -149,9 +160,9 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
           </button>
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <span>Book Transactions</span>
+              <span>Giao dịch sách</span>
               <span>/</span>
-              <span>Book Receipts</span>
+              <span>Phiếu nhập sách</span>
               <span>/</span>
               <span className="text-primary font-mono">{receipt.code || receipt.id.slice(0, 8).toUpperCase()}</span>
             </div>
@@ -171,7 +182,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
             onClick={() => window.print()}
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
           >
-            <Printer className="h-3.5 w-3.5 text-slate-500" /> Print
+            <Printer className="h-3.5 w-3.5 text-slate-500" /> In phiếu
           </button>
 
           {receipt.status === 'PENDING' && (
@@ -183,7 +194,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
                 className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 <Clock className="h-3.5 w-3.5 text-slate-500" />
-                Return to Draft
+                Trả về bản nháp
               </button>
               <button
                 type="button"
@@ -191,7 +202,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
                 onClick={() => handleUpdateStatus('CANCELLED')}
                 className="rounded-lg border border-rose-200 bg-white px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
               >
-                Reject & Cancel
+                Từ chối và hủy
               </button>
               <button
                 type="button"
@@ -199,7 +210,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
                 onClick={() => handleUpdateStatus('APPROVED')}
                 className="rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-700 shadow-xs transition-colors"
               >
-                Approve Receipt
+                Duyệt phiếu nhập
               </button>
             </>
           )}
@@ -212,7 +223,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
                 onClick={() => handleUpdateStatus('CANCELLED')}
                 className="rounded-lg border border-rose-200 bg-white px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
               >
-                Void Receipt
+                Hủy phiếu nhập
               </button>
               <button
                 type="button"
@@ -221,7 +232,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
                 className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 transition-colors"
               >
                 <CheckCircle2 className="h-4 w-4" />
-                Complete & Update Inventory
+                Hoàn tất và cập nhật tồn kho
               </button>
             </>
           )}
@@ -229,14 +240,14 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
           {receipt.status === 'COMPLETED' && (
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3.5 py-2 text-xs font-semibold text-emerald-700 border border-emerald-200">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              Stock Verified & Received
+              Đã kiểm tra và nhập kho
             </span>
           )}
 
           {receipt.status === 'CANCELLED' && (
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-rose-50 px-3.5 py-2 text-xs font-semibold text-rose-700 border border-rose-200">
               <XCircle className="h-4 w-4 text-rose-600" />
-              Receipt Cancelled
+              Phiếu nhập đã hủy
             </span>
           )}
         </div>
@@ -253,7 +264,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
       {receipt.status !== 'CANCELLED' && (
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
-            Receipt Lifecycle & Workflow
+            Tiến trình phiếu nhập
           </p>
           <div className="flex items-center justify-between">
             {steps.map((step, idx) => {
@@ -297,32 +308,32 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
       {/* Overview Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-slate-500">Received Date</p>
+          <p className="text-xs font-medium text-slate-500">Ngày nhập</p>
           <p className="mt-1 text-base font-semibold text-slate-900">{receipt.receivedDate}</p>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-slate-500">Total Copies</p>
-          <p className="mt-1 text-base font-semibold text-primary">{receipt.total} copies</p>
+          <p className="text-xs font-medium text-slate-500">Tổng số bản</p>
+          <p className="mt-1 text-base font-semibold text-primary">{receipt.total} bản</p>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-slate-500">Book Titles</p>
+          <p className="text-xs font-medium text-slate-500">Đầu sách</p>
           <p className="mt-1 text-base font-semibold text-slate-900">
-            {groupedBookTitles.length} {groupedBookTitles.length === 1 ? 'title' : 'titles'}
+            {groupedBookTitles.length} đầu sách
           </p>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-slate-500">Status</p>
-          <p className="mt-1 text-sm font-semibold text-slate-900">{receipt.status}</p>
+          <p className="text-xs font-medium text-slate-500">Trạng thái</p>
+          <p className="mt-1 text-sm font-semibold text-slate-900">{receiptStatusLabel(receipt.status)}</p>
         </div>
       </div>
 
       {receipt.note && (
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Note
+            Ghi chú
           </p>
           <p className="mt-1 text-sm text-slate-700">{receipt.note}</p>
         </div>
@@ -335,13 +346,13 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
           <div>
             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-primary" />
-              Book Titles in this Receipt
+              Đầu sách trong phiếu nhập
               <span className="text-xs font-normal text-slate-500">
-                ({groupedBookTitles.length} {groupedBookTitles.length === 1 ? 'title' : 'titles'} • {receipt.total} copies)
+                ({groupedBookTitles.length} đầu sách • {receipt.total} bản)
               </span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Receipt is locked in {receipt.status} status. Click on any book title to expand and inspect physical copies.
+              Phiếu đang ở trạng thái {receiptStatusLabel(receipt.status)}. Chọn đầu sách để xem các bản sách.
             </p>
           </div>
 
@@ -352,11 +363,11 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
           >
             {groupedBookTitles.every((g) => expandedTitles[g.bookId]) ? (
               <>
-                <ChevronUp className="h-3.5 w-3.5" /> Collapse All
+                <ChevronUp className="h-3.5 w-3.5" /> Thu gọn tất cả
               </>
             ) : (
               <>
-                <ChevronDown className="h-3.5 w-3.5" /> Expand All
+                <ChevronDown className="h-3.5 w-3.5" /> Mở rộng tất cả
               </>
             )}
           </button>
@@ -382,7 +393,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
                   <div className="flex items-center gap-3 min-w-0">
                     <button
                       type="button"
-                      aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                      aria-label={isExpanded ? 'Thu gọn' : 'Mở rộng'}
                       className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 shadow-2xs hover:bg-slate-100"
                     >
                       <ChevronRight
@@ -401,7 +412,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
                         {group.title}
                       </h3>
                       <div className="mt-0.5 text-xs text-slate-500 font-mono">
-                        ISBN: {group.isbn || 'N/A'}
+                        ISBN: {group.isbn || 'Chưa có'}
                       </div>
                     </div>
                   </div>
@@ -409,7 +420,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
                   <div className="flex items-center gap-3 shrink-0 ml-4">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary border border-primary/20">
                       <Layers className="h-3.5 w-3.5" />
-                      {group.copiesCount} {group.copiesCount === 1 ? 'copy' : 'copies'}
+                      {group.copiesCount} bản
                     </span>
                   </div>
                 </div>
@@ -422,11 +433,11 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
                         <thead className="bg-slate-50/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-100">
                           <tr>
                             <th className="px-4 py-2.5 w-12">#</th>
-                            <th className="px-4 py-2.5">Barcode</th>
+                            <th className="px-4 py-2.5">Mã vạch</th>
                             <th className="px-4 py-2.5">
-                              {receipt.receiptType === 'NEW_ACQUISITION' ? 'Target Shelf Location' : 'Assigned Shelf'}
+                              {receipt.receiptType === 'NEW_ACQUISITION' ? 'Vị trí kệ dự kiến' : 'Kệ được phân công'}
                             </th>
-                            <th className="px-4 py-2.5">Copy Note</th>
+                            <th className="px-4 py-2.5">Ghi chú bản sách</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -444,7 +455,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
                               <td className="px-4 py-2.5">
                                 <span className="inline-flex items-center gap-1 text-slate-700 font-medium">
                                   <Warehouse className="h-3.5 w-3.5 text-slate-400" />
-                                  {item.expectedShelfName || 'Unassigned'}
+                                  {item.expectedShelfName || 'Chưa phân kệ'}
                                 </span>
                               </td>
                               <td className="px-4 py-2.5 text-slate-500">

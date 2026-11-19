@@ -114,9 +114,9 @@ function FloorList() {
               <Layers3 className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#17181c]">Floors</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-[#17181c]">Các tầng</h1>
               <p className="mt-0.5 text-sm text-[#596174]">
-                Manage library floors and operational status.
+                Quản lý các tầng thư viện và trạng thái hoạt động.
               </p>
             </div>
           </div>
@@ -126,7 +126,7 @@ function FloorList() {
             className="ml-auto flex h-10 shrink-0 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            Create Floor
+            Thêm tầng
           </button>
         </header>
 
@@ -152,7 +152,7 @@ function FloorList() {
               onClick={loadFloors}
               className="ml-auto flex items-center gap-1 font-semibold underline hover:no-underline"
             >
-              <RefreshCw className="h-3.5 w-3.5" /> Retry
+              <RefreshCw className="h-3.5 w-3.5" /> Thử lại
             </button>
           </div>
         )}
@@ -164,7 +164,7 @@ function FloorList() {
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search by name or description..."
+              placeholder="Tìm theo tên hoặc mô tả..."
               className="h-10 w-full border border-[#d7d9e2] bg-white pl-9 pr-3 text-sm text-[#17181c] outline-none placeholder:text-[#7b8190] focus:border-primary"
             />
           </form>
@@ -178,10 +178,10 @@ function FloorList() {
               }}
               className="h-10 w-full appearance-none border border-[#d7d9e2] bg-white px-3 pr-9 text-sm text-[#17181c] outline-none focus:border-primary"
             >
-              <option value="ALL">All Statuses</option>
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-              <option value="MAINTENANCE">Maintenance</option>
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="ACTIVE">Đang hoạt động</option>
+              <option value="INACTIVE">Ngừng hoạt động</option>
+              <option value="MAINTENANCE">Đang bảo trì</option>
             </select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#687386]" />
           </div>
@@ -193,13 +193,13 @@ function FloorList() {
             className="flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium text-[#3f4654] hover:bg-[#f1eff5] disabled:opacity-50"
           >
             <X className="h-4 w-4" />
-            Clear
+            Xóa bộ lọc
           </button>
         </div>
 
         <div className="flex items-center justify-between text-xs text-[#687386]">
           <p>
-            Showing {floors.length} of {totalCount} floors
+            Hiển thị {floors.length}/{totalCount} tầng
           </p>
           {totalPages > 1 && (
             <div className="flex items-center gap-2">
@@ -209,7 +209,7 @@ function FloorList() {
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 className="border border-[#d7d9e2] bg-white px-2.5 py-1 disabled:opacity-40"
               >
-                Previous
+                Trước
               </button>
               <span>
                 {page} / {totalPages}
@@ -220,7 +220,7 @@ function FloorList() {
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 className="border border-[#d7d9e2] bg-white px-2.5 py-1 disabled:opacity-40"
               >
-                Next
+                Sau
               </button>
             </div>
           )}
@@ -232,19 +232,19 @@ function FloorList() {
               <thead>
                 <tr className="border-b border-[#d9dce5] bg-[#f5f4f8]">
                   <th className="w-[100px] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Floor #
+                    Tầng #
                   </th>
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Name
+                    Tên
                   </th>
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Description
+                    Mô tả
                   </th>
                   <th className="w-[140px] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Status
+                    Trạng thái
                   </th>
                   <th className="w-[90px] px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Actions
+                    Thao tác
                   </th>
                 </tr>
               </thead>
@@ -253,7 +253,7 @@ function FloorList() {
                   <tr>
                     <td colSpan={5} className="px-6 py-14 text-center">
                       <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-                      <p className="mt-3 font-medium text-[#3f4654]">Loading floor data...</p>
+                      <p className="mt-3 font-medium text-[#3f4654]">Đang tải dữ liệu tầng...</p>
                     </td>
                   </tr>
                 ) : floors.length > 0 ? (
@@ -267,7 +267,7 @@ function FloorList() {
                       className="cursor-pointer border-b border-[#d9dce5] last:border-b-0 hover:bg-[#faf9fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                     >
                       <td className="px-4 py-4 font-mono text-xs font-bold text-primary">
-                        Floor {floor.floorNumber}
+                        Tầng {floor.floorNumber}
                       </td>
                       <td className="px-4 py-4 font-medium">
                         <Link
@@ -289,7 +289,7 @@ function FloorList() {
                           onClick={(e) => handleDelete(e, floor)}
                           disabled={deletingId === floor.id}
                           className="p-1 text-[#687386] hover:text-red-600 disabled:opacity-50"
-                          title="Delete floor"
+                          title="Xóa tầng"
                         >
                           {deletingId === floor.id ? (
                             <Loader2 className="h-4 w-4 animate-spin text-red-500" />
@@ -304,9 +304,9 @@ function FloorList() {
                   <tr>
                     <td colSpan={5} className="px-6 py-14 text-center">
                       <Layers3 className="mx-auto h-8 w-8 text-[#89909f]" />
-                      <p className="mt-3 font-medium text-[#3f4654]">No floors found</p>
+                      <p className="mt-3 font-medium text-[#3f4654]">Không tìm thấy tầng</p>
                       <p className="mt-1 text-sm text-[#7b8190]">
-                        Try changing your search keywords or status filter.
+                        Hãy thử thay đổi từ khóa tìm kiếm hoặc bộ lọc trạng thái.
                       </p>
                     </td>
                   </tr>
@@ -319,7 +319,7 @@ function FloorList() {
 
       {createOpen && (
         <FloorFormDialog
-          title="Create Floor"
+          title="Thêm tầng"
           onClose={() => setCreateOpen(false)}
           onSubmit={handleCreate}
         />
@@ -373,7 +373,7 @@ export function FloorFormDialog({
         </header>
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           <label className="block text-sm font-medium text-[#3f4654]">
-            Floor Number
+            Số tầng
             <input
               type="number"
               required
@@ -387,38 +387,38 @@ export function FloorFormDialog({
             />
           </label>
           <label className="block text-sm font-medium text-[#3f4654]">
-            Floor Name
+            Tên tầng
             <input
               required
               maxLength={100}
               value={data.name}
               onChange={(event) => setData({ ...data, name: event.target.value })}
-              placeholder="e.g. Floor 1 - Main Reading Hall"
+              placeholder="Ví dụ: Tầng 1 - Phòng đọc chính"
               className={input}
             />
           </label>
           <label className="block text-sm font-medium text-[#3f4654]">
-            Description
+            Mô tả
             <textarea
               maxLength={500}
               value={data.description || ''}
               onChange={(event) =>
                 setData({ ...data, description: event.target.value || null })
               }
-              placeholder="Notes about this floor..."
+              placeholder="Ghi chú về tầng..."
               className={`${input} h-20 py-2`}
             />
           </label>
           <label className="block text-sm font-medium text-[#3f4654]">
-            Status
+            Trạng thái
             <select
               value={data.status}
               onChange={(event) => setData({ ...data, status: event.target.value as FloorStatus })}
               className={input}
             >
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="INACTIVE">INACTIVE</option>
-              <option value="MAINTENANCE">MAINTENANCE</option>
+              <option value="ACTIVE">Đang hoạt động</option>
+              <option value="INACTIVE">Ngừng hoạt động</option>
+              <option value="MAINTENANCE">Đang bảo trì</option>
             </select>
           </label>
           <footer className="flex justify-end gap-2 border-t pt-4">
@@ -428,7 +428,7 @@ export function FloorFormDialog({
               disabled={submitting}
               className="h-10 border border-[#d7d9e2] px-4 text-sm font-medium text-[#3f4654] hover:bg-[#f1eff5]"
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
@@ -436,7 +436,7 @@ export function FloorFormDialog({
               className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              Save changes
+              Lưu thay đổi
             </button>
           </footer>
         </form>
@@ -453,9 +453,9 @@ export function StatusBadge({ status }: { status: string }) {
   }
 
   const labels: Record<string, string> = {
-    ACTIVE: 'Active',
-    INACTIVE: 'Inactive',
-    MAINTENANCE: 'Maintenance',
+    ACTIVE: 'Đang hoạt động',
+    INACTIVE: 'Ngừng hoạt động',
+    MAINTENANCE: 'Đang bảo trì',
   }
 
   return (

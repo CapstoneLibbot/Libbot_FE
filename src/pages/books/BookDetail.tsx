@@ -82,7 +82,7 @@ export default function BookDetail() {
       s.levels?.forEach((lvl) => {
         map.set(lvl.id, {
           shelfName: s.name,
-          levelName: lvl.name || `Level ${lvl.levelNumber}`,
+          levelName: lvl.name || `Tầng ${lvl.levelNumber}`,
           levelNumber: lvl.levelNumber,
         })
       })
@@ -106,7 +106,7 @@ export default function BookDetail() {
       setBook((prev) => (prev ? { ...prev, ...updated } : updated))
       setBookEditorOpen(false)
     } catch (err) {
-      alert(getErrorMessage(err, 'Could not update book'))
+      alert(getErrorMessage(err, 'Không thể cập nhật sách'))
     }
   }
 
@@ -128,14 +128,14 @@ export default function BookDetail() {
       }
       setItemEditor(null)
     } catch (err) {
-      setItemFormError(getErrorMessage(err, 'Could not save book item'))
+      setItemFormError(getErrorMessage(err, 'Không thể lưu bản sách'))
     } finally {
       setItemSaving(false)
     }
   }
 
   const handleDeleteItem = async (item: BookItemRecord) => {
-    if (!window.confirm(`Are you sure you want to delete book item with barcode "${item.barcode}"?`)) return
+    if (!window.confirm(`Bạn có chắc muốn xóa bản sách có mã vạch "${item.barcode}" không?`)) return
     setDeletingItemId(item.id)
     try {
       await bookItemApi.deleteBookItem(item.id)
@@ -144,7 +144,7 @@ export default function BookDetail() {
         prev ? { ...prev, totalCopies: Math.max(0, (prev.totalCopies ?? items.length) - 1) } : prev,
       )
     } catch (err) {
-      alert(getErrorMessage(err, 'Could not delete book item'))
+      alert(getErrorMessage(err, 'Không thể xóa bản sách'))
     } finally {
       setDeletingItemId('')
     }
@@ -154,7 +154,7 @@ export default function BookDetail() {
     return (
       <div className="flex min-h-[400px] items-center justify-center p-8">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <span className="ml-2 text-sm text-[#596174]">Loading book details and physical copies...</span>
+        <span className="ml-2 text-sm text-[#596174]">Đang tải thông tin sách và các bản sách...</span>
       </div>
     )
   }
@@ -163,17 +163,17 @@ export default function BookDetail() {
     return (
       <div className="min-h-full bg-[#f9f7fd] p-6 text-[#17181c] md:p-8">
         <Link to="/book" className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary">
-          <ArrowLeft className="h-4 w-4" /> Back to Books
+          <ArrowLeft className="h-4 w-4" /> Quay lại danh sách sách
         </Link>
         <div className="mt-6 max-w-xl border border-[#efc7c4] bg-[#fff1f0] p-5 text-[#a12820]">
-          <h2 className="text-base font-semibold">Book Not Found</h2>
-          <p className="mt-1 text-sm">{errorNotice || 'This book does not exist or has been deleted.'}</p>
+          <h2 className="text-base font-semibold">Không tìm thấy sách</h2>
+          <p className="mt-1 text-sm">{errorNotice || 'Sách này không tồn tại hoặc đã bị xóa.'}</p>
           <button
             type="button"
             onClick={() => void loadData()}
             className="mt-3 inline-flex items-center gap-2 text-sm font-semibold underline"
           >
-            <RefreshCw className="h-4 w-4" /> Retry
+            <RefreshCw className="h-4 w-4" /> Thử lại
           </button>
         </div>
       </div>
@@ -202,7 +202,7 @@ export default function BookDetail() {
           className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"
         >
           <ArrowLeft className="h-4 w-4" />
-          Books List
+          Danh sách sách
         </Link>
 
         {/* Header */}
@@ -212,7 +212,7 @@ export default function BookDetail() {
               <BookOpen className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase text-[#687386]">ISBN: {book.isbn || 'None'}</p>
+              <p className="text-xs font-semibold uppercase text-[#687386]">ISBN: {book.isbn || 'Chưa có'}</p>
               <h1 className="text-2xl font-bold tracking-tight">{book.title}</h1>
             </div>
           </div>
@@ -222,7 +222,7 @@ export default function BookDetail() {
             className="flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium hover:bg-[#f1eff5]"
           >
             <Pencil className="h-4 w-4" />
-            Edit Book Details
+            Sửa thông tin sách
           </button>
         </header>
 
@@ -230,23 +230,23 @@ export default function BookDetail() {
         <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div className="overflow-hidden border border-[#d9dce5] bg-white">
             <div className="border-b border-[#ececf1] bg-[#faf9fc] px-5 py-3">
-              <h2 className="text-sm font-semibold text-[#2b303b]">Cataloging Information</h2>
+              <h2 className="text-sm font-semibold text-[#2b303b]">Thông tin danh mục</h2>
             </div>
             <dl className="divide-y divide-[#d9dce5] text-sm">
-              <Detail label="Book ID" value={book.id} />
-              <Detail label="ISBN Standard" value={book.isbn || '—'} />
-              <Detail label="Title" value={book.title} />
-              <Detail label="Author" value={book.author || '—'} />
+              <Detail label="Mã sách" value={book.id} />
+              <Detail label="ISBN" value={book.isbn || '—'} />
+              <Detail label="Tên sách" value={book.title} />
+              <Detail label="Tác giả" value={book.author || '—'} />
               <Detail
-                label="Category"
-                value={book.category?.name || 'Uncategorized'}
+                label="Thể loại"
+                value={book.category?.name || 'Chưa phân loại'}
               />
-              <Detail label="Publisher" value={book.publisher || '—'} />
+              <Detail label="Nhà xuất bản" value={book.publisher || '—'} />
               <Detail
-                label="Publication Year"
+                label="Năm xuất bản"
                 value={book.publicationYear ? String(book.publicationYear) : '—'}
               />
-              <Detail label="Description" value={book.description || '—'} />
+              <Detail label="Mô tả" value={book.description || '—'} />
             </dl>
           </div>
 
@@ -254,13 +254,13 @@ export default function BookDetail() {
             {book.image ? (
               <img
                 src={book.image}
-                alt={`Cover of ${book.title}`}
+                alt={`Bìa sách ${book.title}`}
                 className="max-h-[360px] w-full object-contain"
               />
             ) : (
               <div className="text-center text-[#89909f]">
                 <Camera className="mx-auto h-12 w-12" />
-                <p className="mt-3 text-sm font-medium">No cover image</p>
+                <p className="mt-3 text-sm font-medium">Chưa có ảnh bìa</p>
               </div>
             )}
           </div>
@@ -272,9 +272,9 @@ export default function BookDetail() {
             <div className="flex items-center gap-2">
               <Layers className="h-5 w-5 text-primary" />
               <div>
-                <h2 className="text-lg font-semibold">Physical Book Items (Copies)</h2>
+                <h2 className="text-lg font-semibold">Các bản sách</h2>
                 <p className="text-xs text-[#687386]">
-                  {totalCopies} physical cop{totalCopies === 1 ? 'y' : 'ies'} registered ({availableCopies} available for loan)
+                  Có {totalCopies} bản sách ({availableCopies} bản có thể cho mượn)
                 </p>
               </div>
             </div>
@@ -287,16 +287,16 @@ export default function BookDetail() {
               className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" />
-              Add New Book Item
+              Thêm bản sách
             </button>
           </div>
 
           {/* Quick Stats Grid */}
           <div className="grid gap-3 sm:grid-cols-4">
-            <SummaryCard label="Total Copies" value={totalCopies} tone="text-[#17181c]" />
-            <SummaryCard label="Correct Location" value={correctCount} tone="text-[#087443]" />
-            <SummaryCard label="Misplaced Location" value={misplacedCount} tone="text-[#a65000]" />
-            <SummaryCard label="Missing / Not Found" value={missingCount} tone="text-[#b42318]" />
+            <SummaryCard label="Tổng số bản" value={totalCopies} tone="text-[#17181c]" />
+            <SummaryCard label="Đúng vị trí" value={correctCount} tone="text-[#087443]" />
+            <SummaryCard label="Sai vị trí" value={misplacedCount} tone="text-[#a65000]" />
+            <SummaryCard label="Bị thiếu / Không tìm thấy" value={missingCount} tone="text-[#b42318]" />
           </div>
 
           {/* Table */}
@@ -305,13 +305,13 @@ export default function BookDetail() {
               <table className="w-full min-w-[900px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-[#d9dce5] bg-[#f5f4f8] text-[11px] font-semibold uppercase text-[#3f4654]">
-                    <th className="px-4 py-3">Barcode</th>
-                    <th className="px-4 py-3">Expected Shelf Level</th>
-                    <th className="px-4 py-3">Actual Position</th>
-                    <th className="px-4 py-3">Placement</th>
-                    <th className="px-4 py-3">Physical Status</th>
-                    <th className="px-4 py-3">Last Surveyed</th>
-                    <th className="w-24 px-4 py-3 text-right">Actions</th>
+                    <th className="px-4 py-3">Mã vạch</th>
+                    <th className="px-4 py-3">Tầng kệ dự kiến</th>
+                    <th className="px-4 py-3">Vị trí thực tế</th>
+                    <th className="px-4 py-3">Trạng thái vị trí</th>
+                    <th className="px-4 py-3">Tình trạng bản sách</th>
+                    <th className="px-4 py-3">Kiểm kê gần nhất</th>
+                    <th className="w-24 px-4 py-3 text-right">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -333,9 +333,9 @@ export default function BookDetail() {
                     <tr>
                       <td colSpan={7} className="px-6 py-14 text-center text-[#687386]">
                         <BookOpen className="mx-auto h-8 w-8 text-[#89909f]" />
-                        <p className="mt-2 font-medium">No physical book items found</p>
+                        <p className="mt-2 font-medium">Chưa có bản sách nào</p>
                         <p className="text-xs text-[#7b8190]">
-                          Click &quot;Add New Book Item&quot; to register a barcode and assign a shelf location for this book.
+                          Nhấn &quot;Thêm bản sách&quot; để đăng ký mã vạch và gán vị trí kệ cho sách này.
                         </p>
                       </td>
                     </tr>
@@ -350,7 +350,7 @@ export default function BookDetail() {
       {/* Book Metadata Edit Dialog */}
       {bookEditorOpen && (
         <BookFormDialog
-          title="Update Book"
+          title="Cập nhật sách"
           initial={{
             title: book.title,
             author: book.author || null,
@@ -412,7 +412,7 @@ function ItemTableRow({
             <span className="block text-[#687386]">{expected.levelName}</span>
           </div>
         ) : (
-          <span className="text-[#89909d]">Unassigned</span>
+          <span className="text-[#89909d]">Chưa gán</span>
         )}
       </td>
       <td className="px-4 py-3.5 text-xs text-[#596174]">
@@ -423,22 +423,22 @@ function ItemTableRow({
           </div>
         ) : (
           <span className="inline-flex items-center gap-1 text-[#b42318]">
-            <HelpCircle className="h-3 w-3" /> Not found
+            <HelpCircle className="h-3 w-3" /> Không tìm thấy
           </span>
         )}
       </td>
       <td className="px-4 py-3.5">
         {isMatched ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-[#d9f7e7] px-2.5 py-0.5 text-[11px] font-medium text-[#087443]">
-            <CheckCircle2 className="h-3 w-3" /> Correct location
+            <CheckCircle2 className="h-3 w-3" /> Đúng vị trí
           </span>
         ) : item.currentShelfLevelId ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0d8] px-2.5 py-0.5 text-[11px] font-medium text-[#a65000]">
-            <MapPin className="h-3 w-3" /> Misplaced level
+            <MapPin className="h-3 w-3" /> Sai tầng
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0f0] px-2.5 py-0.5 text-[11px] font-medium text-[#b42318]">
-            Missing
+            Bị thiếu
           </span>
         )}
       </td>
@@ -460,7 +460,7 @@ function ItemTableRow({
           <button
             type="button"
             onClick={onEdit}
-            title="Edit copy"
+            title="Sửa bản sách"
             className="flex h-8 w-8 items-center justify-center text-[#596174] hover:bg-[#eff5ff] hover:text-primary"
           >
             <Pencil className="h-4 w-4" />
@@ -469,7 +469,7 @@ function ItemTableRow({
             type="button"
             onClick={onDelete}
             disabled={isDeleting}
-            title="Delete copy"
+            title="Xóa bản sách"
             className="flex h-8 w-8 items-center justify-center text-[#8d4a46] hover:bg-[#fff1f0] hover:text-[#b42318] disabled:opacity-50"
           >
             <Trash2 className="h-4 w-4" />
@@ -490,11 +490,11 @@ function BookItemStatusBadge({ status }: { status: string }) {
     DAMAGED: 'bg-[#ffebee] text-[#c62828]',
   }
   const labels: Record<string, string> = {
-    AVAILABLE: 'Available',
-    MISPLACED: 'Misplaced',
-    MISSING: 'Missing',
-    LOST: 'Lost',
-    DAMAGED: 'Damaged',
+    AVAILABLE: 'Có sẵn',
+    MISPLACED: 'Sai vị trí',
+    MISSING: 'Bị thiếu',
+    LOST: 'Thất lạc',
+    DAMAGED: 'Bị hư hỏng',
   }
 
   return (
@@ -563,9 +563,9 @@ function BookItemFormDialog({
         <header className="flex justify-between border-b border-[#e4e6eb] px-5 py-4">
           <div>
             <h2 id="book-item-dialog-title" className="text-lg font-semibold">
-              {item ? 'Update Book Item' : 'Add New Book Item'}
+              {item ? 'Cập nhật bản sách' : 'Thêm bản sách'}
             </h2>
-            <p className="text-xs text-[#687386]">Book ID: {bookId}</p>
+            <p className="text-xs text-[#687386]">Mã sách: {bookId}</p>
           </div>
           <button
             type="button"
@@ -580,30 +580,30 @@ function BookItemFormDialog({
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">
-              Barcode <span className="text-[#b42318]">*</span>
+              Mã vạch <span className="text-[#b42318]">*</span>
               <input
                 required
                 maxLength={50}
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
-                placeholder="e.g. LIB-BK-0001..."
+                placeholder="Ví dụ: LIB-BK-0001..."
                 className={inputClass}
               />
             </label>
 
             <label className="block space-y-1.5 text-sm font-medium">
-              Expected Shelf Level
+              Tầng kệ dự kiến
               <select
                 value={expectedLevelId}
                 onChange={(e) => setExpectedLevelId(e.target.value)}
                 className={`${inputClass} appearance-none`}
               >
-                <option value="">Unassigned position</option>
+                <option value="">Chưa gán vị trí</option>
                 {shelves.map((s) => (
                   <optgroup key={s.id} label={`Shelf: ${s.name}`}>
                     {s.levels?.map((lvl) => (
                       <option key={lvl.id} value={lvl.id}>
-                        {s.name} → Level {lvl.levelNumber} ({lvl.name})
+                        {s.name} → Tầng {lvl.levelNumber} ({lvl.name})
                       </option>
                     ))}
                   </optgroup>
@@ -612,18 +612,18 @@ function BookItemFormDialog({
             </label>
 
             <label className="block space-y-1.5 text-sm font-medium">
-              Actual Recorded Position
+              Vị trí thực tế ghi nhận
               <select
                 value={currentLevelId || 'NULL'}
                 onChange={(e) => setCurrentLevelId(e.target.value)}
                 className={`${inputClass} appearance-none`}
               >
-                <option value="NULL">Not found / Missing</option>
+                <option value="NULL">Không tìm thấy / Bị thiếu</option>
                 {shelves.map((s) => (
                   <optgroup key={s.id} label={`Shelf: ${s.name}`}>
                     {s.levels?.map((lvl) => (
                       <option key={lvl.id} value={lvl.id}>
-                        {s.name} → Level {lvl.levelNumber} ({lvl.name})
+                        {s.name} → Tầng {lvl.levelNumber} ({lvl.name})
                       </option>
                     ))}
                   </optgroup>
@@ -632,17 +632,17 @@ function BookItemFormDialog({
             </label>
 
             <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">
-              Physical Status
+              Tình trạng bản sách
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
                 className={`${inputClass} appearance-none`}
               >
-                <option value="AVAILABLE">Available for Loan (AVAILABLE)</option>
-                <option value="MISPLACED">Misplaced Location (MISPLACED)</option>
-                <option value="MISSING">Missing / Not Found (MISSING)</option>
-                <option value="LOST">Lost (LOST)</option>
-                <option value="DAMAGED">Damaged (DAMAGED)</option>
+                <option value="AVAILABLE">Có thể cho mượn (AVAILABLE)</option>
+                <option value="MISPLACED">Sai vị trí (MISPLACED)</option>
+                <option value="MISSING">Bị thiếu / Không tìm thấy (MISSING)</option>
+                <option value="LOST">Thất lạc (LOST)</option>
+                <option value="DAMAGED">Hư hỏng (DAMAGED)</option>
               </select>
             </label>
           </div>
@@ -661,7 +661,7 @@ function BookItemFormDialog({
               disabled={saving}
               className="h-10 border border-[#d7d9e2] px-4 text-sm font-medium hover:bg-[#f5f5f7]"
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
@@ -669,7 +669,7 @@ function BookItemFormDialog({
               className="inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
             >
               {saving && <RefreshCw className="h-4 w-4 animate-spin" />}
-              {saving ? 'Saving...' : item ? 'Save changes' : 'Add Item'}
+              {saving ? 'Đang lưu...' : item ? 'Lưu thay đổi' : 'Thêm bản sách'}
             </button>
           </footer>
         </form>

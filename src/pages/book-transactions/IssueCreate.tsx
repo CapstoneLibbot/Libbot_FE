@@ -153,11 +153,11 @@ export default function IssueCreate() {
           </button>
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <span>Book Transactions</span>
+              <span>Giao dịch sách</span>
               <span>/</span>
-              <span>Book Issues</span>
+              <span>Phiếu xuất sách</span>
               <span>/</span>
-              <span className="text-primary">New Issue</span>
+              <span className="text-primary">Tạo phiếu xuất</span>
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               Create Book Issue
@@ -206,7 +206,7 @@ export default function IssueCreate() {
         {/* Left Column: Issue Metadata */}
         <div className="space-y-6 lg:col-span-4">
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-base font-bold text-slate-900">Issue Details</h2>
+            <h2 className="text-base font-bold text-slate-900">Thông tin phiếu xuất</h2>
             <p className="mt-0.5 text-xs text-slate-500">
               Select transaction type and date.
             </p>
@@ -228,8 +228,8 @@ export default function IssueCreate() {
                     }`}
                   >
                     <ArrowUpRight className="h-5 w-5" />
-                    <span className="mt-1 text-xs font-semibold">Borrow Loan</span>
-                    <span className="text-[10px] text-slate-400">Patron Checkout</span>
+                    <span className="mt-1 text-xs font-semibold">Cho mượn</span>
+                    <span className="text-[10px] text-slate-400">Bạn đọc mượn sách</span>
                   </button>
 
                   <button
@@ -242,8 +242,8 @@ export default function IssueCreate() {
                     }`}
                   >
                     <PackageMinus className="h-5 w-5" />
-                    <span className="mt-1 text-xs font-semibold">Disposal</span>
-                    <span className="text-[10px] text-slate-400">Write-off / Decommission</span>
+                    <span className="mt-1 text-xs font-semibold">Thanh lý</span>
+                    <span className="text-[10px] text-slate-400">Loại khỏi kho</span>
                   </button>
                 </div>
               </div>
@@ -283,21 +283,21 @@ export default function IssueCreate() {
 
           {/* Quick Summary Card */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900">Summary</h3>
+            <h3 className="text-sm font-bold text-slate-900">Tóm tắt</h3>
             <div className="mt-3 divide-y divide-slate-100 text-xs">
               <div className="flex justify-between py-2 text-slate-600">
-                <span>Issue Type:</span>
+                <span>Loại phiếu xuất:</span>
                 <span className="font-semibold text-slate-900">
                   {issueType === 'BORROW_LOAN' ? 'Borrow Loan' : 'Disposal'}
                 </span>
               </div>
               <div className="flex justify-between py-2 text-slate-600">
-                <span>Total Copies:</span>
+                <span>Tổng số bản:</span>
                 <span className="font-bold text-primary">{items.length} copies</span>
               </div>
               <div className="flex justify-between py-2 text-slate-600">
-                <span>Status upon submit:</span>
-                <span className="font-medium text-amber-700">PENDING</span>
+                <span>Trạng thái khi gửi:</span>
+                <span className="font-medium text-amber-700">Đang chờ</span>
               </div>
             </div>
           </div>
@@ -309,10 +309,10 @@ export default function IssueCreate() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Barcode className="h-5 w-5 text-primary" />
-                <h2 className="text-base font-bold text-slate-900">Scan Book Copies to Issue</h2>
+                <h2 className="text-base font-bold text-slate-900">Quét bản sách để xuất</h2>
               </div>
               <span className="text-xs text-slate-400">
-                Tip: Press <kbd className="rounded border bg-slate-100 px-1 py-0.5 font-mono">Enter</kbd> to add
+                Mẹo: Nhấn <kbd className="rounded border bg-slate-100 px-1 py-0.5 font-mono">Enter</kbd> để thêm
               </span>
             </div>
 
@@ -327,7 +327,7 @@ export default function IssueCreate() {
                     <input
                       type="text"
                       autoFocus
-                      placeholder="Scan or enter barcode (e.g. BK-0001, BK-0002, BK-0003, BK-0005)..."
+                      placeholder="Quét hoặc nhập mã vạch (ví dụ: BK-0001, BK-0002, BK-0003, BK-0005)..."
                       value={scanBarcode}
                       onChange={(e) => setScanBarcode(e.target.value)}
                       onKeyDown={handleKeyDownBarcode}
@@ -350,7 +350,7 @@ export default function IssueCreate() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Due back in 2 weeks or reason for disposal..."
+                  placeholder="Ví dụ: Hạn trả sau 2 tuần hoặc lý do thanh lý..."
                   value={itemNote}
                   onChange={(e) => setItemNote(e.target.value)}
                   className="mt-1.5 h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -386,7 +386,7 @@ export default function IssueCreate() {
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center text-slate-400">
                 <Barcode className="h-8 w-8 text-slate-300" />
-                <p className="mt-2 text-sm font-medium text-slate-600">No copies added yet</p>
+                <p className="mt-2 text-sm font-medium text-slate-600">Chưa thêm bản sách nào</p>
                 <p className="text-xs text-slate-400">
                   Scan available copies to loan or liquidate (Sample codes: BK-0001, BK-0002, BK-0003).
                 </p>
@@ -397,12 +397,12 @@ export default function IssueCreate() {
                   <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                     <tr>
                       <th className="px-4 py-3">#</th>
-                      <th className="px-4 py-3">Barcode</th>
-                      <th className="px-4 py-3">Book Title</th>
+                      <th className="px-4 py-3">Mã vạch</th>
+                      <th className="px-4 py-3">Tên sách</th>
                       <th className="px-4 py-3">ISBN</th>
-                      <th className="px-4 py-3">Current Shelf</th>
-                      <th className="px-4 py-3">Note</th>
-                      <th className="px-4 py-3 text-right">Action</th>
+                      <th className="px-4 py-3">Kệ hiện tại</th>
+                      <th className="px-4 py-3">Ghi chú</th>
+                      <th className="px-4 py-3 text-right">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -414,7 +414,7 @@ export default function IssueCreate() {
                         </td>
                         <td className="px-4 py-3 font-medium text-slate-800">{it.title}</td>
                         <td className="px-4 py-3 text-slate-500">{it.isbn}</td>
-                        <td className="px-4 py-3 text-slate-600">{it.currentShelfName || 'Main Shelf'}</td>
+                        <td className="px-4 py-3 text-slate-600">{it.currentShelfName || 'Kệ chính'}</td>
                         <td className="px-4 py-3 text-slate-500">{it.note || '-'}</td>
                         <td className="px-4 py-3 text-right">
                           <button

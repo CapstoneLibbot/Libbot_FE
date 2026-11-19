@@ -9,7 +9,7 @@ import type {
 } from '../types/aisle'
 
 export const aisleApi = {
-  /** Lấy danh sách lối đi có phân trang và bộ lọc */
+  /** Lấy danh sách dãy sách có phân trang và bộ lọc */
   getAisles: (params?: AisleQueryParams): Promise<PaginatedData<AisleRecord>> => {
     return httpClient.get(AISLE_ENDPOINTS.LIST, {
       params: {
@@ -25,7 +25,7 @@ export const aisleApi = {
     })
   },
 
-  /** Lấy danh sách rút gọn các lối đi phục vụ Dropdown / Select box */
+  /** Lấy danh sách rút gọn các dãy sách phục vụ Dropdown / Select box */
   getAllOptions: (floorId?: string, status?: string): Promise<AisleOptionRecord[]> => {
     return httpClient.get(AISLE_ENDPOINTS.ALL, {
       params: {
@@ -35,24 +35,24 @@ export const aisleApi = {
     })
   },
 
-  /** Lấy chi tiết 1 lối đi theo ID */
+  /** Lấy chi tiết 1 dãy sách theo ID */
   getAisleById: (id: string, expand = 'floor,shelves'): Promise<AisleRecord> => {
     return httpClient.get(AISLE_ENDPOINTS.DETAIL(id), {
       params: { expand },
     })
   },
 
-  /** Tạo lối đi mới */
+  /** Tạo dãy sách mới */
   createAisle: (payload: AisleWriteRequest): Promise<AisleRecord> => {
     return httpClient.post(AISLE_ENDPOINTS.LIST, payload)
   },
 
-  /** Cập nhật thông tin lối đi */
+  /** Cập nhật thông tin dãy sách */
   updateAisle: (id: string, payload: AisleWriteRequest): Promise<AisleRecord> => {
     return httpClient.put(AISLE_ENDPOINTS.DETAIL(id), payload)
   },
 
-  /** Xóa lối đi */
+  /** Xóa dãy sách */
   deleteAisle: (id: string): Promise<void> => {
     return httpClient.delete(AISLE_ENDPOINTS.DETAIL(id))
   },

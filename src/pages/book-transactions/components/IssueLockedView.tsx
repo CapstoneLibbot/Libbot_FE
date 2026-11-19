@@ -30,6 +30,17 @@ interface IssueLockedViewProps {
   onUpdate: (updated: BookIssueRecord) => void
 }
 
+function issueStatusLabel(status: BookIssueStatus) {
+  switch (status) {
+    case 'DRAFT': return 'Bản nháp'
+    case 'PENDING': return 'Chờ duyệt'
+    case 'APPROVED': return 'Đã duyệt'
+    case 'COMPLETED': return 'Hoàn tất'
+    case 'CANCELLED': return 'Đã hủy'
+    default: return status
+  }
+}
+
 export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProps) {
   const navigate = useNavigate()
   const [actionError, setActionError] = useState<string | null>(null)
@@ -44,7 +55,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
       const updated = await bookTransactionApi.updateIssueStatus(issue.id, newStatus)
       onUpdate(updated)
     } catch (err: any) {
-      setActionError(err?.message || `Failed to update status to ${newStatus}`)
+      setActionError(err?.message || `Không thể cập nhật trạng thái phiếu thành ${issueStatusLabel(newStatus)}.`)
     } finally {
       setIsUpdating(false)
     }
@@ -73,7 +84,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
           title: item.title,
           isbn: item.isbn,
           copiesCount: 0,
-          shelfSummary: item.currentShelfName || 'Main Shelf',
+          shelfSummary: item.currentShelfName || 'Kệ chính',
           items: [],
         })
       }
@@ -108,23 +119,23 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
     if (type === 'BORROW_LOAN') {
       return (
         <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 border border-indigo-200">
-          <ArrowUpRight className="h-3.5 w-3.5 text-indigo-600" /> Borrow Loan
+          <ArrowUpRight className="h-3.5 w-3.5 text-indigo-600" /> Mượn liên thư viện
         </span>
       )
     }
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 border border-amber-300">
-        <PackageMinus className="h-3.5 w-3.5 text-amber-700" /> Disposal
+        <PackageMinus className="h-3.5 w-3.5 text-amber-700" /> Thanh lý
       </span>
     )
   }
 
   // Stepper steps
   const steps: { key: BookIssueStatus; label: string }[] = [
-    { key: 'DRAFT', label: 'Draft' },
-    { key: 'PENDING', label: 'Pending' },
-    { key: 'APPROVED', label: 'Approved' },
-    { key: 'COMPLETED', label: 'Completed' },
+    { key: 'DRAFT', label: 'Bản nháp' },
+    { key: 'PENDING', label: 'Chờ duyệt' },
+    { key: 'APPROVED', label: 'Đã duyệt' },
+    { key: 'COMPLETED', label: 'Hoàn tất' },
   ]
 
   const getStepIndex = (st: BookIssueStatus) => {
@@ -150,9 +161,9 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
           </button>
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <span>Book Transactions</span>
+              <span>Giao dịch sách</span>
               <span>/</span>
-              <span>Book Issues</span>
+              <span>Phiếu xuất sách</span>
               <span>/</span>
               <span className="text-primary font-mono">
                 {issue.code || issue.id.slice(0, 8).toUpperCase()}
@@ -174,7 +185,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
             onClick={() => window.print()}
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors"
           >
-            <Printer className="h-3.5 w-3.5 text-slate-500" /> Print
+            <Printer className="h-3.5 w-3.5 text-slate-500" /> In phiếu
           </button>
 
           {/* Actions for PENDING status */}
@@ -187,7 +198,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
                 className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors"
               >
                 <Clock className="h-3.5 w-3.5 text-slate-500" />
-                Return to Draft
+                Trả về bản nháp
               </button>
               <button
                 type="button"
@@ -196,7 +207,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
                 className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50 transition-colors"
               >
                 <XCircle className="h-3.5 w-3.5" />
-                Reject & Cancel
+                Từ chối và hủy
               </button>
               <button
                 type="button"
@@ -205,7 +216,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
                 className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-primary/90 disabled:opacity-50 transition-colors"
               >
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                Approve Issue
+                Duyệt phiếu xuất
               </button>
             </>
           )}
@@ -220,7 +231,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
                 className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors"
               >
                 <Clock className="h-3.5 w-3.5 text-slate-500" />
-                Return to Draft
+                Trả về bản nháp
               </button>
               <button
                 type="button"
@@ -229,7 +240,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
                 className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50 transition-colors"
               >
                 <XCircle className="h-3.5 w-3.5" />
-                Cancel Issue
+                Hủy phiếu xuất
               </button>
               <button
                 type="button"
@@ -238,7 +249,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
                 className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 transition-colors"
               >
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                Complete & Release Stock
+                Hoàn tất và xuất kho
               </button>
             </>
           )}
@@ -247,14 +258,14 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
           {issue.status === 'COMPLETED' && (
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3.5 py-2 text-xs font-semibold text-emerald-700 border border-emerald-200">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              Stock Released & Completed
+              Đã xuất kho và hoàn tất
             </span>
           )}
 
           {issue.status === 'CANCELLED' && (
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-rose-50 px-3.5 py-2 text-xs font-semibold text-rose-700 border border-rose-200">
               <XCircle className="h-4 w-4 text-rose-600" />
-              Issue Cancelled
+              Phiếu xuất đã hủy
             </span>
           )}
         </div>
@@ -271,7 +282,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
       {issue.status !== 'CANCELLED' && (
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
-            Issue Lifecycle & Workflow
+            Tiến trình phiếu xuất
           </p>
           <div className="flex items-center justify-between">
             {steps.map((step, idx) => {
@@ -315,32 +326,32 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
       {/* Overview Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-slate-500">Issue Date</p>
+          <p className="text-xs font-medium text-slate-500">Ngày xuất</p>
           <p className="mt-1 text-base font-semibold text-slate-900">{issue.issueDate}</p>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-slate-500">Total Copies</p>
-          <p className="mt-1 text-base font-semibold text-primary">{issue.total} copies</p>
+          <p className="text-xs font-medium text-slate-500">Tổng số bản</p>
+          <p className="mt-1 text-base font-semibold text-primary">{issue.total} bản</p>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-slate-500">Book Titles</p>
+          <p className="text-xs font-medium text-slate-500">Đầu sách</p>
           <p className="mt-1 text-base font-semibold text-slate-900">
-            {groupedBookTitles.length} {groupedBookTitles.length === 1 ? 'title' : 'titles'}
+            {groupedBookTitles.length} đầu sách
           </p>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-slate-500">Status</p>
-          <p className="mt-1 text-sm font-semibold text-slate-900">{issue.status}</p>
+          <p className="text-xs font-medium text-slate-500">Trạng thái</p>
+          <p className="mt-1 text-sm font-semibold text-slate-900">{issueStatusLabel(issue.status)}</p>
         </div>
       </div>
 
       {issue.note && (
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Note
+            Ghi chú
           </p>
           <p className="mt-1 text-sm text-slate-700">{issue.note}</p>
         </div>
@@ -353,13 +364,13 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
           <div>
             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-primary" />
-              Book Titles in this Issue
+              Đầu sách trong phiếu xuất
               <span className="text-xs font-normal text-slate-500">
-                ({groupedBookTitles.length} {groupedBookTitles.length === 1 ? 'title' : 'titles'} • {issue.total} copies)
+                ({groupedBookTitles.length} đầu sách • {issue.total} bản)
               </span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Issue is locked in {issue.status} status. Click on any book title to expand and inspect physical copies.
+              Phiếu đang ở trạng thái {issueStatusLabel(issue.status)}. Chọn đầu sách để xem các bản sách.
             </p>
           </div>
 
@@ -370,11 +381,11 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
           >
             {groupedBookTitles.every((g) => expandedTitles[g.bookId]) ? (
               <>
-                <ChevronUp className="h-3.5 w-3.5" /> Collapse All
+                <ChevronUp className="h-3.5 w-3.5" /> Thu gọn tất cả
               </>
             ) : (
               <>
-                <ChevronDown className="h-3.5 w-3.5" /> Expand All
+                <ChevronDown className="h-3.5 w-3.5" /> Mở rộng tất cả
               </>
             )}
           </button>
@@ -400,7 +411,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
                   <div className="flex items-center gap-3 min-w-0">
                     <button
                       type="button"
-                      aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                      aria-label={isExpanded ? 'Thu gọn' : 'Mở rộng'}
                       className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 shadow-2xs hover:bg-slate-100"
                     >
                       <ChevronRight
@@ -419,7 +430,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
                         {group.title}
                       </h3>
                       <div className="mt-0.5 text-xs text-slate-500 font-mono">
-                        ISBN: {group.isbn || 'N/A'}
+                        ISBN: {group.isbn || 'Chưa có'}
                       </div>
                     </div>
                   </div>
@@ -427,7 +438,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
                   <div className="flex items-center gap-3 shrink-0 ml-4">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary border border-primary/20">
                       <Layers className="h-3.5 w-3.5" />
-                      {group.copiesCount} {group.copiesCount === 1 ? 'copy' : 'copies'}
+                      {group.copiesCount} bản
                     </span>
                   </div>
                 </div>
@@ -440,9 +451,9 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
                         <thead className="bg-slate-50/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-100">
                           <tr>
                             <th className="px-4 py-2.5 w-12">#</th>
-                            <th className="px-4 py-2.5">Barcode</th>
-                            <th className="px-4 py-2.5">Origin Shelf Location</th>
-                            <th className="px-4 py-2.5">Copy Note</th>
+                            <th className="px-4 py-2.5">Mã vạch</th>
+                            <th className="px-4 py-2.5">Vị trí kệ ban đầu</th>
+                            <th className="px-4 py-2.5">Ghi chú bản sách</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -460,7 +471,7 @@ export default function IssueLockedView({ issue, onUpdate }: IssueLockedViewProp
                               <td className="px-4 py-2.5">
                                 <span className="inline-flex items-center gap-1 text-slate-700 font-medium">
                                   <Warehouse className="h-3.5 w-3.5 text-slate-400" />
-                                  {item.currentShelfName || 'Main Shelf'}
+                                  {item.currentShelfName || 'Kệ chính'}
                                 </span>
                               </td>
                               <td className="px-4 py-2.5 text-slate-500">

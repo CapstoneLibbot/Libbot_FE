@@ -127,31 +127,31 @@ export default function BookTransactionsHub() {
       case 'DRAFT':
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
-            <Clock className="h-3 w-3" /> Draft
+            <Clock className="h-3 w-3" /> Bản nháp
           </span>
         )
       case 'PENDING':
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 border border-amber-200">
-            <AlertCircle className="h-3 w-3" /> Pending
+            <AlertCircle className="h-3 w-3" /> Đang chờ
           </span>
         )
       case 'APPROVED':
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-semibold text-sky-700 border border-sky-200">
-            <CheckCircle2 className="h-3 w-3" /> Approved
+            <CheckCircle2 className="h-3 w-3" /> Đã duyệt
           </span>
         )
       case 'COMPLETED':
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
-            <CheckCircle2 className="h-3 w-3" /> Completed
+            <CheckCircle2 className="h-3 w-3" /> Hoàn tất
           </span>
         )
       case 'CANCELLED':
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700 border border-rose-200">
-            <XCircle className="h-3 w-3" /> Cancelled
+            <XCircle className="h-3 w-3" /> Đã hủy
           </span>
         )
       default:
@@ -163,13 +163,13 @@ export default function BookTransactionsHub() {
     if (type === 'NEW_ACQUISITION') {
       return (
         <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 border border-blue-200">
-          <PackagePlus className="h-3.5 w-3.5 text-blue-600" /> New Acquisition
+          <PackagePlus className="h-3.5 w-3.5 text-blue-600" /> Nhập mới
         </span>
       )
     }
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200">
-        <ArrowDownLeft className="h-3.5 w-3.5 text-emerald-600" /> Borrow Return
+        <ArrowDownLeft className="h-3.5 w-3.5 text-emerald-600" /> Trả sách mượn
       </span>
     )
   }
@@ -178,13 +178,13 @@ export default function BookTransactionsHub() {
     if (type === 'BORROW_LOAN') {
       return (
         <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 border border-indigo-200">
-          <ArrowUpRight className="h-3.5 w-3.5 text-indigo-600" /> Borrow Loan
+          <ArrowUpRight className="h-3.5 w-3.5 text-indigo-600" /> Cho mượn
         </span>
       )
     }
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 border border-amber-300">
-        <PackageMinus className="h-3.5 w-3.5 text-amber-700" /> Disposal
+        <PackageMinus className="h-3.5 w-3.5 text-amber-700" /> Thanh lý
       </span>
     )
   }
@@ -200,10 +200,10 @@ export default function BookTransactionsHub() {
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                Book Transactions
+                Giao dịch sách
               </h1>
               <p className="text-sm text-slate-500">
-                Manage book receipts (new acquisitions, returns) and book issues (loans, disposals).
+                Quản lý phiếu nhập sách (nhập mới, sách trả) và phiếu xuất sách (cho mượn, thanh lý).
               </p>
             </div>
           </div>
@@ -215,14 +215,14 @@ export default function BookTransactionsHub() {
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 transition-colors"
           >
             <Plus className="h-4 w-4" />
-            New Book Receipt
+            Tạo phiếu nhập sách
           </button>
           <button
             onClick={() => navigate('/book-transactions/issues/new')}
             className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
           >
             <Plus className="h-4 w-4 text-slate-500" />
-            New Book Issue
+            Tạo phiếu xuất sách
           </button>
         </div>
       </div>
@@ -231,53 +231,53 @@ export default function BookTransactionsHub() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500">Book Receipts Completed</p>
+            <p className="text-sm font-medium text-slate-500">Phiếu nhập đã hoàn tất</p>
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
               <ArrowDownLeft className="h-4 w-4" />
             </span>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <p className="text-2xl font-bold text-slate-900">{totalReceivedCopies}</p>
-            <span className="text-xs text-slate-500">copies received</span>
+            <span className="text-xs text-slate-500">bản sách đã nhập</span>
           </div>
         </div>
 
         <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500">Book Issues Completed</p>
+            <p className="text-sm font-medium text-slate-500">Phiếu xuất đã hoàn tất</p>
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
               <ArrowUpRight className="h-4 w-4" />
             </span>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <p className="text-2xl font-bold text-slate-900">{totalIssuedCopies}</p>
-            <span className="text-xs text-slate-500">copies issued</span>
+            <span className="text-xs text-slate-500">bản sách đã xuất</span>
           </div>
         </div>
 
         <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500">Pending Receipts</p>
+            <p className="text-sm font-medium text-slate-500">Phiếu nhập đang chờ</p>
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
               <AlertCircle className="h-4 w-4" />
             </span>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <p className="text-2xl font-bold text-slate-900">{pendingReceiptsCount}</p>
-            <span className="text-xs text-slate-500">needs review</span>
+            <span className="text-xs text-slate-500">cần được xem xét</span>
           </div>
         </div>
 
         <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500">Pending Issues</p>
+            <p className="text-sm font-medium text-slate-500">Phiếu xuất đang chờ</p>
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
               <Clock className="h-4 w-4" />
             </span>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <p className="text-2xl font-bold text-slate-900">{pendingIssuesCount}</p>
-            <span className="text-xs text-slate-500">awaiting release</span>
+            <span className="text-xs text-slate-500">chờ xuất kho</span>
           </div>
         </div>
       </div>
@@ -295,7 +295,7 @@ export default function BookTransactionsHub() {
             }`}
           >
             <PackagePlus className="h-4 w-4" />
-            Book Receipts
+            Phiếu nhập sách
             <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
               {receipts.length}
             </span>
@@ -310,7 +310,7 @@ export default function BookTransactionsHub() {
             }`}
           >
             <PackageMinus className="h-4 w-4" />
-            Book Issues
+            Phiếu xuất sách
             <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
               {issues.length}
             </span>
@@ -323,7 +323,7 @@ export default function BookTransactionsHub() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by ID, title, barcode, note..."
+              placeholder="Tìm theo mã, tên sách, mã vạch, ghi chú..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -332,7 +332,7 @@ export default function BookTransactionsHub() {
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-              <Filter className="h-3.5 w-3.5" /> Filter by:
+              <Filter className="h-3.5 w-3.5" /> Lọc theo:
             </div>
 
             {activeTab === 'receipts' ? (
@@ -342,9 +342,9 @@ export default function BookTransactionsHub() {
                   onChange={(e) => setReceiptTypeFilter(e.target.value as any)}
                   className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  <option value="ALL">All Receipt Types</option>
-                  <option value="NEW_ACQUISITION">New Acquisition</option>
-                  <option value="BORROW_RETURN">Borrow Return</option>
+                  <option value="ALL">Tất cả loại phiếu nhập</option>
+                  <option value="NEW_ACQUISITION">Nhập mới</option>
+                  <option value="BORROW_RETURN">Trả sách mượn</option>
                 </select>
 
                 <select
@@ -352,12 +352,12 @@ export default function BookTransactionsHub() {
                   onChange={(e) => setReceiptStatusFilter(e.target.value as any)}
                   className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  <option value="ALL">All Statuses</option>
-                  <option value="DRAFT">Draft</option>
-                  <option value="PENDING">Pending</option>
-                  <option value="APPROVED">Approved</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="CANCELLED">Cancelled</option>
+                  <option value="ALL">Tất cả trạng thái</option>
+                  <option value="DRAFT">Bản nháp</option>
+                  <option value="PENDING">Đang chờ</option>
+                  <option value="APPROVED">Đã duyệt</option>
+                  <option value="COMPLETED">Hoàn tất</option>
+                  <option value="CANCELLED">Đã hủy</option>
                 </select>
               </>
             ) : (
@@ -367,9 +367,9 @@ export default function BookTransactionsHub() {
                   onChange={(e) => setIssueTypeFilter(e.target.value as any)}
                   className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  <option value="ALL">All Issue Types</option>
-                  <option value="BORROW_LOAN">Borrow Loan</option>
-                  <option value="DISPOSAL">Disposal</option>
+                  <option value="ALL">Tất cả loại phiếu xuất</option>
+                  <option value="BORROW_LOAN">Cho mượn</option>
+                  <option value="DISPOSAL">Thanh lý</option>
                 </select>
 
                 <select
@@ -377,12 +377,12 @@ export default function BookTransactionsHub() {
                   onChange={(e) => setIssueStatusFilter(e.target.value as any)}
                   className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  <option value="ALL">All Statuses</option>
-                  <option value="DRAFT">Draft</option>
-                  <option value="PENDING">Pending</option>
-                  <option value="APPROVED">Approved</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="CANCELLED">Cancelled</option>
+                  <option value="ALL">Tất cả trạng thái</option>
+                  <option value="DRAFT">Bản nháp</option>
+                  <option value="PENDING">Đang chờ</option>
+                  <option value="APPROVED">Đã duyệt</option>
+                  <option value="COMPLETED">Hoàn tất</option>
+                  <option value="CANCELLED">Đã hủy</option>
                 </select>
               </>
             )}
@@ -394,25 +394,25 @@ export default function BookTransactionsHub() {
           <div className="overflow-x-auto">
             {isLoading ? (
               <div className="flex h-48 items-center justify-center text-sm text-slate-500">
-                Loading receipts...
+                Đang tải phiếu nhập...
               </div>
             ) : filteredReceipts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <PackagePlus className="h-10 w-10 text-slate-300" />
-                <p className="mt-2 text-sm font-semibold text-slate-700">No receipts found</p>
-                <p className="text-xs text-slate-500">Try adjusting your filters or create a new book receipt.</p>
+                <p className="mt-2 text-sm font-semibold text-slate-700">Không tìm thấy phiếu nhập</p>
+                <p className="text-xs text-slate-500">Thử thay đổi bộ lọc hoặc tạo phiếu nhập sách mới.</p>
               </div>
             ) : (
               <table className="w-full text-left text-sm text-slate-600">
                 <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
                   <tr>
-                    <th className="px-6 py-3.5">Receipt ID</th>
-                    <th className="px-6 py-3.5">Type</th>
-                    <th className="px-6 py-3.5">Received Date</th>
-                    <th className="px-6 py-3.5">Copies</th>
-                    <th className="px-6 py-3.5">Status</th>
-                    <th className="px-6 py-3.5">Note</th>
-                    <th className="px-6 py-3.5 text-right">Actions</th>
+                    <th className="px-6 py-3.5">Mã phiếu nhập</th>
+                    <th className="px-6 py-3.5">Loại</th>
+                    <th className="px-6 py-3.5">Ngày nhập</th>
+                    <th className="px-6 py-3.5">Số bản</th>
+                    <th className="px-6 py-3.5">Trạng thái</th>
+                    <th className="px-6 py-3.5">Ghi chú</th>
+                    <th className="px-6 py-3.5 text-right">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -440,7 +440,7 @@ export default function BookTransactionsHub() {
                           }}
                           className="font-medium text-primary hover:underline"
                         >
-                          View Details
+                          Xem chi tiết
                         </button>
                       </td>
                     </tr>
@@ -456,25 +456,25 @@ export default function BookTransactionsHub() {
           <div className="overflow-x-auto">
             {isLoading ? (
               <div className="flex h-48 items-center justify-center text-sm text-slate-500">
-                Loading issues...
+                Đang tải phiếu xuất...
               </div>
             ) : filteredIssues.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <PackageMinus className="h-10 w-10 text-slate-300" />
-                <p className="mt-2 text-sm font-semibold text-slate-700">No issues found</p>
-                <p className="text-xs text-slate-500">Try adjusting your filters or create a new book issue.</p>
+                <p className="mt-2 text-sm font-semibold text-slate-700">Không tìm thấy phiếu xuất</p>
+                <p className="text-xs text-slate-500">Thử thay đổi bộ lọc hoặc tạo phiếu xuất sách mới.</p>
               </div>
             ) : (
               <table className="w-full text-left text-sm text-slate-600">
                 <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
                   <tr>
-                    <th className="px-6 py-3.5">Issue ID</th>
-                    <th className="px-6 py-3.5">Type</th>
-                    <th className="px-6 py-3.5">Issue Date</th>
-                    <th className="px-6 py-3.5">Copies</th>
-                    <th className="px-6 py-3.5">Status</th>
-                    <th className="px-6 py-3.5">Note</th>
-                    <th className="px-6 py-3.5 text-right">Actions</th>
+                    <th className="px-6 py-3.5">Mã phiếu xuất</th>
+                    <th className="px-6 py-3.5">Loại</th>
+                    <th className="px-6 py-3.5">Ngày xuất</th>
+                    <th className="px-6 py-3.5">Số bản</th>
+                    <th className="px-6 py-3.5">Trạng thái</th>
+                    <th className="px-6 py-3.5">Ghi chú</th>
+                    <th className="px-6 py-3.5 text-right">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -502,7 +502,7 @@ export default function BookTransactionsHub() {
                           }}
                           className="font-medium text-primary hover:underline"
                         >
-                          View Details
+                          Xem chi tiết
                         </button>
                       </td>
                     </tr>

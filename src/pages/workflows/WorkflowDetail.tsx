@@ -1,7 +1,7 @@
 import { Activity, ArrowLeft, CalendarDays, ListChecks } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 import { getWorkflowById } from '@/lib/workflowData'
-import { WorkflowStatus } from '@/types/workflow'
+import { WorkflowStatus, WorkflowStepType } from '@/types/workflow'
 
 const statusStyles: Record<WorkflowStatus, string> = {
   [WorkflowStatus.Draft]: 'bg-[#fff4df] text-[#946200]',
@@ -10,9 +10,19 @@ const statusStyles: Record<WorkflowStatus, string> = {
 }
 
 const statusLabels: Record<WorkflowStatus, string> = {
-  [WorkflowStatus.Draft]: 'Draft',
-  [WorkflowStatus.Active]: 'Active',
-  [WorkflowStatus.Inactive]: 'Inactive',
+  [WorkflowStatus.Draft]: 'Bản nháp',
+  [WorkflowStatus.Active]: 'Đang hoạt động',
+  [WorkflowStatus.Inactive]: 'Ngừng hoạt động',
+}
+
+const stepTypeLabels: Record<string, string> = {
+  [WorkflowStepType.Move]: 'Di chuyển',
+  [WorkflowStepType.Scan]: 'Quét',
+  [WorkflowStepType.ProcessData]: 'Xử lý dữ liệu',
+  [WorkflowStepType.Evaluate]: 'Đánh giá',
+  [WorkflowStepType.Display]: 'Hiển thị',
+  [WorkflowStepType.Wait]: 'Chờ',
+  [WorkflowStepType.Notify]: 'Thông báo',
 }
 
 function WorkflowDetail() {
@@ -28,11 +38,11 @@ function WorkflowDetail() {
             className="inline-flex items-center gap-2 text-sm font-medium text-[#596174] transition hover:text-primary"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Workflows
+            Quay lại Workflows
           </Link>
           <div className="mt-8 border border-[#d9dce5] bg-white px-6 py-12 text-center">
-            <h1 className="text-lg font-semibold text-[#252933]">Workflow not found</h1>
-            <p className="mt-2 text-sm text-[#687386]">This workflow may have been removed or the ID is invalid.</p>
+            <h1 className="text-lg font-semibold text-[#252933]">Không tìm thấy quy trình</h1>
+            <p className="mt-2 text-sm text-[#687386]">Quy trình có thể đã bị xóa hoặc mã không hợp lệ.</p>
           </div>
         </div>
       </div>
@@ -49,7 +59,7 @@ function WorkflowDetail() {
           className="inline-flex items-center gap-2 text-sm font-medium text-[#596174] transition hover:text-primary"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Workflows
+          Quay lại Workflows
         </Link>
 
         <section className="border border-[#d9dce5] bg-white p-5 sm:p-6">
@@ -80,21 +90,21 @@ function WorkflowDetail() {
           <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 border-t border-[#e4e5ea] pt-4 text-sm text-[#596174]">
             <div className="inline-flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-[#7b8190]" />
-              Created {new Date(workflow.createdAt).toLocaleDateString()}
+              Ngày tạo {new Date(workflow.createdAt).toLocaleDateString('vi-VN')}
             </div>
             <div className="inline-flex items-center gap-2">
               <ListChecks className="h-4 w-4 text-[#7b8190]" />
-              {workflow.tasks.length} {workflow.tasks.length === 1 ? 'task' : 'tasks'}
+              {workflow.tasks.length} nhiệm vụ
               <span className="text-[#a2a6b0]">·</span>
-              {stepCount} {stepCount === 1 ? 'step' : 'steps'}
+              {stepCount} bước
             </div>
           </div>
         </section>
 
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-[#252933]">Workflow sequence</h2>
-            <p className="mt-1 text-sm text-[#687386]">Tasks and steps are shown in execution order.</p>
+            <h2 className="text-lg font-semibold text-[#252933]">Trình tự quy trình</h2>
+            <p className="mt-1 text-sm text-[#687386]">Nhiệm vụ và bước được hiển thị theo thứ tự thực hiện.</p>
           </div>
         </div>
 
@@ -107,7 +117,7 @@ function WorkflowDetail() {
                 <section key={task.id} className="border border-[#d9dce5] bg-white">
                   <header className="border-b border-[#e4e5ea] bg-[#f5f4f8] px-5 py-4">
                     <p className="text-[11px] font-semibold uppercase tracking-wide text-[#687386]">
-                      Task {task.sequenceNo}
+                      Nhiệm vụ {task.sequenceNo}
                     </p>
                     <h3 className="mt-1 text-base font-semibold text-[#252933]">{task.name}</h3>
                     {task.description && (
@@ -132,20 +142,20 @@ function WorkflowDetail() {
                               )}
                             </div>
                             <span className="w-fit rounded-sm border border-[#d9dce5] bg-[#fafbfc] px-2 py-1 font-mono text-[11px] font-medium text-[#4f5868]">
-                              {step.stepType}
+                              {stepTypeLabels[step.stepType] || step.stepType}
                             </span>
                           </li>
                         ))}
                     </ol>
                   ) : (
-                    <p className="px-5 py-6 text-sm text-[#687386]">No steps in this task.</p>
+                    <p className="px-5 py-6 text-sm text-[#687386]">Nhiệm vụ này chưa có bước nào.</p>
                   )}
                 </section>
               ))}
           </div>
         ) : (
           <div className="border border-[#d9dce5] bg-white px-5 py-10 text-center text-sm text-[#687386]">
-            No tasks in this workflow.
+            Quy trình này chưa có nhiệm vụ nào.
           </div>
         )}
       </div>

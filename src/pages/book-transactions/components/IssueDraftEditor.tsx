@@ -238,9 +238,9 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
           </button>
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <span>Book Transactions</span>
+              <span>Giao dịch sách</span>
               <span>/</span>
-              <span>Book Issues</span>
+              <span>Phiếu xuất sách</span>
               <span>/</span>
               <span className="font-mono text-primary">
                 {issue.code || issue.id.slice(0, 8).toUpperCase()}
@@ -304,11 +304,11 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
       <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-900">
         <Clock className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
         <div className="flex-1">
-          <p className="font-semibold text-amber-950">Active Draft Editing Session</p>
+          <p className="font-semibold text-amber-950">Đang chỉnh sửa bản nháp</p>
           <p className="mt-0.5 text-amber-800">
-            This book issue is currently in <strong>DRAFT</strong> status. Inventory stock is
-            not yet committed. You can freely scan new barcodes, delete mistaken copies, or update
-            metadata before submitting for manager approval.
+            Phiếu xuất sách hiện ở trạng thái <strong>BẢN NHÁP</strong>. Số lượng tồn kho
+            chưa được cập nhật. Bạn có thể quét mã vạch mới, xóa bản sách đã thêm nhầm hoặc cập nhật
+            thông tin trước khi gửi quản lý phê duyệt.
           </p>
         </div>
       </div>
@@ -391,7 +391,7 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
               </label>
               <textarea
                 rows={3}
-                placeholder="Reason for issuance, borrower student ID, or disposal authorization..."
+                placeholder="Lý do xuất, mã bạn đọc mượn hoặc thông tin phê duyệt thanh lý..."
                 value={generalNote}
                 onChange={(e) => setGeneralNote(e.target.value)}
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -406,11 +406,11 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-lg bg-slate-50 p-3 text-center border border-slate-100">
-                <span className="text-xs text-slate-500 block">Total Copies</span>
+                <span className="text-xs text-slate-500 block">Tổng số bản</span>
                 <span className="text-2xl font-bold text-primary">{items.length}</span>
               </div>
               <div className="rounded-lg bg-slate-50 p-3 text-center border border-slate-100">
-                <span className="text-xs text-slate-500 block">Book Titles</span>
+                <span className="text-xs text-slate-500 block">Đầu sách</span>
                 <span className="text-2xl font-bold text-slate-800">{distinctTitlesCount}</span>
               </div>
             </div>
@@ -442,7 +442,7 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
                   <Barcode className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="e.g. BK-0001, BK-0002..."
+                    placeholder="Ví dụ: BK-0001, BK-0002..."
                     value={scanBarcode}
                     onChange={(e) => setScanBarcode(e.target.value)}
                     onKeyDown={handleKeyDownBarcode}
@@ -457,7 +457,7 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Slight cover wear"
+                  placeholder="Ví dụ: Bìa sách bị mòn nhẹ"
                   value={itemNote}
                   onChange={(e) => setItemNote(e.target.value)}
                   onKeyDown={handleKeyDownBarcode}
@@ -495,7 +495,7 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
             {items.length === 0 ? (
               <div className="p-8 text-center text-slate-400">
                 <PackageMinus className="h-8 w-8 mx-auto mb-2 text-slate-300" />
-                <p className="text-sm font-medium">No book copies in this draft yet.</p>
+                <p className="text-sm font-medium">Chưa có bản sách nào trong bản nháp.</p>
                 <p className="text-xs text-slate-400 mt-1">
                   Scan barcodes above to add copies to this issue.
                 </p>
@@ -506,11 +506,11 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
                   <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
                     <tr>
                       <th className="px-4 py-3 w-12">#</th>
-                      <th className="px-4 py-3">Barcode</th>
-                      <th className="px-4 py-3">Book Title & ISBN</th>
-                      <th className="px-4 py-3">Origin Shelf</th>
-                      <th className="px-4 py-3">Note</th>
-                      <th className="px-4 py-3 text-right w-16">Action</th>
+                      <th className="px-4 py-3">Mã vạch</th>
+                      <th className="px-4 py-3">Tên sách và ISBN</th>
+                      <th className="px-4 py-3">Kệ gốc</th>
+                      <th className="px-4 py-3">Ghi chú</th>
+                      <th className="px-4 py-3 text-right w-16">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -538,7 +538,7 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
                         <td className="px-4 py-3">
                           <input
                             type="text"
-                            placeholder="Add copy note..."
+                            placeholder="Thêm ghi chú cho bản sách..."
                             value={item.note || ''}
                             onChange={(e) => handleUpdateItemNote(item.tempId, e.target.value)}
                             className="w-full rounded border border-transparent bg-transparent px-2 py-1 text-xs text-slate-700 hover:border-slate-200 focus:border-primary focus:bg-white focus:outline-none"
@@ -549,7 +549,7 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
                             type="button"
                             onClick={() => handleRemoveItem(item.tempId)}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
-                            title="Remove copy from draft"
+                            title="Xóa bản sách khỏi bản nháp"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>

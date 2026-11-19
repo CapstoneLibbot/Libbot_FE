@@ -44,7 +44,7 @@ function PlaceholderPage({
       <h1 className="text-2xl font-semibold">{title}</h1>
 
       <p className="mt-2 text-sm text-muted-foreground">
-        This page will be implemented later.
+        Trang này sẽ được triển khai sau.
       </p>
     </div>
   )
@@ -255,22 +255,22 @@ function AppRouter() {
 
           <Route
             path="/alerts"
-            element={<PlaceholderPage title="Alerts" />}
+            element={<PlaceholderPage title="Cảnh báo" />}
           />
 
           <Route
             path="/history"
-            element={<PlaceholderPage title="History" />}
+            element={<PlaceholderPage title="Lịch sử" />}
           />
 
           <Route
             path="/reports"
-            element={<PlaceholderPage title="Reports" />}
+            element={<PlaceholderPage title="Báo cáo" />}
           />
 
           <Route
             path="/settings"
-            element={<PlaceholderPage title="Settings" />}
+            element={<PlaceholderPage title="Cài đặt" />}
           />
         </Route>
 

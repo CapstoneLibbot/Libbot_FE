@@ -19,12 +19,12 @@ import {
 
 const menuItems = [
   {
-    label: 'Overview',
+    label: 'Tổng quan',
     icon: LayoutDashboard,
     path: '/',
   },
   {
-    label: 'Tasks',
+    label: 'Nhiệm vụ',
     icon: ClipboardList,
     path: '/tasks',
   },
@@ -39,62 +39,62 @@ const menuItems = [
     path: '/workflows',
   },
   {
-    label: 'Map',
+    label: 'Bản đồ',
     icon: Map,
     path: '/maps',
   },
   {
-    label: 'Floor',
+    label: 'Tầng',
     icon: Layers3,
     path: '/floors',
   },
   {
-    label: 'Aisle',
+    label: 'Dãy',
     icon: Route,
     path: '/aisles',
   },
   {
-    label: 'Shelf',
+    label: 'Kệ',
     icon: Warehouse,
     path: '/shelves',
   },
   {
-    label: 'Book',
+    label: 'Sách',
     icon: BookOpen,
     path: '/book',
   },
   {
-    label: 'Book Transactions',
+    label: 'Giao dịch sách',
     icon: ArrowLeftRight,
     path: '/book-transactions',
   },
   {
-    label: 'Inventory',
+    label: 'Kiểm kê',
     icon: Boxes,
     path: '/inventory',
   },
   {
-    label: 'Inventory Results',
+    label: 'Kết quả kiểm kê',
     icon: FileBarChart,
     path: '/inventory-results',
   },
   {
-    label: 'Alerts',
+    label: 'Cảnh báo',
     icon: AlertTriangle,
     path: '/alerts',
   },
   {
-    label: 'History',
+    label: 'Lịch sử',
     icon: History,
     path: '/history',
   },
   {
-    label: 'Reports',
+    label: 'Báo cáo',
     icon: FileBarChart,
     path: '/reports',
   },
   {
-    label: 'Settings',
+    label: 'Cài đặt',
     icon: Settings,
     path: '/settings',
   },
@@ -111,7 +111,7 @@ function Sidebar() {
           </h1>
 
           <p className="mt-0.5 text-[12px] text-[#687386]">
-            Library Robot Management
+            Quản lý robot thư viện
           </p>
         </div>
       </div>
@@ -167,11 +167,11 @@ function Sidebar() {
 
           <div className="min-w-0">
             <p className="truncate text-[14px] font-semibold text-[#252933]">
-              Librarian
+              Thủ thư
             </p>
 
             <p className="mt-0.5 truncate text-[12px] text-[#747b8b]">
-              Library Staff
+              Nhân viên thư viện
             </p>
           </div>
         </div>

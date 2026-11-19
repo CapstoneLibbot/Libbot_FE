@@ -313,11 +313,11 @@ export default function ReceiptCreate() {
           </button>
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <span>Book Transactions</span>
+              <span>Giao dịch sách</span>
               <span>/</span>
-              <span>Book Receipts</span>
+              <span>Phiếu nhập sách</span>
               <span>/</span>
-              <span className="text-primary">New Receipt</span>
+              <span className="text-primary">Tạo phiếu nhập</span>
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               Create Book Receipt
@@ -366,7 +366,7 @@ export default function ReceiptCreate() {
         {/* Left Column: General Receipt Information */}
         <div className="space-y-6 lg:col-span-4">
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-base font-bold text-slate-900">Receipt Details</h2>
+            <h2 className="text-base font-bold text-slate-900">Thông tin phiếu nhập</h2>
             <p className="mt-0.5 text-xs text-slate-500">
               Select receipt type and received date.
             </p>
@@ -388,8 +388,8 @@ export default function ReceiptCreate() {
                     }`}
                   >
                     <PackagePlus className="h-5 w-5" />
-                    <span className="mt-1 text-xs font-semibold">New Acquisition</span>
-                    <span className="text-[10px] text-slate-400">Purchases & Donations</span>
+                    <span className="mt-1 text-xs font-semibold">Nhập mới</span>
+                    <span className="text-[10px] text-slate-400">Mua và quyên tặng</span>
                   </button>
 
                   <button
@@ -402,8 +402,8 @@ export default function ReceiptCreate() {
                     }`}
                   >
                     <ArrowDownLeft className="h-5 w-5" />
-                    <span className="mt-1 text-xs font-semibold">Borrow Return</span>
-                    <span className="text-[10px] text-slate-400">Patron Check-in</span>
+                    <span className="mt-1 text-xs font-semibold">Trả sách mượn</span>
+                    <span className="text-[10px] text-slate-400">Bạn đọc trả sách</span>
                   </button>
                 </div>
               </div>
@@ -443,21 +443,21 @@ export default function ReceiptCreate() {
 
           {/* Quick Summary Card */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900">Summary</h3>
+            <h3 className="text-sm font-bold text-slate-900">Tóm tắt</h3>
             <div className="mt-3 divide-y divide-slate-100 text-xs">
               <div className="flex justify-between py-2 text-slate-600">
-                <span>Receipt Type:</span>
+                <span>Loại phiếu nhập:</span>
                 <span className="font-semibold text-slate-900">
                   {receiptType === 'NEW_ACQUISITION' ? 'New Acquisition' : 'Borrow Return'}
                 </span>
               </div>
               <div className="flex justify-between py-2 text-slate-600">
-                <span>Total Copies:</span>
+                <span>Tổng số bản:</span>
                 <span className="font-bold text-primary">{items.length} copies</span>
               </div>
               <div className="flex justify-between py-2 text-slate-600">
-                <span>Status upon submit:</span>
-                <span className="font-medium text-amber-700">PENDING</span>
+                <span>Trạng thái khi gửi:</span>
+                <span className="font-medium text-amber-700">Đang chờ</span>
               </div>
             </div>
           </div>
@@ -470,10 +470,10 @@ export default function ReceiptCreate() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Barcode className="h-5 w-5 text-primary" />
-                <h2 className="text-base font-bold text-slate-900">Scan & Add Book Copies</h2>
+                <h2 className="text-base font-bold text-slate-900">Quét và thêm bản sách</h2>
               </div>
               <span className="text-xs text-slate-400">
-                Tip: Press <kbd className="rounded border bg-slate-100 px-1 py-0.5 font-mono">Enter</kbd> to add scanned barcode
+                Mẹo: Nhấn <kbd className="rounded border bg-slate-100 px-1 py-0.5 font-mono">Enter</kbd> để thêm mã vạch đã quét
               </span>
             </div>
 
@@ -489,7 +489,7 @@ export default function ReceiptCreate() {
                     <input
                       type="text"
                       autoFocus
-                      placeholder="Scan or enter barcode (e.g. BK-0001, BK-0002, BK-0005)..."
+                      placeholder="Quét hoặc nhập mã vạch (ví dụ: BK-0001, BK-0002, BK-0005)..."
                       value={scanBarcode}
                       onChange={(e) => setScanBarcode(e.target.value)}
                       onKeyDown={handleKeyDownBarcode}
@@ -536,7 +536,7 @@ export default function ReceiptCreate() {
                           setBookSearchQuery(e.target.value)
                           setIsBookDropdownOpen(true)
                         }}
-                        placeholder="Search by title, author, or ISBN..."
+                        placeholder="Tìm theo tên sách, tác giả hoặc ISBN..."
                         className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-8 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                       <button
@@ -612,7 +612,7 @@ export default function ReceiptCreate() {
                             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                             <input
                               type="text"
-                              placeholder="Filter shelves or levels..."
+                              placeholder="Lọc kệ hoặc tầng..."
                               value={shelfSearchQuery}
                               onChange={(e) => setShelfSearchQuery(e.target.value)}
                               className="h-7 w-full rounded border border-slate-200 bg-white pl-7 pr-2 text-xs text-slate-800 focus:outline-none focus:border-primary"
@@ -664,7 +664,7 @@ export default function ReceiptCreate() {
 
                     {/* Quick Level Switch Pills */}
                     <div className="mt-2 flex items-center gap-1.5">
-                      <span className="text-[10px] font-medium text-slate-400">Level:</span>
+                      <span className="text-[10px] font-medium text-slate-400">Tầng:</span>
                       {[1, 2, 3].map((lvl) => {
                         const matchedLevel = shelfOptions.find(
                           (s) => s.shelfCode === currentShelf.shelfCode && s.levelNumber === lvl
@@ -699,7 +699,7 @@ export default function ReceiptCreate() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Special edition, donor note, condition remarks..."
+                  placeholder="Ví dụ: Ấn bản đặc biệt, ghi chú người tặng, tình trạng sách..."
                   value={itemNote}
                   onChange={(e) => setItemNote(e.target.value)}
                   className="mt-1.5 h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -735,7 +735,7 @@ export default function ReceiptCreate() {
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center text-slate-400">
                 <Barcode className="h-8 w-8 text-slate-300" />
-                <p className="mt-2 text-sm font-medium text-slate-600">No copies scanned yet</p>
+                <p className="mt-2 text-sm font-medium text-slate-600">Chưa quét bản sách nào</p>
                 <p className="text-xs text-slate-400">
                   Scan a barcode above or enter sample codes: BK-0001, BK-0002, BK-0005.
                 </p>
@@ -746,14 +746,14 @@ export default function ReceiptCreate() {
                   <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                     <tr>
                       <th className="px-4 py-3">#</th>
-                      <th className="px-4 py-3">Barcode</th>
-                      <th className="px-4 py-3">Book Title</th>
+                      <th className="px-4 py-3">Mã vạch</th>
+                      <th className="px-4 py-3">Tên sách</th>
                       <th className="px-4 py-3">ISBN</th>
                       <th className="px-4 py-3">
                         {receiptType === 'NEW_ACQUISITION' ? 'Target Shelf' : 'Assigned Shelf'}
                       </th>
-                      <th className="px-4 py-3">Note</th>
-                      <th className="px-4 py-3 text-right">Action</th>
+                      <th className="px-4 py-3">Ghi chú</th>
+                      <th className="px-4 py-3 text-right">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">

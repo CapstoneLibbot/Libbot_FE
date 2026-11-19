@@ -16,6 +16,15 @@ import {
 
 const inputClassName = 'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#17181c] outline-none transition placeholder:text-[#858b98] focus:border-primary'
 const textAreaClassName = 'min-h-24 w-full resize-y border border-[#d7d9e2] bg-white px-3 py-2 text-sm text-[#17181c] outline-none transition placeholder:text-[#858b98] focus:border-primary'
+const stepTypeLabels: Record<WorkflowStepTypeValue, string> = {
+  [WorkflowStepType.Move]: 'Di chuyển',
+  [WorkflowStepType.Scan]: 'Quét',
+  [WorkflowStepType.ProcessData]: 'Xử lý dữ liệu',
+  [WorkflowStepType.Evaluate]: 'Đánh giá',
+  [WorkflowStepType.Display]: 'Hiển thị',
+  [WorkflowStepType.Wait]: 'Chờ',
+  [WorkflowStepType.Notify]: 'Thông báo',
+}
 
 function createStep(stepType: WorkflowStepTypeValue = WorkflowStepType.Move): WorkflowStepDraft {
   return {
@@ -86,15 +95,15 @@ function WorkflowCreate() {
               className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-[#596174] transition hover:text-primary"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Workflows
+              Quay lại Workflows
             </button>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
                 <Activity className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-[#17181c]">Create Workflow</h1>
-                <p className="mt-0.5 text-sm text-[#596174]">Define workflow details, tasks, and steps.</p>
+                <h1 className="text-2xl font-bold text-[#17181c]">Tạo quy trình</h1>
+                <p className="mt-0.5 text-sm text-[#596174]">Khai báo thông tin quy trình, nhiệm vụ và các bước.</p>
               </div>
             </div>
           </div>
@@ -103,45 +112,45 @@ function WorkflowCreate() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <section className="border border-[#d9dce5] bg-white p-5 sm:p-6">
             <div className="mb-5 border-b border-[#e4e5ea] pb-4">
-              <h2 className="text-base font-semibold text-[#252933]">Workflow details</h2>
+              <h2 className="text-base font-semibold text-[#252933]">Thông tin quy trình</h2>
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <label className="space-y-1.5 text-sm font-medium text-[#3f4654]">
-                Workflow name <span className="text-[#b42318]">*</span>
+                Tên quy trình <span className="text-[#b42318]">*</span>
                 <input
                   required
                   maxLength={100}
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  placeholder="e.g. Book Retrieval"
+                  placeholder="Ví dụ: Lấy sách"
                   className={inputClassName}
                 />
                 <span className="block text-right text-xs font-normal text-[#858b98]">{name.length}/100</span>
               </label>
 
               <label className="space-y-1.5 text-sm font-medium text-[#3f4654]">
-                Status
+                Trạng thái
                 <span className="relative block">
                   <select
                     value={status}
                     onChange={(event) => setStatus(Number(event.target.value) as WorkflowStatus)}
                     className={`${inputClassName} appearance-none pr-9`}
                   >
-                    <option value={WorkflowStatus.Draft}>Draft</option>
-                    <option value={WorkflowStatus.Active}>Active</option>
-                    <option value={WorkflowStatus.Inactive}>Inactive</option>
+                    <option value={WorkflowStatus.Draft}>Bản nháp</option>
+                    <option value={WorkflowStatus.Active}>Đang hoạt động</option>
+                    <option value={WorkflowStatus.Inactive}>Ngừng hoạt động</option>
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#687386]" />
                 </span>
               </label>
 
               <label className="space-y-1.5 text-sm font-medium text-[#3f4654] sm:col-span-2">
-                Description
+                Mô tả
                 <textarea
                   maxLength={500}
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
-                  placeholder="Describe what this workflow does"
+                  placeholder="Mô tả chức năng của quy trình"
                   className={textAreaClassName}
                 />
                 <span className="block text-right text-xs font-normal text-[#858b98]">{description.length}/500</span>
@@ -152,8 +161,8 @@ function WorkflowCreate() {
           <section className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-[#252933]">Tasks</h2>
-                <p className="mt-1 text-sm text-[#687386]">Tasks and steps are saved in the order shown.</p>
+                <h2 className="text-lg font-semibold text-[#252933]">Nhiệm vụ</h2>
+                <p className="mt-1 text-sm text-[#687386]">Nhiệm vụ và bước được lưu theo thứ tự hiển thị.</p>
               </div>
               <button
                 type="button"
@@ -161,20 +170,20 @@ function WorkflowCreate() {
                 className="inline-flex h-10 items-center gap-2 border border-[#c9d5e8] bg-white px-4 text-sm font-semibold text-primary transition hover:bg-[#f2f6fc]"
               >
                 <Plus className="h-4 w-4" />
-                Add task
+                Thêm nhiệm vụ
               </button>
             </div>
 
             {tasks.map((task, taskIndex) => (
               <article key={task.key} className="border border-[#d9dce5] bg-white">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e4e5ea] bg-[#f5f4f8] px-5 py-3">
-                  <h3 className="text-sm font-semibold text-[#252933]">Task {taskIndex + 1}</h3>
+                  <h3 className="text-sm font-semibold text-[#252933]">Nhiệm vụ {taskIndex + 1}</h3>
                   <button
                     type="button"
                     onClick={() => setTasks((currentTasks) => currentTasks.filter((item) => item.key !== task.key))}
                     disabled={tasks.length === 1}
-                    aria-label={`Remove task ${taskIndex + 1}`}
-                    title="Remove task"
+                    aria-label={`Xóa nhiệm vụ ${taskIndex + 1}`}
+                    title="Xóa nhiệm vụ"
                     className="inline-flex h-8 w-8 items-center justify-center text-[#687386] transition hover:bg-white hover:text-[#b42318] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -184,23 +193,23 @@ function WorkflowCreate() {
                 <div className="space-y-5 p-5">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <label className="space-y-1.5 text-sm font-medium text-[#3f4654]">
-                      Task name <span className="text-[#b42318]">*</span>
+                      Tên nhiệm vụ <span className="text-[#b42318]">*</span>
                       <input
                         required
                         maxLength={100}
                         value={task.name}
                         onChange={(event) => updateTask(task.key, (currentTask) => ({ ...currentTask, name: event.target.value }))}
-                        placeholder="e.g. Navigate to shelf"
+                        placeholder="Ví dụ: Di chuyển đến kệ"
                         className={inputClassName}
                       />
                     </label>
                     <label className="space-y-1.5 text-sm font-medium text-[#3f4654]">
-                      Task description
+                      Mô tả nhiệm vụ
                       <input
                         maxLength={500}
                         value={task.description}
                         onChange={(event) => updateTask(task.key, (currentTask) => ({ ...currentTask, description: event.target.value }))}
-                        placeholder="Optional"
+                        placeholder="Không bắt buộc"
                         className={inputClassName}
                       />
                     </label>
@@ -208,14 +217,14 @@ function WorkflowCreate() {
 
                   <div className="border-t border-[#e4e5ea] pt-4">
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                      <h4 className="text-sm font-semibold text-[#3f4654]">Steps</h4>
+                      <h4 className="text-sm font-semibold text-[#3f4654]">Các bước</h4>
                       <button
                         type="button"
                         onClick={() => updateTask(task.key, (currentTask) => ({ ...currentTask, steps: [...currentTask.steps, createStep()] }))}
                         className="inline-flex h-9 items-center gap-2 border border-[#d7d9e2] bg-white px-3 text-sm font-medium text-[#3f4654] transition hover:bg-[#f5f4f8]"
                       >
                         <Plus className="h-4 w-4" />
-                        Add step
+                        Thêm bước
                       </button>
                     </div>
 
@@ -223,13 +232,13 @@ function WorkflowCreate() {
                       {task.steps.map((step, stepIndex) => (
                         <div key={step.key} className="space-y-4 py-5 first:pt-2 last:pb-1">
                           <div className="flex flex-wrap items-center justify-between gap-3">
-                            <h5 className="text-sm font-semibold text-[#252933]">Step {stepIndex + 1}</h5>
+                            <h5 className="text-sm font-semibold text-[#252933]">Bước {stepIndex + 1}</h5>
                             <button
                               type="button"
                               onClick={() => updateTask(task.key, (currentTask) => ({ ...currentTask, steps: currentTask.steps.filter((item) => item.key !== step.key) }))}
                               disabled={task.steps.length === 1}
                               aria-label={`Remove task ${taskIndex + 1}, step ${stepIndex + 1}`}
-                              title="Remove step"
+                              title="Xóa bước"
                               className="inline-flex h-8 w-8 items-center justify-center text-[#687386] transition hover:bg-[#f5f4f8] hover:text-[#b42318] disabled:cursor-not-allowed disabled:opacity-40"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -238,18 +247,18 @@ function WorkflowCreate() {
 
                           <div className="grid gap-4 sm:grid-cols-2">
                             <label className="space-y-1.5 text-sm font-medium text-[#3f4654]">
-                              Step name <span className="text-[#b42318]">*</span>
+                              Tên bước <span className="text-[#b42318]">*</span>
                               <input
                                 required
                                 maxLength={100}
                                 value={step.name}
                                 onChange={(event) => updateStep(task.key, step.key, (currentStep) => ({ ...currentStep, name: event.target.value }))}
-                                placeholder="e.g. Move to shelf"
+                                placeholder="Ví dụ: Di chuyển đến kệ"
                                 className={inputClassName}
                               />
                             </label>
                             <label className="space-y-1.5 text-sm font-medium text-[#3f4654]">
-                              Step type <span className="text-[#b42318]">*</span>
+                              Loại bước <span className="text-[#b42318]">*</span>
                               <span className="relative block">
                                 <select
                                   value={step.stepType}
@@ -257,19 +266,19 @@ function WorkflowCreate() {
                                   className={`${inputClassName} appearance-none pr-9`}
                                 >
                                   {Object.values(WorkflowStepType).map((stepType) => (
-                                    <option key={stepType} value={stepType}>{stepType}</option>
+                                    <option key={stepType} value={stepType}>{stepTypeLabels[stepType]}</option>
                                   ))}
                                 </select>
                                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#687386]" />
                               </span>
                             </label>
                             <label className="space-y-1.5 text-sm font-medium text-[#3f4654] sm:col-span-2">
-                              Step description
+                              Mô tả bước
                               <input
                                 maxLength={500}
                                 value={step.description}
                                 onChange={(event) => updateStep(task.key, step.key, (currentStep) => ({ ...currentStep, description: event.target.value }))}
-                                placeholder="Optional"
+                                placeholder="Không bắt buộc"
                                 className={inputClassName}
                               />
                             </label>
@@ -290,13 +299,13 @@ function WorkflowCreate() {
               onClick={() => navigate('/workflows')}
               className="h-10 border border-[#d7d9e2] bg-white px-5 text-sm font-semibold text-[#3f4654] transition hover:bg-[#f1eff5]"
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
               className="h-10 bg-primary px-5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
             >
-              Create Workflow
+              Tạo quy trình
             </button>
           </div>
         </form>

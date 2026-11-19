@@ -76,7 +76,7 @@ function FloorDetail() {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-3 text-sm text-[#596174]">Loading floor details...</p>
+        <p className="mt-3 text-sm text-[#596174]">Đang tải thông tin tầng...</p>
       </div>
     )
   }
@@ -87,10 +87,10 @@ function FloorDetail() {
         <div className="max-w-md rounded-md border border-[#fecaca] bg-white p-6 shadow-sm">
           <div className="flex items-center gap-2 text-red-600">
             <AlertCircle className="h-5 w-5" />
-            <h1 className="text-lg font-semibold">Floor Not Found</h1>
+            <h1 className="text-lg font-semibold">Không tìm thấy tầng</h1>
           </div>
           <p className="mt-2 text-sm text-[#596174]">
-            {errorNotice || 'The requested floor does not exist or has been deleted.'}
+            {errorNotice || 'Tầng yêu cầu không tồn tại hoặc đã bị xóa.'}
           </p>
           <div className="mt-4 flex items-center gap-3">
             <button
@@ -98,10 +98,10 @@ function FloorDetail() {
               onClick={loadFloor}
               className="flex items-center gap-1.5 border border-[#d7d9e2] bg-white px-3 py-1.5 text-xs font-semibold text-[#3f4654] hover:bg-[#f1eff5]"
             >
-              <RefreshCw className="h-3.5 w-3.5" /> Retry
+              <RefreshCw className="h-3.5 w-3.5" /> Thử lại
             </button>
             <Link to="/floors" className="text-xs font-semibold text-primary hover:underline">
-              ← Back to floors list
+              ← Quay lại danh sách tầng
             </Link>
           </div>
         </div>
@@ -119,7 +119,7 @@ function FloorDetail() {
         className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" />
-        Floors List
+        Danh sách tầng
       </Link>
 
       <header className="mt-6 flex flex-wrap items-center justify-between gap-4">
@@ -129,7 +129,7 @@ function FloorDetail() {
           </div>
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-primary">
-              Floor #{floor.floorNumber}
+              Tầng #{floor.floorNumber}
             </p>
             <h1 className="text-2xl font-bold tracking-tight">{floor.name}</h1>
           </div>
@@ -141,7 +141,7 @@ function FloorDetail() {
             className="flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium hover:bg-[#f1eff5]"
           >
             <Pencil className="h-4 w-4" />
-            Edit Floor
+            Sửa tầng
           </button>
           <button
             type="button"
@@ -150,7 +150,7 @@ function FloorDetail() {
             className="flex h-10 items-center gap-2 border border-red-200 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
           >
             {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-            Delete Floor
+            Xóa tầng
           </button>
         </div>
       </header>
@@ -159,11 +159,11 @@ function FloorDetail() {
       <section className="mt-8 max-w-3xl overflow-hidden border border-[#d9dce5] bg-white shadow-sm">
         <dl className="divide-y divide-[#d9dce5]">
           <DetailRow label="ID (GUID)" value={floor.id} mono />
-          <DetailRow label="Floor Number" value={`Floor ${floor.floorNumber}`} />
-          <DetailRow label="Floor Name" value={floor.name} />
-          <DetailRow label="Description" value={floor.description || '—'} />
+          <DetailRow label="Số tầng" value={`Tầng ${floor.floorNumber}`} />
+          <DetailRow label="Tên tầng" value={floor.name} />
+          <DetailRow label="Mô tả" value={floor.description || '—'} />
           <div className="grid grid-cols-[140px_1fr] gap-4 px-4 py-4 text-sm sm:grid-cols-[180px_1fr]">
-            <dt className="text-[#687386]">Status</dt>
+            <dt className="text-[#687386]">Trạng thái</dt>
             <dd>
               <StatusBadge status={floor.status} />
             </dd>
@@ -177,9 +177,9 @@ function FloorDetail() {
           <div className="flex items-center gap-2">
             <Route className="h-5 w-5 text-primary" />
             <div>
-              <h2 className="text-lg font-semibold">Aisles</h2>
+              <h2 className="text-lg font-semibold">Dãy sách</h2>
               <p className="mt-0.5 text-sm text-[#687386]">
-                {aisles.length} aisle{aisles.length === 1 ? '' : 's'} located on this floor.
+                Có {aisles.length} dãy sách trên tầng này.
               </p>
             </div>
           </div>
@@ -188,7 +188,7 @@ function FloorDetail() {
             className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            Create Aisle
+            Xem danh sách dãy sách
           </Link>
         </div>
 
@@ -198,10 +198,10 @@ function FloorDetail() {
               <thead>
                 <tr className="border-b border-[#d9dce5] bg-[#f5f4f8]">
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Aisle Name
+                    Tên dãy sách
                   </th>
                   <th className="w-[120px] px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Actions
+                    Thao tác
                   </th>
                 </tr>
               </thead>
@@ -223,7 +223,7 @@ function FloorDetail() {
                           to={`/aisles/${aisle.id}`}
                           className="text-xs font-semibold text-primary hover:underline"
                         >
-                          View details →
+                          Xem chi tiết →
                         </Link>
                       </td>
                     </tr>
@@ -232,9 +232,9 @@ function FloorDetail() {
                   <tr>
                     <td colSpan={2} className="px-6 py-12 text-center">
                       <Route className="mx-auto h-8 w-8 text-[#89909f]" />
-                      <p className="mt-3 font-medium text-[#3f4654]">No aisles found</p>
+                      <p className="mt-3 font-medium text-[#3f4654]">Không tìm thấy dãy sách</p>
                       <p className="mt-1 text-sm text-[#7b8190]">
-                        No aisles configured for this floor yet.
+                        Tầng này chưa có dãy sách nào.
                       </p>
                     </td>
                   </tr>
@@ -251,9 +251,9 @@ function FloorDetail() {
           <div className="flex items-center gap-2">
             <MapIcon className="h-5 w-5 text-primary" />
             <div>
-              <h2 className="text-lg font-semibold">Digital Maps</h2>
+              <h2 className="text-lg font-semibold">Bản đồ số</h2>
               <p className="mt-0.5 text-sm text-[#687386]">
-                {maps.length} digital map{maps.length === 1 ? '' : 's'} assigned to this floor.
+                Có {maps.length} bản đồ số được gán cho tầng này.
               </p>
             </div>
           </div>
@@ -269,12 +269,12 @@ function FloorDetail() {
                   <h3 className="font-semibold text-[#17181c]">{map.name}</h3>
                   <StatusBadge status={map.status} />
                 </div>
-                <p className="mt-1 text-xs text-[#596174]">Version: {map.version}</p>
+                <p className="mt-1 text-xs text-[#596174]">Phiên bản: {map.version}</p>
                 <Link
                   to={`/maps/${map.id}`}
                   className="mt-3 inline-block text-xs font-semibold text-primary hover:underline"
                 >
-                  Open map →
+                  Mở bản đồ →
                 </Link>
               </div>
             ))}
@@ -284,7 +284,7 @@ function FloorDetail() {
 
       {editing && (
         <FloorFormDialog
-          title="Update Floor"
+          title="Cập nhật tầng"
           initial={{
             name: floor.name,
             floorNumber: floor.floorNumber,

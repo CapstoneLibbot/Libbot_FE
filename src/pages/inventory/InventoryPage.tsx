@@ -68,7 +68,7 @@ export default function InventoryPage() {
             <Boxes className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Inventory Scans</h1>
+            <h1 className="text-2xl font-bold">Quét kiểm kê</h1>
             <p className="mt-0.5 text-sm text-[#596174]">
               Record book barcode scans for a running inventory mission
             </p>
@@ -80,11 +80,11 @@ export default function InventoryPage() {
           className="max-w-3xl space-y-5 border border-[#d9dce5] bg-white p-5 sm:p-6"
         >
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e4e6eb] pb-4">
-            <h2 className="text-base font-semibold">Record Scan</h2>
+            <h2 className="text-base font-semibold">Ghi nhận lượt quét</h2>
             <div
               className="inline-flex border border-[#d7d9e2] bg-[#f5f4f8] p-1"
               role="group"
-              aria-label="Runtime environment"
+              aria-label="Môi trường chạy"
             >
               {(['real', 'sim'] as const).map((runtime) => (
                 <button
@@ -110,7 +110,7 @@ export default function InventoryPage() {
               <input
                 required
                 pattern={missionPattern}
-                title="Please enter a valid GUID format (e.g. 00000000-0000-0000-0000-000000000000)"
+                title="Vui lòng nhập mã GUID hợp lệ (ví dụ: 00000000-0000-0000-0000-000000000000)"
                 value={missionId}
                 onChange={(event) => setMissionId(event.target.value)}
                 placeholder="00000000-0000-0000-0000-000000000000"
@@ -152,7 +152,7 @@ export default function InventoryPage() {
                   autoComplete="off"
                   value={barcode}
                   onChange={(event) => setBarcode(event.target.value)}
-                  placeholder="Scan or enter barcode..."
+                  placeholder="Quét hoặc nhập mã vạch..."
                   className={`${inputClassName} pl-9`}
                 />
               </div>
@@ -189,9 +189,9 @@ export default function InventoryPage() {
           </div>
         </form>
 
-        <section className="space-y-3" aria-label="Recent scan responses">
+        <section className="space-y-3" aria-label="Kết quả quét gần đây">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-base font-semibold">Recent Scans</h2>
+            <h2 className="text-base font-semibold">Các lượt quét gần đây</h2>
             <span className="text-xs text-[#687386]">{scans.length} scans in this session</span>
           </div>
 
@@ -205,11 +205,11 @@ export default function InventoryPage() {
                 <table className="w-full min-w-[700px] text-left text-sm">
                   <thead className="border-b border-[#d9dce5] bg-[#f5f4f8] text-[11px] font-semibold uppercase text-[#3f4654]">
                     <tr>
-                      <th className="px-4 py-3">Barcode</th>
-                      <th className="px-4 py-3">Target Shelf</th>
-                      <th className="px-4 py-3">Match Result</th>
-                      <th className="px-4 py-3">Expected Shelf</th>
-                      <th className="px-4 py-3">Timestamp</th>
+                      <th className="px-4 py-3">Mã vạch</th>
+                      <th className="px-4 py-3">Kệ đích</th>
+                      <th className="px-4 py-3">Kết quả đối chiếu</th>
+                      <th className="px-4 py-3">Kệ dự kiến</th>
+                      <th className="px-4 py-3">Thời gian</th>
                     </tr>
                   </thead>
                   <tbody>

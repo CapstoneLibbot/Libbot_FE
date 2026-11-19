@@ -79,7 +79,7 @@ export default function OperationsMap2D({
       onPointerUp={() => { dragStart.current = null }}
       onPointerCancel={() => { dragStart.current = null }}
       role="application"
-      aria-label="Robot navigation map"
+      aria-label="Bản đồ điều hướng robot"
     >
       <g transform={`translate(${rotatedWidth / 2} ${rotatedHeight / 2}) rotate(${(rotationAngle * 180) / Math.PI}) translate(${-map.imageWidth / 2} ${-map.imageHeight / 2})`}>
       {map.occupancyImage ? (

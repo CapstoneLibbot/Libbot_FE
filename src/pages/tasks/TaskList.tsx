@@ -23,10 +23,18 @@ const priorityStyles: Record<JobPriorityValue, string> = {
 }
 
 const priorityLabels: Record<JobPriorityValue, string> = {
-  [JobPriority.Low]: 'Low',
-  [JobPriority.Normal]: 'Normal',
-  [JobPriority.High]: 'High',
-  [JobPriority.Critical]: 'Critical',
+  [JobPriority.Low]: 'Thấp',
+  [JobPriority.Normal]: 'Bình thường',
+  [JobPriority.High]: 'Cao',
+  [JobPriority.Critical]: 'Khẩn cấp',
+}
+
+const statusLabels: Record<JobStatusValue, string> = {
+  [JobStatus.Pending]: 'Đang chờ',
+  [JobStatus.Running]: 'Đang chạy',
+  [JobStatus.Completed]: 'Đã hoàn thành',
+  [JobStatus.Failed]: 'Thất bại',
+  [JobStatus.Cancelled]: 'Đã hủy',
 }
 
 const selectClassName = 'h-10 w-full appearance-none border border-[#d7d9e2] bg-white px-3 pr-9 text-sm text-[#17181c] outline-none transition focus:border-primary'
@@ -86,8 +94,8 @@ function TaskList() {
               <CheckSquare className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#17181c]">Tasks</h1>
-              <p className="mt-0.5 text-sm text-[#596174]">Manage robot tasks and their workflow assignments.</p>
+              <h1 className="text-2xl font-bold tracking-tight text-[#17181c]">Nhiệm vụ</h1>
+              <p className="mt-0.5 text-sm text-[#596174]">Quản lý nhiệm vụ của robot và quy trình được giao.</p>
             </div>
           </div>
           <button
@@ -96,7 +104,7 @@ function TaskList() {
             className="ml-auto inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            Create Task
+            Tạo nhiệm vụ
           </button>
         </div>
 
@@ -112,8 +120,8 @@ function TaskList() {
                 setSearch(event.target.value)
                 setCurrentPage(1)
               }}
-              placeholder="Search tasks by ID or name..."
-              aria-label="Search tasks by ID or name"
+              placeholder="Tìm nhiệm vụ theo mã hoặc tên..."
+              aria-label="Tìm nhiệm vụ theo mã hoặc tên"
               className="h-10 w-full border border-[#d7d9e2] bg-white pl-9 pr-3 text-sm text-[#17181c] outline-none transition placeholder:text-[#7b8190] focus:border-primary"
             />
           </div>
@@ -125,10 +133,10 @@ function TaskList() {
                 setWorkflowId(event.target.value)
                 setCurrentPage(1)
               }}
-              aria-label="Filter tasks by workflow"
+              aria-label="Lọc nhiệm vụ theo quy trình"
               className={selectClassName}
             >
-              <option value="All">All Workflows</option>
+              <option value="All">Tất cả Workflows</option>
               {workflows.map((workflow) => (
                 <option key={workflow.id} value={workflow.id}>{workflow.name}</option>
               ))}
@@ -143,12 +151,12 @@ function TaskList() {
                 setStatus(event.target.value as 'All' | JobStatusValue)
                 setCurrentPage(1)
               }}
-              aria-label="Filter tasks by status"
+              aria-label="Lọc nhiệm vụ theo trạng thái"
               className={selectClassName}
             >
-              <option value="All">All Statuses</option>
+              <option value="All">Tất cả trạng thái</option>
               {statuses.map((jobStatus) => (
-                <option key={jobStatus} value={jobStatus}>{jobStatus}</option>
+                <option key={jobStatus} value={jobStatus}>{statusLabels[jobStatus]}</option>
               ))}
             </select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#687386]" />
@@ -161,10 +169,10 @@ function TaskList() {
                 setPriority(event.target.value)
                 setCurrentPage(1)
               }}
-              aria-label="Filter tasks by priority"
+              aria-label="Lọc nhiệm vụ theo mức độ ưu tiên"
               className={selectClassName}
             >
-              <option value="All">All Priorities</option>
+              <option value="All">Tất cả mức độ ưu tiên</option>
               {priorities.map((value) => (
                 <option key={value} value={value}>{priorityLabels[value as JobPriorityValue]}</option>
               ))}
@@ -179,7 +187,7 @@ function TaskList() {
             className="flex h-10 items-center justify-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium text-[#3f4654] transition hover:bg-[#f1eff5] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="h-4 w-4" />
-            Clear
+            Xóa bộ lọc
           </button>
         </div>
 
@@ -189,12 +197,12 @@ function TaskList() {
               <thead>
                 <tr className="border-b border-[#d9dce5] bg-[#f5f4f8]">
                   <th scope="col" className="w-[100px] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">ID</th>
-                  <th scope="col" className="w-[115px] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Workflow ID</th>
-                  <th scope="col" className="w-[110px] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Created By</th>
-                  <th scope="col" className="w-[110px] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Robot ID</th>
-                  <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Name</th>
-                  <th scope="col" className="w-[100px] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Priority</th>
-                  <th scope="col" className="w-[150px] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Status</th>
+                  <th scope="col" className="w-[115px] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Mã quy trình</th>
+                  <th scope="col" className="w-[110px] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Người tạo</th>
+                  <th scope="col" className="w-[110px] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Mã robot</th>
+                  <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Tên</th>
+                  <th scope="col" className="w-[100px] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Ưu tiên</th>
+                  <th scope="col" className="w-[150px] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">Trạng thái</th>
                 </tr>
               </thead>
               <tbody>
@@ -207,12 +215,12 @@ function TaskList() {
                     }}
                     role="link"
                     tabIndex={0}
-                    aria-label={`View task ${job.name}`}
+                    aria-label={`Xem nhiệm vụ ${job.name}`}
                     className="cursor-pointer border-b border-[#d9dce5] last:border-b-0 transition hover:bg-[#faf9fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                   >
                     <td className="px-4 py-4 font-mono text-xs font-semibold text-primary">{job.id}</td>
                     <td className="px-4 py-4 font-mono text-xs text-[#414856]">
-                      <span title={workflowNames.get(job.workflowId) ?? 'Workflow not found'}>{job.workflowId}</span>
+                      <span title={workflowNames.get(job.workflowId) ?? 'Không tìm thấy quy trình'}>{job.workflowId}</span>
                     </td>
                     <td className="px-4 py-4 font-mono text-xs text-[#414856]">{job.createdBy}</td>
                     <td className="px-4 py-4 font-mono text-xs text-[#414856]">{job.robotId ?? '—'}</td>
@@ -224,14 +232,14 @@ function TaskList() {
                     </td>
                     <td className="px-4 py-4">
                       <span className={`inline-flex min-w-[104px] justify-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[job.status]}`}>
-                        {job.status}
+                        {statusLabels[job.status]}
                       </span>
                     </td>
                   </tr>
                 )) : (
                   <tr>
                     <td colSpan={7} className="px-4 py-12 text-center text-sm text-[#687386]">
-                      No tasks match your search or filters.
+                      Không tìm thấy nhiệm vụ phù hợp với nội dung tìm kiếm hoặc bộ lọc.
                     </td>
                   </tr>
                 )}
@@ -240,14 +248,14 @@ function TaskList() {
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#d9dce5] px-4 py-3">
             <p className="text-xs text-[#687386]" aria-live="polite">
-              Showing {filteredJobs.length} of {jobs.length} tasks
+              Hiển thị {filteredJobs.length}/{jobs.length} nhiệm vụ
             </p>
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setCurrentPage(visiblePage - 1)}
                 disabled={visiblePage === 1}
-                aria-label="Previous page"
+                aria-label="Trang trước"
                 className="flex h-7 w-7 items-center justify-center text-[#a3a8b2] disabled:cursor-not-allowed enabled:hover:bg-[#f1eff5]"
               >
                 ‹
@@ -257,7 +265,7 @@ function TaskList() {
                   key={page}
                   type="button"
                   onClick={() => setCurrentPage(page)}
-                  aria-label={`Page ${page}`}
+                  aria-label={`Trang ${page}`}
                   aria-current={page === visiblePage ? 'page' : undefined}
                   className={page === visiblePage
                     ? 'flex h-7 min-w-7 items-center justify-center bg-primary px-2 text-xs font-medium text-white'
@@ -270,7 +278,7 @@ function TaskList() {
                 type="button"
                 onClick={() => setCurrentPage(visiblePage + 1)}
                 disabled={visiblePage === pageCount}
-                aria-label="Next page"
+                aria-label="Trang sau"
                 className="flex h-7 w-7 items-center justify-center text-[#a3a8b2] disabled:cursor-not-allowed enabled:hover:bg-[#f1eff5]"
               >
                 ›

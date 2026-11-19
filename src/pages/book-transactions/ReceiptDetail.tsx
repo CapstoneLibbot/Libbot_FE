@@ -25,7 +25,7 @@ export default function ReceiptDetail() {
         setIsLoading(false)
       })
       .catch((err) => {
-        setError(err?.message || 'Failed to load receipt details.')
+        setError(err?.message || 'Không thể tải thông tin phiếu nhập.')
         setIsLoading(false)
       })
   }, [id])
@@ -33,7 +33,7 @@ export default function ReceiptDetail() {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center text-sm text-slate-500">
-        Loading receipt details...
+        Đang tải thông tin phiếu nhập...
       </div>
     )
   }
@@ -41,15 +41,15 @@ export default function ReceiptDetail() {
   if (error || !receipt) {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-xl font-bold text-slate-900">Receipt Not Found</h2>
+        <h2 className="text-xl font-bold text-slate-900">Không tìm thấy phiếu nhập</h2>
         <p className="mt-1 text-sm text-slate-500">
-          {error || 'The requested receipt could not be loaded.'}
+          {error || 'Không thể tải phiếu nhập được yêu cầu.'}
         </p>
         <button
           onClick={() => navigate('/book-transactions')}
           className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Book Transactions
+          <ArrowLeft className="h-4 w-4" /> Quay lại giao dịch sách
         </button>
       </div>
     )

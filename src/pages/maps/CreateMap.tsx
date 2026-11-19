@@ -93,7 +93,7 @@ function CreateMap() {
   const [speed, setSpeed] = useState(0.1)
   const [maps, setMaps] = useState<SavedMap[]>([])
   const [selectedMap, setSelectedMap] = useState('')
-  const [mapName, setMapName] = useState('LiBot map')
+  const [mapName, setMapName] = useState('Bản đồ LiBot')
   const [notice, setNotice] = useState('')
   const [noticeTone, setNoticeTone] = useState<'info' | 'success' | 'error'>('info')
   const [busy, setBusy] = useState(false)
@@ -181,7 +181,7 @@ function CreateMap() {
           showNotice(
             result.navigation_restarted
               ? 'Đã dừng điều khiển tay và khởi động lại Nav2.'
-              : 'Đã dừng điều khiển tay. Nav2 chưa khởi động lại; hãy kiểm tra map và log robot.',
+              : 'Đã dừng điều khiển tay. Nav2 chưa khởi động lại; hãy kiểm tra bản đồ và nhật ký robot.',
             result.navigation_restarted ? 'success' : 'error',
           )
         }
@@ -440,7 +440,7 @@ function CreateMap() {
 
       await refresh()
       showNotice(
-        enabled ? 'Đang mapping trực tiếp.' : 'Đã dừng mapping.',
+        enabled ? 'Đang lập bản đồ trực tiếp.' : 'Đã dừng lập bản đồ.',
         'success',
       )
     } catch (error) {
@@ -457,7 +457,7 @@ function CreateMap() {
 
     setBusy(true)
     showNotice(
-      'Đang lưu PGM/YAML trên robot và snapshot vào database…',
+      'Đang lưu tệp PGM/YAML trên robot và ảnh chụp dữ liệu vào cơ sở dữ liệu…',
     )
 
     try {
@@ -495,7 +495,7 @@ function CreateMap() {
       navigationRestartPending.current = false
       await refresh()
       showNotice(
-        'Nav2 đã nạp map. Nếu robot chưa LOCALIZED, hãy đặt initial pose trước khi gửi goal.',
+        'Nav2 đã nạp bản đồ. Nếu robot chưa được định vị, hãy đặt tư thế ban đầu trước khi gửi điểm đích.',
         'success',
       )
     } catch (error) {
@@ -574,7 +574,7 @@ function CreateMap() {
           <div className="flex items-start gap-3">
             <Link
               to="/maps"
-              aria-label="Quay lại danh sách map"
+              aria-label="Quay lại danh sách bản đồ"
               className="mt-0.5 flex h-9 w-9 items-center justify-center border border-[#d9dce5] bg-white text-[#596174] hover:border-primary hover:text-primary"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -587,7 +587,7 @@ function CreateMap() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold tracking-tight text-[#17181c]">
-                    Create Map
+                    Tạo bản đồ
                   </h1>
                   <p className="mt-0.5 text-sm text-[#596174]">
                     Điều khiển robot thật và tạo bản đồ bằng SLAM.
@@ -618,7 +618,7 @@ function CreateMap() {
           <section className="min-w-0 overflow-hidden border border-[#d9dce5] bg-white">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#d9dce5] px-5 py-4">
               <div>
-                <h2 className="font-semibold text-[#252933]">Map trực tiếp</h2>
+                <h2 className="font-semibold text-[#252933]">Bản đồ trực tiếp</h2>
                 <p className="mt-1 text-xs text-[#747b8b]">
                   {grid
                     ? `Cập nhật ${new Date(grid.timestamp).toLocaleTimeString()}`
@@ -639,7 +639,7 @@ function CreateMap() {
                   ? 'SLAM ĐANG CHẠY'
                   : navActive
                     ? 'NAV2 ĐANG CHẠY'
-                    : 'CHƯA MAPPING'}
+                    : 'CHƯA LẬP BẢN ĐỒ'}
               </span>
             </div>
 
@@ -693,7 +693,7 @@ function CreateMap() {
                   <h2 className="font-semibold text-[#252933]">Điều khiển</h2>
                 </div>
                 <span className="text-[10px] font-bold text-[#687386]">
-                  {leaseId ? 'ĐÃ ARM' : 'ĐANG KHÓA'}
+                  {leaseId ? 'ĐÃ MỞ KHÓA' : 'ĐANG KHÓA'}
                 </span>
               </div>
 
@@ -770,7 +770,7 @@ function CreateMap() {
             <section className="border border-[#d9dce5] bg-white p-4">
               <div className="mb-4 flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-primary" />
-                <h2 className="font-semibold text-[#252933]">Mapping và lưu</h2>
+                <h2 className="font-semibold text-[#252933]">Lập bản đồ và lưu</h2>
               </div>
 
               <div className="grid grid-cols-[1fr_auto] gap-2">
@@ -787,7 +787,7 @@ function CreateMap() {
                   className="flex h-10 items-center justify-center gap-2 bg-primary px-3 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
                 >
                   <Power className="h-4 w-4" />
-                  Bắt đầu mapping
+                  Bắt đầu lập bản đồ
                 </button>
                 <button
                   type="button"
@@ -823,7 +823,7 @@ function CreateMap() {
                 className="mt-3 flex h-10 w-full items-center justify-center gap-2 bg-[#087443] px-3 text-sm font-semibold text-white hover:bg-[#066139] disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
-                Lưu map vào robot và database
+                Lưu bản đồ vào robot và cơ sở dữ liệu
               </button>
             </section>
 
@@ -838,7 +838,7 @@ function CreateMap() {
                 onChange={(event) => setSelectedMap(event.target.value)}
                 className="h-10 w-full border border-[#d9dce5] bg-white px-3 text-sm text-[#252933] outline-none focus:border-primary"
               >
-                <option value="">Chọn map đã lưu</option>
+                <option value="">Chọn bản đồ đã lưu</option>
                 {maps.map((map) => (
                   <option key={map.id} value={map.id}>
                     {map.name} · v{map.version}
@@ -868,7 +868,7 @@ function CreateMap() {
                   onClick={() => void startNav()}
                   className="mt-3 h-10 w-full bg-primary px-3 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
                 >
-                  Khởi chạy Nav2 với map
+                  Khởi chạy Nav2 với bản đồ
                 </button>
               )}
             </section>

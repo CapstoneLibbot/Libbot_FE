@@ -32,10 +32,10 @@ export type MapInfo = {
 export const sampleMap: MapInfo = {
   id: 1,
   floor_id: 1,
-  floor_name: 'Floor 1',
-  name: 'Floor 1 - Version 1',
+  floor_name: 'Tầng 1',
+  name: 'Tầng 1 - Phiên bản 1',
   description:
-    'Library floor map with shelves, service spaces and robot corridors.',
+    'Bản đồ tầng thư viện với các kệ sách, khu vực phục vụ và đường di chuyển dành cho robot.',
   version: 1,
   width: 900,
   height: 600,
@@ -48,199 +48,199 @@ const endpointSeeds: Omit<MapEndpoint, 'endpoint_groups'>[] = [
     id: 101,
     map_id: 1,
     code: 'EP-101',
-    name: 'Shelf A-01',
-    description: 'Endpoint assigned to Shelf A-01.',
+    name: 'Kệ A-01',
+    description: 'Điểm điều hướng được gán cho kệ A-01.',
     position_x: 5.880,
     position_y: 25.290,
     is_active: true,
-    linked_object: { kind: 'SHELF', id: 1, name: 'Shelf A-01' },
+    linked_object: { kind: 'SHELF', id: 1, name: 'Kệ A-01' },
   },
   {
     id: 102,
     map_id: 1,
     code: 'EP-102',
-    name: 'Shelf A-02',
-    description: 'Endpoint assigned to Shelf A-02.',
+    name: 'Kệ A-02',
+    description: 'Điểm điều hướng được gán cho kệ A-02.',
     position_x: 11.100,
     position_y: 9.040,
     is_active: true,
-    linked_object: { kind: 'SHELF', id: 2, name: 'Shelf A-02' },
+    linked_object: { kind: 'SHELF', id: 2, name: 'Kệ A-02' },
   },
   {
     id: 106,
     map_id: 1,
     code: 'EP-106',
-    name: 'Shelf A-03',
-    description: 'Endpoint assigned to Shelf A-03.',
+    name: 'Kệ A-03',
+    description: 'Điểm điều hướng được gán cho kệ A-03.',
     position_x: 24.5,
     position_y: 23,
     is_active: true,
-    linked_object: { kind: 'SHELF', id: 3, name: 'Shelf A-03' },
+    linked_object: { kind: 'SHELF', id: 3, name: 'Kệ A-03' },
   },
   {
     id: 107,
     map_id: 1,
     code: 'EP-107',
-    name: 'Shelf A-04',
-    description: 'Endpoint assigned to Shelf A-04.',
+    name: 'Kệ A-04',
+    description: 'Điểm điều hướng được gán cho kệ A-04.',
     position_x: 28.5,
     position_y: 23,
     is_active: true,
-    linked_object: { kind: 'SHELF', id: 4, name: 'Shelf A-04' },
+    linked_object: { kind: 'SHELF', id: 4, name: 'Kệ A-04' },
   },
   {
     id: 108,
     map_id: 1,
     code: 'EP-108',
-    name: 'Shelf A-05',
-    description: 'Endpoint assigned to Shelf A-05.',
+    name: 'Kệ A-05',
+    description: 'Điểm điều hướng được gán cho kệ A-05.',
     position_x: 31.5,
     position_y: 23,
     is_active: true,
-    linked_object: { kind: 'SHELF', id: 5, name: 'Shelf A-05' },
+    linked_object: { kind: 'SHELF', id: 5, name: 'Kệ A-05' },
   },
   {
     id: 109,
     map_id: 1,
     code: 'EP-109',
-    name: 'Shelf A-06',
-    description: 'Endpoint assigned to Shelf A-06.',
+    name: 'Kệ A-06',
+    description: 'Điểm điều hướng được gán cho kệ A-06.',
     position_x: 35,
     position_y: 23,
     is_active: true,
-    linked_object: { kind: 'SHELF', id: 6, name: 'Shelf A-06' },
+    linked_object: { kind: 'SHELF', id: 6, name: 'Kệ A-06' },
   },
   {
     id: 110,
     map_id: 1,
     code: 'EP-110',
-    name: 'Shelf A-07',
-    description: 'Endpoint assigned to Shelf A-07.',
+    name: 'Kệ A-07',
+    description: 'Điểm điều hướng được gán cho kệ A-07.',
     position_x: 38.5,
     position_y: 23,
     is_active: true,
-    linked_object: { kind: 'SHELF', id: 7, name: 'Shelf A-07' },
+    linked_object: { kind: 'SHELF', id: 7, name: 'Kệ A-07' },
   },
   {
     id: 111,
     map_id: 1,
     code: 'EP-111',
-    name: 'Shelf A-08',
-    description: 'Endpoint assigned to Shelf A-08.',
+    name: 'Kệ A-08',
+    description: 'Điểm điều hướng được gán cho kệ A-08.',
     position_x: 42,
     position_y: 23,
     is_active: true,
-    linked_object: { kind: 'SHELF', id: 8, name: 'Shelf A-08' },
+    linked_object: { kind: 'SHELF', id: 8, name: 'Kệ A-08' },
   },
   {
     id: 112,
     map_id: 1,
     code: 'EP-112',
-    name: 'Shelf A-09',
-    description: 'Endpoint assigned to Shelf A-09.',
+    name: 'Kệ A-09',
+    description: 'Điểm điều hướng được gán cho kệ A-09.',
     position_x: 45.5,
     position_y: 23,
     is_active: true,
-    linked_object: { kind: 'SHELF', id: 9, name: 'Shelf A-09' },
+    linked_object: { kind: 'SHELF', id: 9, name: 'Kệ A-09' },
   },
   {
     id: 113,
     map_id: 1,
     code: 'EP-113',
-    name: 'Shelf A-10',
-    description: 'Endpoint assigned to Shelf A-10.',
+    name: 'Kệ A-10',
+    description: 'Điểm điều hướng được gán cho kệ A-10.',
     position_x: 49,
     position_y: 23,
     is_active: true,
-    linked_object: { kind: 'SHELF', id: 10, name: 'Shelf A-10' },
+    linked_object: { kind: 'SHELF', id: 10, name: 'Kệ A-10' },
   },
   {
     id: 114,
     map_id: 1,
     code: 'EP-114',
-    name: 'Aisle A Start',
-    description: 'Start endpoint for Aisle A.',
+    name: 'Đầu dãy sách A',
+    description: 'Điểm đầu của dãy sách A.',
     position_x: 26.5,
     position_y: 28,
     is_active: true,
-    linked_object: { kind: 'AISLE', id: 1, name: 'Aisle A' },
+    linked_object: { kind: 'AISLE', id: 1, name: 'Dãy sách A' },
   },
   {
     id: 115,
     map_id: 1,
     code: 'EP-115',
-    name: 'Aisle A End',
-    description: 'End endpoint for Aisle A.',
+    name: 'Cuối dãy sách A',
+    description: 'Điểm cuối của dãy sách A.',
     position_x: 26.5,
     position_y: 16.5,
     is_active: true,
-    linked_object: { kind: 'AISLE', id: 1, name: 'Aisle A' },
+    linked_object: { kind: 'AISLE', id: 1, name: 'Dãy sách A' },
   },
   {
     id: 116,
     map_id: 1,
     code: 'EP-116',
-    name: 'Aisle B Start',
-    description: 'Start endpoint for Aisle B.',
+    name: 'Đầu dãy sách B',
+    description: 'Điểm đầu của dãy sách B.',
     position_x: 33.3,
     position_y: 28,
     is_active: true,
-    linked_object: { kind: 'AISLE', id: 2, name: 'Aisle B' },
+    linked_object: { kind: 'AISLE', id: 2, name: 'Dãy sách B' },
   },
   {
     id: 117,
     map_id: 1,
     code: 'EP-117',
-    name: 'Aisle B End',
-    description: 'End endpoint for Aisle B.',
+    name: 'Cuối dãy sách B',
+    description: 'Điểm cuối của dãy sách B.',
     position_x: 33.3,
     position_y: 16.5,
     is_active: true,
-    linked_object: { kind: 'AISLE', id: 2, name: 'Aisle B' },
+    linked_object: { kind: 'AISLE', id: 2, name: 'Dãy sách B' },
   },
   {
     id: 118,
     map_id: 1,
     code: 'EP-118',
-    name: 'Aisle C Start',
-    description: 'Start endpoint for Aisle C.',
+    name: 'Đầu dãy sách C',
+    description: 'Điểm đầu của dãy sách C.',
     position_x: 40,
     position_y: 28,
     is_active: true,
-    linked_object: { kind: 'AISLE', id: 3, name: 'Aisle C' },
+    linked_object: { kind: 'AISLE', id: 3, name: 'Dãy sách C' },
   },
   {
     id: 119,
     map_id: 1,
     code: 'EP-119',
-    name: 'Aisle C End',
-    description: 'End endpoint for Aisle C.',
+    name: 'Cuối dãy sách C',
+    description: 'Điểm cuối của dãy sách C.',
     position_x: 40,
     position_y: 16.5,
     is_active: true,
-    linked_object: { kind: 'AISLE', id: 3, name: 'Aisle C' },
+    linked_object: { kind: 'AISLE', id: 3, name: 'Dãy sách C' },
   },
   {
     id: 120,
     map_id: 1,
     code: 'EP-120',
-    name: 'Aisle D Start',
-    description: 'Start endpoint for Aisle D.',
+    name: 'Đầu dãy sách D',
+    description: 'Điểm đầu của dãy sách D.',
     position_x: 47,
     position_y: 28,
     is_active: true,
-    linked_object: { kind: 'AISLE', id: 4, name: 'Aisle D' },
+    linked_object: { kind: 'AISLE', id: 4, name: 'Dãy sách D' },
   },
   {
     id: 121,
     map_id: 1,
     code: 'EP-121',
-    name: 'Aisle D End',
-    description: 'End endpoint for Aisle D.',
+    name: 'Cuối dãy sách D',
+    description: 'Điểm cuối của dãy sách D.',
     position_x: 47,
     position_y: 16.5,
     is_active: true,
-    linked_object: { kind: 'AISLE', id: 4, name: 'Aisle D' },
+    linked_object: { kind: 'AISLE', id: 4, name: 'Dãy sách D' },
   },
 ]
 
@@ -260,13 +260,13 @@ export const initialZones: MapZone[] = [
     id: 1,
     map_id: 1,
     code: 'Z-001',
-    name: 'Restroom Exclusion Zone',
+    name: 'Khu vực cấm nhà vệ sinh',
     zone_type: 1,
     max_speed: 0,
     preferred_direction: 'NONE',
     corridor_width: 0,
     allow_turnaround: false,
-    description: 'Robot must not enter the restroom zone.',
+    description: 'Robot không được đi vào khu vực nhà vệ sinh.',
     min_x: 60.94,
     min_y: 30.12,
     max_x: 72.11,
@@ -277,13 +277,13 @@ export const initialZones: MapZone[] = [
     id: 2,
     map_id: 1,
     code: 'Z-002',
-    name: 'Crowded Zone',
+    name: 'Khu vực đông người',
     zone_type: 2,
     max_speed: 0.35,
     preferred_direction: 'NONE',
     corridor_width: 0,
     allow_turnaround: true,
-    description: 'Maximum speed is limited to 0.35 m/s in this crowded zone.',
+    description: 'Tốc độ tối đa trong khu vực đông người này được giới hạn ở mức 0,35 m/s.',
     min_x: 20.12,
     min_y: 3.21,
     max_x: 65.05,
@@ -294,13 +294,13 @@ export const initialZones: MapZone[] = [
     id: 3,
     map_id: 1,
     code: 'Z-003',
-    name: 'One-way Street Zone',
+    name: 'Khu vực đường một chiều',
     zone_type: 3,
     max_speed: 0,
     preferred_direction: 'FORWARD',
     corridor_width: 0,
     allow_turnaround: true,
-    description: 'Preferred travel direction is from Min to Max.',
+    description: 'Hướng di chuyển ưu tiên từ giá trị nhỏ nhất đến giá trị lớn nhất.',
     min_x: 24.69,
     min_y: 15.82,
     max_x: 28.41,
@@ -311,13 +311,13 @@ export const initialZones: MapZone[] = [
     id: 4,
     map_id: 1,
     code: 'Z-004',
-    name: 'Narrow Corridor',
+    name: 'Hành lang hẹp',
     zone_type: 4,
     max_speed: 0,
     preferred_direction: 'NONE',
     corridor_width: 1.2,
     allow_turnaround: false,
-    description: 'Narrow corridor with turnaround disabled.',
+    description: 'Hành lang hẹp không cho phép quay đầu.',
     min_x: 45.07,
     min_y: 16.34,
     max_x: 49.38,
@@ -472,7 +472,7 @@ function MapDetail() {
       id: nextId,
       map_id: sampleMap.id,
       code: String(formData.get('code') ?? `EP-${nextId}`),
-      name: String(formData.get('name') ?? 'New Endpoint'),
+      name: String(formData.get('name') ?? 'Điểm điều hướng mới'),
       description: String(
         formData.get('description') ?? '',
       ),
@@ -519,7 +519,7 @@ function MapDetail() {
       id: nextId,
       map_id: sampleMap.id,
       code: String(formData.get('code') ?? `Z-${nextId}`),
-      name: String(formData.get('name') ?? 'New Zone'),
+      name: String(formData.get('name') ?? 'Khu vực mới'),
       zone_type: Number(
         formData.get('zone_type') ?? 1,
       ) as MapZone['zone_type'],
@@ -576,13 +576,13 @@ function MapDetail() {
             </h1>
 
             <p className="text-xs text-white/35">
-              Map #{map.id} · {map.floor_name} · v{map.version}
+              Bản đồ #{map.id} · {map.floor_name} · v{map.version}
             </p>
           </div>
         </div>
 
         <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300">
-          Active
+          Đang hoạt động
         </span>
       </header>
 
@@ -596,7 +596,7 @@ function MapDetail() {
                 aria-pressed={mapViewMode === '2d'}
                 className={`rounded px-3 py-1.5 text-xs font-medium transition ${mapViewMode === '2d' ? 'bg-white/12 text-white' : 'text-white/50 hover:text-white'}`}
               >
-                2D map
+                Bản đồ 2D
               </button>
               <button
                 type="button"
@@ -609,7 +609,7 @@ function MapDetail() {
             </div>
             {mapViewMode === 'gazebo3d' && (
               <span className="truncate text-[11px] text-amber-200/70">
-                Nguồn: library_layout.json · cảnh Gazebo tĩnh 50×60 m, độc lập với map biên tập 2D
+                Nguồn: library_layout.json · cảnh Gazebo tĩnh 50×60 m, độc lập với bản đồ 2D đang biên tập
               </span>
             )}
           </div>
@@ -690,10 +690,10 @@ function MapDetail() {
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <h2 className="text-base font-semibold">
-                  Create Endpoint
+                  Tạo điểm điều hướng
                 </h2>
                 <p className="mt-1 text-xs text-white/40">
-                  Create a navigation point on the library map.
+                  Tạo điểm điều hướng trên bản đồ thư viện.
                 </p>
               </div>
 
@@ -708,7 +708,7 @@ function MapDetail() {
 
             <div className="grid grid-cols-2 gap-4">
               <label className="text-xs text-white/55">
-                Map ID
+                Mã bản đồ
                 <input
                   value={map.id}
                   readOnly
@@ -717,7 +717,7 @@ function MapDetail() {
               </label>
 
               <label className="text-xs text-white/55">
-                Code
+                Mã
                 <input
                   name="code"
                   defaultValue={`EP-${
@@ -733,17 +733,17 @@ function MapDetail() {
               </label>
 
               <label className="col-span-2 text-xs text-white/55">
-                Name
+                Tên
                 <input
                   name="name"
                   required
-                  placeholder="Endpoint name"
+                  placeholder="Tên điểm điều hướng"
                   className="mt-1.5 h-9 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none focus:border-primary"
                 />
               </label>
 
               <label className="col-span-2 text-xs text-white/55">
-                Description
+                Mô tả
                 <textarea
                   name="description"
                   rows={3}
@@ -752,7 +752,7 @@ function MapDetail() {
               </label>
 
               <label className="text-xs text-white/55">
-                Position X
+                Vị trí X
                 <input
                   name="position_x"
                   type="number"
@@ -765,7 +765,7 @@ function MapDetail() {
               </label>
 
               <label className="text-xs text-white/55">
-                Position Y
+                Vị trí Y
                 <input
                   name="position_y"
                   type="number"
@@ -784,7 +784,7 @@ function MapDetail() {
                   defaultChecked
                   className="h-4 w-4 accent-primary"
                 />
-                Active
+                Đang hoạt động
               </label>
             </div>
 
@@ -794,14 +794,14 @@ function MapDetail() {
                 onClick={() => setCreateEndpointPosition(null)}
                 className="rounded-md px-4 py-2 text-sm text-white/60 hover:bg-white/8 hover:text-white"
               >
-                Cancel
+                Hủy
               </button>
 
               <button
                 type="submit"
                 className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90"
               >
-                Create Endpoint
+                Tạo điểm điều hướng
               </button>
             </div>
           </form>
@@ -817,10 +817,10 @@ function MapDetail() {
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <h2 className="text-base font-semibold">
-                  Create Zone
+                  Tạo khu vực
                 </h2>
                 <p className="mt-1 text-xs text-white/40">
-                  Configure the zone you just drew on the map.
+                  Cấu hình khu vực bạn vừa vẽ trên bản đồ.
                 </p>
               </div>
 
@@ -835,7 +835,7 @@ function MapDetail() {
 
             <div className="grid grid-cols-2 gap-4">
               <label className="text-xs text-white/55">
-                Code
+                Mã
                 <input
                   name="code"
                   defaultValue={`Z-${
@@ -849,39 +849,39 @@ function MapDetail() {
               </label>
 
               <label className="text-xs text-white/55">
-                Name
+                Tên
                 <input
                   name="name"
                   required
-                  placeholder="Zone name"
+                  placeholder="Tên khu vực"
                   className="mt-1.5 h-9 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none focus:border-primary"
                 />
               </label>
 
               <label className="text-xs text-white/55">
-                Zone Type
+                Loại khu vực
                 <select
                   name="zone_type"
                   defaultValue="1"
                   className="mt-1.5 h-9 w-full rounded-md border border-white/10 bg-[#17181d] px-3 text-sm text-white outline-none focus:border-primary"
                 >
                   <option value="1">
-                    1 - EXCLUSION
+                    1 - Khu vực cấm
                   </option>
                   <option value="2">
-                    2 - SPEED_LIMIT
+                    2 - Giới hạn tốc độ
                   </option>
                   <option value="3">
-                    3 - PREFERRED_DIRECTION
+                    3 - Hướng ưu tiên
                   </option>
                   <option value="4">
-                    4 - NARROW_CORRIDOR
+                    4 - Hành lang hẹp
                   </option>
                 </select>
               </label>
 
               <label className="text-xs text-white/55">
-                Max Speed
+                Tốc độ tối đa
                 <input
                   name="max_speed"
                   type="number"
@@ -892,24 +892,24 @@ function MapDetail() {
               </label>
 
               <label className="text-xs text-white/55">
-                Preferred Direction
+                Hướng ưu tiên
                 <select
                   name="preferred_direction"
                   defaultValue="NONE"
                   className="mt-1.5 h-9 w-full rounded-md border border-white/10 bg-[#17181d] px-3 text-sm text-white outline-none focus:border-primary"
                 >
-                  <option value="NONE">NONE</option>
-                  <option value="FORWARD">FORWARD (Min to Max)</option>
-                  <option value="REVERSE">REVERSE (Max to Min)</option>
-                  <option value="NORTH">NORTH</option>
-                  <option value="SOUTH">SOUTH</option>
-                  <option value="EAST">EAST</option>
-                  <option value="WEST">WEST</option>
+                  <option value="NONE">Không có</option>
+                  <option value="FORWARD">Xuôi (Từ nhỏ đến lớn)</option>
+                  <option value="REVERSE">Ngược (Từ lớn đến nhỏ)</option>
+                  <option value="NORTH">Bắc</option>
+                  <option value="SOUTH">Nam</option>
+                  <option value="EAST">Đông</option>
+                  <option value="WEST">Tây</option>
                 </select>
               </label>
 
               <label className="text-xs text-white/55">
-                Corridor Width
+                Chiều rộng hành lang
                 <input
                   name="corridor_width"
                   type="number"
@@ -920,7 +920,7 @@ function MapDetail() {
               </label>
 
               <label className="col-span-2 text-xs text-white/55">
-                Description
+                Mô tả
                 <textarea
                   name="description"
                   rows={3}
@@ -930,7 +930,7 @@ function MapDetail() {
 
               <div className="rounded-lg border border-white/8 bg-white/3 p-3">
                 <p className="text-[11px] uppercase tracking-wide text-white/35">
-                  Min
+                  Nhỏ nhất
                 </p>
 
                 <p className="mt-1 font-mono text-xs text-white/70">
@@ -942,7 +942,7 @@ function MapDetail() {
 
               <div className="rounded-lg border border-white/8 bg-white/3 p-3">
                 <p className="text-[11px] uppercase tracking-wide text-white/35">
-                  Max
+                  Lớn nhất
                 </p>
 
                 <p className="mt-1 font-mono text-xs text-white/70">
@@ -959,7 +959,7 @@ function MapDetail() {
                   defaultChecked
                   className="h-4 w-4 accent-primary"
                 />
-                Allow turnaround
+                Cho phép quay đầu
               </label>
 
               <label className="col-span-2 flex items-center gap-2 text-sm text-white/70">
@@ -969,7 +969,7 @@ function MapDetail() {
                   defaultChecked
                   className="h-4 w-4 accent-primary"
                 />
-                Active
+                Đang hoạt động
               </label>
             </div>
 
@@ -979,14 +979,14 @@ function MapDetail() {
                 onClick={() => setCreateZoneRect(null)}
                 className="rounded-md px-4 py-2 text-sm text-white/60 hover:bg-white/8 hover:text-white"
               >
-                Cancel
+                Hủy
               </button>
 
               <button
                 type="submit"
                 className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90"
               >
-                Create Zone
+                Tạo khu vực
               </button>
             </div>
           </form>

@@ -4,11 +4,11 @@
 
 ## 1. Tổng quan
 
-LiBot FE là giao diện quản lý robot thư viện, được xây dựng bằng React và TypeScript. Ứng dụng hiện có khung điều hướng chung, màn danh sách bản đồ, màn chi tiết bản đồ tương tác, và các màn danh sách/chi tiết Aisle, Shelf. Những mục nghiệp vụ khác đã có route nhưng hiện chỉ hiển thị trang placeholder.
+LiBot FE là giao diện quản lý robot thư viện, được xây dựng bằng React và TypeScript. Ứng dụng hiện có khung điều hướng chung, màn danh sách bản đồ, màn chi tiết bản đồ tương tác, và các màn danh sách/chi tiết dãy sách, kệ. Những mục nghiệp vụ khác đã có route nhưng hiện chỉ hiển thị trang placeholder.
 
 Các luồng dữ liệu hiện có:
 
-- Dữ liệu Aisle, Shelf, endpoint group và một phần cấu hình bản đồ nằm trong `src/lib/mapData.ts` hoặc dữ liệu mẫu khai báo ngay trong trang.
+- Dữ liệu dãy sách, kệ, endpoint group và một phần cấu hình bản đồ nằm trong `src/lib/mapData.ts` hoặc dữ liệu mẫu khai báo ngay trong trang.
 - Raster bản đồ và metadata YAML là file tĩnh trong `public/maps/`.
 - Tạo endpoint/zone trên màn bản đồ chỉ cập nhật React state trong phiên hiện tại; tải lại trang sẽ mất dữ liệu.
 - Không có API client, xác thực, global state library, test script hoặc persistence layer được khai báo trong project hiện tại.
@@ -108,8 +108,8 @@ Luồng khởi chạy:
 | `/maps` | `ListMap` | Danh sách mock, tìm kiếm theo ID/tên, lọc status/version; click dòng mở chi tiết |
 | `/maps/:id` | `MapDetail` | Canvas map, xem endpoint/zone và tạo mới trong state cục bộ |
 | `/floors/:id` | `PlaceholderPage` | Chưa dùng `FloorDetail.tsx` (file rỗng) |
-| `/aisles` | `AisleDetail` | Danh sách Aisle |
-| `/aisles/:id` | `AisleDetail` | Chi tiết Aisle |
+| `/aisles` | `AisleDetail` | Danh sách dãy sách |
+| `/aisles/:id` | `AisleDetail` | Chi tiết dãy sách |
 | `/shelves` | `ShelfList` | Danh sách Shelf; nhấn vào hàng kệ để mở chi tiết |
 | `/shelves/:id` | `ShelfDetail` | Chi tiết Shelf |
 | `/tasks` | `TaskList` | Danh sách Task (Job trong model dữ liệu) với ID, Workflow ID, Created By, Robot ID, Name, Priority và Status; tìm kiếm/lọc trên mock data |
@@ -155,18 +155,18 @@ Lưu ý khi mở rộng: `:id` trong URL hiện chỉ thay đổi ID hiển th�
 3. Đọc PGM nhị phân `P5` với pixel 8-bit, chuyển thành `ImageData`.
 4. Vẽ ảnh lên `<canvas>`, fit vào container, vẽ lưới và các overlay tùy tab.
 5. Chuyển tọa độ world (mét) sang pixel bằng `origin`, `resolution` và chiều cao ảnh; chiều Y được đảo giữa world và ảnh.
-6. Endpoint, đường nối aisle và zone được vẽ theo tọa độ world. Click chọn đối tượng; wheel/nút điều khiển zoom; kéo để pan khi đang zoom; nút reset trả về góc nhìn ban đầu.
+6. Endpoint, đường nối dãy sách và zone được vẽ theo tọa độ world. Click chọn đối tượng; wheel/nút điều khiển zoom; kéo để pan khi đang zoom; nút reset trả về góc nhìn ban đầu.
 
 Parser hiện chỉ hỗ trợ binary PGM `P5`, max value 255. Map YAML mẫu là `public/maps/floor1_library_v1.yaml`, ảnh tương ứng là `public/maps/floor1_library_v1.pgm`; khi thêm map tĩnh mới, đảm bảo đường dẫn `image` trong YAML đúng tương đối với file YAML.
 
 `src/components/map/MapDetailPanel.tsx` là presentational panel nhận props và callback từ `MapDetail`. Panel hiển thị metadata, danh sách endpoint/zone, bộ lọc group, trạng thái được chọn và nút tạo/vẽ. Nên đặt logic state/submit ở page và để component dùng chung nhận dữ liệu qua props như pattern này.
 
-### 7.4. Aisle, Shelf
+### 7.4. Dãy sách, kệ
 
-Các dữ liệu ví dụ Aisle/Shelf tập trung trong `src/lib/mapData.ts`:
+Các dữ liệu ví dụ dãy sách/kệ tập trung trong `src/lib/mapData.ts`:
 
-- Aisle có hai đầu mút qua `endpointA_id`, `endpointB_id`, đồng thời có `floor_id` và status.
-- Shelf liên kết endpoint qua `endpoint_id` và aisle qua `aisle_id`.
+- Dãy sách có hai đầu mút qua `endpointA_id`, `endpointB_id`, đồng thời có `floor_id` và status.
+- Kệ liên kết endpoint qua `endpoint_id` và dãy sách qua `aisle_id`.
 - Endpoint có thể có `linked_object` với `kind` là `AISLE` hoặc `SHELF`; MapDetailPanel dùng kind để điều hướng đến trang tương ứng.
 
 `AisleDetail`, `ShelfDetail` hiển thị bảng khi không có `id` và hiển thị chi tiết khi có `id`. Đây là các trang đọc dữ liệu mock, chưa có sửa/xóa/tạo.

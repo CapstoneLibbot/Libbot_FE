@@ -291,7 +291,7 @@ export default function LiveOccupancyMap({
           <canvas
             ref={canvasRef}
             className="block h-full w-full [image-rendering:pixelated]"
-            aria-label="Bản đồ occupancy SLAM đang cập nhật"
+            aria-label="Bản đồ chiếm dụng SLAM đang cập nhật"
           />
 
           {(showEndpoints || showZones) && (

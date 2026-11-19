@@ -89,7 +89,7 @@ function StatusPill({ active }: { active: boolean }) {
         }`}
       />
 
-      {active ? 'Active' : 'Inactive'}
+      {active ? 'Đang hoạt động' : 'Ngừng hoạt động'}
     </span>
   )
 }
@@ -97,13 +97,26 @@ function StatusPill({ active }: { active: boolean }) {
 function zoneTypeLabel(type: MapZone['zone_type']) {
   switch (type) {
     case 1:
-      return 'EXCLUSION'
+      return 'Khu vực cấm'
     case 2:
-      return 'SPEED_LIMIT'
+      return 'Giới hạn tốc độ'
     case 3:
-      return 'PREFERRED_DIRECTION'
+      return 'Hướng ưu tiên'
     case 4:
-      return 'NARROW_CORRIDOR'
+      return 'Hành lang hẹp'
+  }
+}
+
+function preferredDirectionLabel(direction: string) {
+  switch (direction) {
+    case 'NONE': return 'Không có'
+    case 'FORWARD': return 'Xuôi'
+    case 'REVERSE': return 'Ngược'
+    case 'NORTH': return 'Bắc'
+    case 'SOUTH': return 'Nam'
+    case 'EAST': return 'Đông'
+    case 'WEST': return 'Tây'
+    default: return direction
   }
 }
 
@@ -132,9 +145,9 @@ function MapDetailPanel({
     <aside className="map-detail-panel flex h-[240px] w-full shrink-0 flex-col border-t border-[#e0e3e9] bg-white text-[#252933] xl:h-full xl:w-[360px] xl:border-l xl:border-t-0">
       <div className="flex h-14 shrink-0 items-center border-b border-white/10 px-3">
         {[
-          ['detail', 'Detail'],
-          ['endpoint', 'Endpoint'],
-          ['zone', 'Zone'],
+          ['detail', 'Chi tiết'],
+          ['endpoint', 'Điểm điều hướng'],
+          ['zone', 'Khu vực'],
         ].map(([value, label]) => {
           const active = activeTab === value
 
@@ -164,7 +177,7 @@ function MapDetailPanel({
           <div className="px-4 pb-6">
             <div className="border-b border-white/10 py-4">
               <p className="text-xs font-medium uppercase tracking-wider text-white/35">
-                Map
+                Bản đồ
               </p>
 
               <h2 className="mt-1 text-base font-semibold">
@@ -175,7 +188,7 @@ function MapDetailPanel({
             <Field label="ID" value={map.id} />
 
             <Field
-              label="Floor"
+              label="Tầng"
               value={
                 <Link
                   to={`/floors/${map.floor_id}`}
@@ -187,29 +200,28 @@ function MapDetailPanel({
               }
             />
 
-            <Field label="Floor ID" value={map.floor_id} />
-
-            <Field label="Name" value={map.name} />
+            <Field label="Mã tầng" value={map.floor_id} />
+            <Field label="Tên" value={map.name} />
 
             <Field
-              label="Description"
+              label="Mô tả"
               value={map.description}
             />
 
-            <Field label="Version" value={`v${map.version}`} />
+            <Field label="Phiên bản" value={`v${map.version}`} />
 
             <Field
-              label="Width"
+              label="Chiều rộng"
               value={`${map.width} px`}
             />
 
             <Field
-              label="Height"
+              label="Chiều cao"
               value={`${map.height} px`}
             />
 
             <Field
-              label="Map Data"
+              label="Dữ liệu bản đồ"
               value={
                 <span className="font-mono text-xs">
                   {map.map_data}
@@ -218,10 +230,10 @@ function MapDetailPanel({
             />
 
             <Field
-              label="Status"
+              label="Trạng thái"
               value={
                 <span className="inline-flex rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300">
-                  Active
+                  Đang hoạt động
                 </span>
               }
             />
@@ -238,12 +250,12 @@ function MapDetailPanel({
                   className="mb-3 inline-flex items-center gap-1.5 text-xs text-white/55 hover:text-white"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
-                  Back to endpoints
+                  Quay lại danh sách điểm điều hướng
                 </button>
 
                 <div className="border-b border-white/10 py-4">
                   <p className="text-xs font-medium uppercase tracking-wider text-white/35">
-                    Selected Endpoint
+                    Điểm điều hướng đã chọn
                   </p>
 
                   <h2 className="mt-1 text-base font-semibold">
@@ -254,42 +266,42 @@ function MapDetailPanel({
                 <Field label="ID" value={selectedEndpoint.id} />
 
                 <Field
-                  label="Map ID"
+                  label="Mã bản đồ"
                   value={selectedEndpoint.map_id}
                 />
 
                 <Field
-                  label="Code"
+                  label="Mã"
                   value={selectedEndpoint.code}
                 />
 
                 <Field
-                  label="Name"
+                  label="Tên"
                   value={selectedEndpoint.name}
                 />
 
                 <Field
-                  label="Description"
+                  label="Mô tả"
                   value={selectedEndpoint.description}
                 />
 
                 <Field
-                  label="Position X"
+                  label="Vị trí X"
                   value={selectedEndpoint.position_x.toFixed(3)}
                 />
 
                 <Field
-                  label="Position Y"
+                  label="Vị trí Y"
                   value={selectedEndpoint.position_y.toFixed(3)}
                 />
 
                 <Field
-                  label="Is Active"
+                  label="Đang hoạt động"
                   value={<StatusPill active={selectedEndpoint.is_active} />}
                 />
 
                 <Field
-                  label="Endpoint Groups"
+                  label="Nhóm điểm điều hướng"
                   value={
                     selectedEndpoint.endpoint_groups.length > 0 ? (
                       <div className="space-y-1">
@@ -298,13 +310,13 @@ function MapDetailPanel({
                         ))}
                       </div>
                     ) : (
-                      <span className="text-white/35">None</span>
+                      <span className="text-white/35">Không có</span>
                     )
                   }
                 />
 
                 <Field
-                  label="Linked Object"
+                  label="Đối tượng được liên kết"
                   value={
                     selectedEndpoint.linked_object ? (
                       <Link
@@ -314,7 +326,7 @@ function MapDetailPanel({
                         {selectedEndpoint.linked_object.name}
                       </Link>
                     ) : (
-                      <span className="text-white/35">None</span>
+                      <span className="text-white/35">Không có</span>
                     )
                   }
                 />
@@ -325,11 +337,10 @@ function MapDetailPanel({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wider text-white/35">
-                    Endpoints
+                    Điểm điều hướng
                   </p>
                   <p className="mt-1 text-xs text-white/40">
-                    {endpoints.length} endpoint
-                    {endpoints.length !== 1 ? 's' : ''}
+                    {endpoints.length} điểm điều hướng
                   </p>
                 </div>
 
@@ -339,13 +350,13 @@ function MapDetailPanel({
                   className="inline-flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-2 text-xs font-medium text-white hover:opacity-90"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  Create
+                  Tạo mới
                 </button>
               </div>
                 </div>
 
                 <label className="block border-b border-white/10 px-4 py-3 text-xs text-white/55">
-                  Filter by endpoint group
+                  Lọc theo nhóm điểm điều hướng
                   <select
                     value={endpointGroupFilterId ?? ''}
                     onChange={(event) =>
@@ -357,7 +368,7 @@ function MapDetailPanel({
                     }
                     className="mt-1.5 h-9 w-full rounded-md border border-white/10 bg-[#17181d] px-3 text-sm text-white outline-none focus:border-primary"
                   >
-                    <option value="">All groups</option>
+                    <option value="">Tất cả nhóm</option>
                     {endpointGroups.map((group) => (
                       <option key={group.id} value={group.id}>
                         {group.name}
@@ -405,7 +416,7 @@ function MapDetailPanel({
             </div>
                 {endpoints.length === 0 && (
                   <div className="px-4 py-8 text-center text-xs text-white/35">
-                    No endpoints belong to this group.
+                    Không có điểm điều hướng nào thuộc nhóm này.
                   </div>
                 )}
               </>
@@ -423,11 +434,11 @@ function MapDetailPanel({
                   className="mb-3 inline-flex items-center gap-1.5 text-xs text-[#596174] hover:text-primary"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
-                  Back to zones
+                  Quay lại danh sách khu vực
                 </button>
                 <div className="border-b border-white/10 py-4">
                   <p className="text-xs font-medium uppercase tracking-wider text-white/35">
-                    Selected Zone
+                    Khu vực đã chọn
                   </p>
 
                   <h2 className="mt-1 text-base font-semibold">
@@ -438,42 +449,42 @@ function MapDetailPanel({
                 <Field label="ID" value={selectedZone.id} />
 
                 <Field
-                  label="Map ID"
+                  label="Mã bản đồ"
                   value={selectedZone.map_id}
                 />
 
                 <Field
-                  label="Code"
+                  label="Mã"
                   value={selectedZone.code}
                 />
 
                 <Field
-                  label="Name"
+                  label="Tên"
                   value={selectedZone.name}
                 />
 
                 <Field
-                  label="Zone Type"
+                  label="Loại khu vực"
                   value={zoneTypeLabel(selectedZone.zone_type)}
                 />
 
                 <Field
-                  label="Max Speed"
+                  label="Tốc độ tối đa"
                   value={`${selectedZone.max_speed} m/s`}
                 />
 
                 <Field
-                  label="Preferred Direction"
-                  value={selectedZone.preferred_direction}
+                  label="Hướng ưu tiên"
+                  value={preferredDirectionLabel(selectedZone.preferred_direction)}
                 />
 
                 <Field
-                  label="Corridor Width"
+                  label="Chiều rộng hành lang"
                   value={`${selectedZone.corridor_width} m`}
                 />
 
                 <Field
-                  label="Allow Turnaround"
+                  label="Cho phép quay đầu"
                   value={
                     <span className="inline-flex items-center gap-1.5">
                       <Check
@@ -484,39 +495,39 @@ function MapDetailPanel({
                         }`}
                       />
                       {selectedZone.allow_turnaround
-                        ? 'Yes'
-                        : 'No'}
+                        ? 'Có'
+                        : 'Không'}
                     </span>
                   }
                 />
 
                 <Field
-                  label="Description"
+                  label="Mô tả"
                   value={selectedZone.description}
                 />
 
                 <Field
-                  label="Min X"
+                  label="X nhỏ nhất"
                   value={selectedZone.min_x.toFixed(2)}
                 />
 
                 <Field
-                  label="Min Y"
+                  label="Y nhỏ nhất"
                   value={selectedZone.min_y.toFixed(2)}
                 />
 
                 <Field
-                  label="Max X"
+                  label="X lớn nhất"
                   value={selectedZone.max_x.toFixed(2)}
                 />
 
                 <Field
-                  label="Max Y"
+                  label="Y lớn nhất"
                   value={selectedZone.max_y.toFixed(2)}
                 />
 
                 <Field
-                  label="Is Active"
+                  label="Đang hoạt động"
                   value={
                     <StatusPill active={selectedZone.is_active} />
                   }
@@ -528,10 +539,10 @@ function MapDetailPanel({
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-xs font-medium uppercase tracking-wider text-white/35">
-                        Zones
+                        Khu vực
                       </p>
                       <p className="mt-1 text-xs text-white/40">
-                        {zones.length} zone{zones.length !== 1 ? 's' : ''}
+                        {zones.length} khu vực
                       </p>
                     </div>
 
@@ -545,13 +556,13 @@ function MapDetailPanel({
                       }`}
                     >
                       <SquareDashed className="h-3.5 w-3.5" />
-                      {zoneDrawMode ? 'Drawing...' : 'Draw Zone'}
+                      {zoneDrawMode ? 'Đang vẽ...' : 'Vẽ khu vực'}
                     </button>
                   </div>
                 </div>
 
                 <label className="block border-b border-white/10 px-4 py-3 text-xs text-white/55">
-                  Filter by zone type
+                  Lọc theo loại khu vực
                   <select
                     value={zoneTypeFilter ?? ''}
                     onChange={(event) =>
@@ -563,11 +574,11 @@ function MapDetailPanel({
                     }
                     className="mt-1.5 h-9 w-full rounded-md border border-white/10 bg-white px-3 text-sm text-[#252933] outline-none focus:border-primary"
                   >
-                    <option value="">All types</option>
-                    <option value={1}>EXCLUSION</option>
-                    <option value={2}>SPEED_LIMIT</option>
-                    <option value={3}>PREFERRED_DIRECTION</option>
-                    <option value={4}>NARROW_CORRIDOR</option>
+                    <option value="">Tất cả loại</option>
+                    <option value={1}>Khu vực cấm</option>
+                    <option value={2}>Giới hạn tốc độ</option>
+                    <option value={3}>Hướng ưu tiên</option>
+                    <option value={4}>Hành lang hẹp</option>
                   </select>
                 </label>
 
@@ -602,7 +613,7 @@ function MapDetailPanel({
 
                 {zones.length === 0 && (
                   <div className="px-4 py-8 text-center text-xs text-white/35">
-                    No zones match this type.
+                    Không có khu vực nào khớp với loại này.
                   </div>
                 )}
               </>

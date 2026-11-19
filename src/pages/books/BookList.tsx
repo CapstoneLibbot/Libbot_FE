@@ -128,8 +128,8 @@ function BookList() {
               <BookOpen className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Books</h1>
-              <p className="mt-0.5 text-sm text-[#596174]">Browse the library catalog.</p>
+              <h1 className="text-2xl font-bold tracking-tight">Sách</h1>
+              <p className="mt-0.5 text-sm text-[#596174]">Tra cứu danh mục sách của thư viện.</p>
             </div>
           </div>
           <button
@@ -138,7 +138,7 @@ function BookList() {
             className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            Create Book
+            Thêm sách
           </button>
         </header>
 
@@ -156,7 +156,7 @@ function BookList() {
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search ISBN, title or author..."
+              placeholder="Tìm ISBN, tên sách hoặc tác giả..."
               className="h-10 w-full border border-[#d7d9e2] bg-white pl-9 pr-3 text-sm outline-none placeholder:text-[#7b8190] focus:border-primary"
             />
           </div>
@@ -164,10 +164,10 @@ function BookList() {
             <select
               value={categoryId}
               onChange={(event) => setCategoryId(event.target.value)}
-              aria-label="Filter by category"
+              aria-label="Lọc theo thể loại"
               className="h-10 w-full appearance-none border border-[#d7d9e2] bg-white px-3 pr-9 text-sm outline-none focus:border-primary"
             >
-              <option value="ALL">All Categories</option>
+              <option value="ALL">Tất cả thể loại</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -183,16 +183,16 @@ function BookList() {
             className="flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium text-[#3f4654] hover:bg-[#f1eff5] disabled:opacity-50"
           >
             <X className="h-4 w-4" />
-            Clear
+            Xóa bộ lọc
           </button>
         </div>
 
         <div className="flex items-center justify-between text-xs text-[#687386]">
-          <p>Showing {books.length} of {totalCount} books</p>
+          <p>Hiển thị {books.length}/{totalCount} sách</p>
           {isLoading && (
             <span className="flex items-center gap-1.5 text-primary">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Loading data...
+              Đang tải dữ liệu...
             </span>
           )}
         </div>
@@ -203,10 +203,10 @@ function BookList() {
               <thead>
                 <tr className="border-b border-[#d9dce5] bg-[#f5f4f8]">
                   <Header>ISBN</Header>
-                  <Header>Title</Header>
-                  <Header>Author</Header>
-                  <Header>Category</Header>
-                  <Header>Copies (Available / Total)</Header>
+                  <Header>Tên sách</Header>
+                  <Header>Tác giả</Header>
+                  <Header>Thể loại</Header>
+                  <Header>Bản sao (Có sẵn / Tổng số)</Header>
                 </tr>
               </thead>
               <tbody>
@@ -223,7 +223,7 @@ function BookList() {
                       }}
                       role="link"
                       tabIndex={0}
-                      aria-label={`Open ${book.title}`}
+                      aria-label={`Mở ${book.title}`}
                       className="cursor-pointer border-b border-[#d9dce5] last:border-b-0 hover:bg-[#faf9fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                     >
                       <td className="px-4 py-4 font-mono text-xs text-[#596174]">
@@ -233,12 +233,12 @@ function BookList() {
                       <td className="px-4 py-4 text-[#596174]">{book.author || '—'}</td>
                       <td className="px-4 py-4 text-[#596174]">
                         {book.categoryId
-                          ? categoryNames.get(book.categoryId) || 'Uncategorized'
-                          : 'Uncategorized'}
+                          ? categoryNames.get(book.categoryId) || 'Chưa phân loại'
+                          : 'Chưa phân loại'}
                       </td>
                       <td className="px-4 py-4 text-xs">
                         <span className="font-semibold text-[#087443]">{book.availableCopies ?? 0}</span>
-                        <span className="text-[#687386]"> / {book.totalCopies ?? 0} copies</span>
+                        <span className="text-[#687386]"> / {book.totalCopies ?? 0} bản sao</span>
                       </td>
                     </tr>
                   ))
@@ -246,9 +246,9 @@ function BookList() {
                   <tr>
                     <td colSpan={5} className="px-6 py-14 text-center">
                       <BookOpen className="mx-auto h-8 w-8 text-[#89909f]" />
-                      <p className="mt-3 font-medium text-[#3f4654]">No books found</p>
+                      <p className="mt-3 font-medium text-[#3f4654]">Không tìm thấy sách</p>
                       <p className="mt-1 text-sm text-[#7b8190]">
-                        Try changing your search or category filter.
+                        Hãy thử thay đổi từ khóa tìm kiếm hoặc bộ lọc thể loại.
                       </p>
                     </td>
                   </tr>
@@ -261,7 +261,7 @@ function BookList() {
 
       {isCreateOpen && (
         <BookFormDialog
-          title="Create Book"
+          title="Thêm sách"
           categories={categories}
           onClose={() => setIsCreateOpen(false)}
           onSubmit={handleCreateBook}
@@ -372,7 +372,7 @@ export function BookFormDialog({
             <h2 id="book-form-title" className="text-lg font-semibold">
               {title}
             </h2>
-            <p className="mt-1 text-sm text-[#687386]">Book catalog details</p>
+            <p className="mt-1 text-sm text-[#687386]">Thông tin sách trong danh mục</p>
           </div>
           <button
             type="button"
@@ -391,10 +391,10 @@ export function BookFormDialog({
         >
           <div className="grid gap-4 sm:grid-cols-2">
             {stringField('isbn', 'ISBN')}
-            {stringField('title', 'Title', true)}
-            {stringField('author', 'Author')}
+            {stringField('title', 'Tên sách', true)}
+            {stringField('author', 'Tác giả')}
             <label className="text-sm font-medium">
-              Category
+              Thể loại
               <select
                 value={form.category_id ? String(form.category_id) : ''}
                 onChange={(event) =>
@@ -405,7 +405,7 @@ export function BookFormDialog({
                 }
                 className={`${input} mt-1.5`}
               >
-                <option value="">Uncategorized</option>
+                <option value="">Chưa phân loại</option>
                 {activeCategories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -413,9 +413,9 @@ export function BookFormDialog({
                 ))}
               </select>
             </label>
-            {stringField('publisher', 'Publisher')}
+            {stringField('publisher', 'Nhà xuất bản')}
             <label className="text-sm font-medium">
-              Publication year
+              Năm xuất bản
               <input
                 min={1}
                 type="number"
@@ -429,8 +429,8 @@ export function BookFormDialog({
                 className={`${input} mt-1.5`}
               />
             </label>
-            {stringField('image_url', 'Image URL')}
-            {stringField('description', 'Description')}
+            {stringField('image_url', 'Đường dẫn ảnh')}
+            {stringField('description', 'Mô tả')}
           </div>
           <footer className="flex justify-end gap-2 border-t border-[#e4e6eb] pt-4">
             <button
@@ -438,13 +438,13 @@ export function BookFormDialog({
               onClick={onClose}
               className="h-10 border border-[#d7d9e2] px-4 text-sm font-medium hover:bg-[#f5f5f7]"
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
               className="h-10 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
             >
-              Save
+              Lưu
             </button>
           </footer>
         </form>

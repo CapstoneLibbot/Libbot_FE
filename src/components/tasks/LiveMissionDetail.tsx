@@ -27,11 +27,34 @@ function stepIdentifier(step: BackendWorkflow['steps'][number]) {
 }
 
 function displayName(value: string) {
+  const labels: Record<string, string> = {
+    ACCEPTED: 'Đã tiếp nhận',
+    QUEUED: 'Đang xếp hàng',
+    RUNNING: 'Đang chạy',
+    WAITING: 'Đang chờ',
+    COMPLETED: 'Hoàn thành',
+    FAILED: 'Thất bại',
+    CANCELLED: 'Đã hủy',
+    STEP_STARTED: 'Bắt đầu bước',
+    STEP_COMPLETED: 'Hoàn tất bước',
+    STEP_FAILED: 'Bước thất bại',
+    BOOK_SELECTED: 'Đã chọn sách',
+    VIEW_LOCATION: 'Xem vị trí',
+    CHARGER_CONNECTED: 'Đã kết nối bộ sạc',
+    MOVE: 'Di chuyển',
+    SCAN: 'Quét',
+    PROCESS_DATA: 'Xử lý dữ liệu',
+    EVALUATE: 'Đánh giá',
+    DISPLAY: 'Hiển thị',
+    WAIT: 'Chờ',
+    NOTIFY: 'Thông báo',
+  }
+  if (labels[value.toUpperCase()]) return labels[value.toUpperCase()]
   return value.toLowerCase().replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase())
 }
 
 function formatTime(value?: string | null) {
-  return value ? new Date(value).toLocaleTimeString() : 'Waiting for robot'
+  return value ? new Date(value).toLocaleTimeString('vi-VN') : 'Đang chờ robot'
 }
 
 function progressForStep(stepIds: string[], events: StepEvent[]): StepProgress {
@@ -343,10 +366,10 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   if (!mission && error) {
     return (
       <div className="min-h-screen bg-[#0c0d10] p-6 text-white">
-        <Link to="/tasks" className="inline-flex items-center gap-2 text-sm text-white/65 hover:text-white"><ArrowLeft className="h-4 w-4" />Back to tasks</Link>
+        <Link to="/tasks" className="inline-flex items-center gap-2 text-sm text-white/65 hover:text-white"><ArrowLeft className="h-4 w-4" />Quay lại Nhiệm vụ</Link>
         <section role="alert" className="mx-auto mt-10 max-w-2xl border border-rose-400/30 bg-rose-500/10 p-6">
-          <h1 className="text-lg font-semibold">Mission monitor unavailable</h1>
-          <p className="mt-2 text-sm text-white/65">{error}. Check that the backend is running and VITE_API_BASE_URL points to it.</p>
+          <h1 className="text-lg font-semibold">Không thể mở trình theo dõi nhiệm vụ</h1>
+          <p className="mt-2 text-sm text-white/65">{error}. Hãy kiểm tra backend đang chạy và VITE_API_BASE_URL trỏ đúng địa chỉ.</p>
         </section>
       </div>
     )
@@ -356,21 +379,21 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     <div className="flex min-h-screen flex-col overflow-hidden bg-[#0c0d10] text-white xl:h-screen">
       <header className="flex min-h-14 shrink-0 items-center justify-between gap-4 border-b border-white/10 bg-[#121318] px-4 py-2">
         <div className="flex min-w-0 items-center gap-3">
-          <Link to="/tasks" aria-label="Back to tasks" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/55 hover:bg-white/10 hover:text-white"><ArrowLeft className="h-4 w-4" /></Link>
+          <Link to="/tasks" aria-label="Quay lại Nhiệm vụ" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/55 hover:bg-white/10 hover:text-white"><ArrowLeft className="h-4 w-4" /></Link>
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-white/40">Robot workflow monitor</p>
-            <h1 className="truncate text-sm font-semibold">{mission?.workflowName ?? 'Loading mission…'}</h1>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-white/40">Trình theo dõi quy trình robot</p>
+            <h1 className="truncate text-sm font-semibold">{mission?.workflowName ?? 'Đang tải nhiệm vụ…'}</h1>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {canRun && !isSimulation && !armLeaseId && (
             <button type="button" onClick={() => void armPhysicalRobot()} disabled={armPending || !runtime?.connected || runtime.stale} className="rounded-md border border-amber-300/30 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-200 hover:bg-amber-400/15 disabled:cursor-not-allowed disabled:opacity-50">
-              {armPending ? 'Arming…' : 'Arm robot'}
+              {armPending ? 'Đang cấp quyền…' : 'Cho phép điều khiển robot'}
             </button>
           )}
           {armLeaseId && !isSimulation && (
             <button type="button" onClick={() => void disarmPhysicalRobot()} disabled={armPending} className="rounded-md border border-white/15 px-3 py-1.5 text-xs font-semibold text-white/65 hover:bg-white/10 disabled:opacity-50">
-              {armPending ? 'Disarming…' : 'Disarm'}
+              {armPending ? 'Đang ngắt điều khiển…' : 'Ngắt điều khiển'}
             </button>
           )}
           {canRun && (
@@ -380,7 +403,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
               disabled={runPending || (!isSimulation && !armLeaseId)}
               className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-[#07140d] hover:bg-emerald-400 disabled:cursor-wait disabled:opacity-60"
             >
-              <Play className="h-3.5 w-3.5" />{runPending ? 'Starting…' : missionIsComplete || missionHasFailed ? 'Run again' : 'Run'}
+              <Play className="h-3.5 w-3.5" />{runPending ? 'Đang khởi chạy…' : missionIsComplete || missionHasFailed ? 'Chạy lại' : 'Chạy'}
             </button>
           )}
           <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${missionHasFailed ? 'bg-rose-400/15 text-rose-300' : missionIsComplete ? 'bg-emerald-400/15 text-emerald-300' : 'bg-amber-400/15 text-amber-200'}`}>{displayName(status)}</span>
@@ -395,13 +418,13 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
           <div className="flex h-full min-h-[420px] flex-col">
             <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#121318] px-4 py-2.5">
               <div>
-                <h2 className="text-sm font-semibold">Library simulation</h2>
-                <p className="mt-0.5 text-xs text-white/45">50 × 60 m · robot position updates live</p>
+                <h2 className="text-sm font-semibold">Mô phỏng thư viện</h2>
+                <p className="mt-0.5 text-xs text-white/45">50 × 60 m · vị trí robot được cập nhật trực tiếp</p>
               </div>
               <div className="flex min-w-0 items-center gap-3">
                 <span className="hidden items-center gap-1.5 text-xs text-white/45 lg:inline-flex">
                   <Radio className="h-3.5 w-3.5" />
-                  {runtime?.telemetry?.navigationState ?? 'Awaiting telemetry'}
+                  {runtime?.telemetry?.navigationState ?? 'Đang chờ dữ liệu'}
                   {robotPose && ` · X ${robotPose.x.toFixed(1)} · Y ${robotPose.y.toFixed(1)} m`}
                 </span>
                 <div className="flex shrink-0 items-center gap-1 rounded-md border border-white/10 bg-black/20 p-1">
@@ -423,8 +446,8 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                   </button>
                 </div>
                 {mission?.runtimeId === 'sim' && (
-                  <div aria-label="Gazebo simulation speed" className="flex shrink-0 items-center gap-1 rounded-md border border-white/10 bg-black/20 p-1">
-                    <span className="px-1 text-[10px] font-medium text-white/40">Speed</span>
+                  <div                   aria-label="Tốc độ mô phỏng Gazebo" className="flex shrink-0 items-center gap-1 rounded-md border border-white/10 bg-black/20 p-1">
+                    <span className="px-1 text-[10px] font-medium text-white/40">Tốc độ</span>
                     {[1, 2, 3, 4].map((multiplier) => (
                       <button
                         key={multiplier}
@@ -472,26 +495,26 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
 
         <aside className="flex max-h-[72vh] min-h-[440px] w-full shrink-0 flex-col border-t border-white/10 bg-[#f7f8fa] text-[#252933] xl:max-h-none xl:min-h-0 xl:w-[430px] xl:border-r xl:border-t-0">
           <div className="shrink-0 border-b border-[#e0e3e9] bg-white px-5 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[#79808d]">Execution progress</p>
-            <h2 className="mt-1 break-words text-base font-semibold">{workflow?.name ?? mission?.workflowName ?? 'Workflow'}</h2>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-[#79808d]">Tiến độ thực thi</p>
+            <h2 className="mt-1 break-words text-base font-semibold">{workflow?.name ?? mission?.workflowName ?? 'Quy trình'}</h2>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#687386]">
-              <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />Updated {formatTime(execution?.updatedAt)}</span>
-              {runtime?.telemetry?.battery !== null && runtime?.telemetry?.battery !== undefined && <span>Battery {Math.round(runtime.telemetry.battery)}%</span>}
+              <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />Cập nhật {formatTime(execution?.updatedAt)}</span>
+              {runtime?.telemetry?.battery !== null && runtime?.telemetry?.battery !== undefined && <span>Pin {Math.round(runtime.telemetry.battery)}%</span>}
             </div>
             {currentStep && missionInProgress && (
               <div className="mt-4 border-l-2 border-amber-500 bg-amber-50 px-3 py-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-800">Robot is working on</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-800">Robot đang thực hiện</p>
                 <p className="mt-1 text-sm font-semibold text-[#252933]">{currentStep.sequence}. {currentStep.name}</p>
               </div>
             )}
             {status === 'WAITING' && expectedEventType && (
               <div className="mt-4 border border-cyan-200 bg-cyan-50 px-3 py-3">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-cyan-800">
-                  {mission?.runtimeId === 'sim' ? 'Demo is continuing automatically' : 'Workflow is waiting for your choice'}
+                  {mission?.runtimeId === 'sim' ? 'Bản demo sẽ tự động tiếp tục' : 'Quy trình đang chờ lựa chọn của bạn'}
                 </p>
                 <p className="mt-1 text-xs text-[#465164]">{displayName(expectedEventType)} · chọn hoặc nhập để workflow tiếp tục.</p>
                 {waitAlreadySubmitted ? (
-                  <p className="mt-3 text-xs font-medium text-emerald-700">Đã nhận lựa chọn. Workflow đang chạy tiếp…</p>
+                  <p className="mt-3 text-xs font-medium text-emerald-700">Đã nhận lựa chọn. Quy trình đang tiếp tục…</p>
                 ) : (
                   <>
                     {(execution?.allowedValues?.length ?? 0) > 0 && (
@@ -522,7 +545,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                     {!execution?.allowedValues?.length && !waitChoicesLoading && waitChoices.length === 0 && (
                       <form className="mt-3 flex gap-2" onSubmit={(event) => { event.preventDefault(); void submitWaitEvent(waitInput) }}>
                         <input value={waitInput} onChange={(event) => setWaitInput(event.target.value)}
-                          aria-label="Workflow choice" placeholder={expectedEventType === 'BOOK_SELECTED' ? 'Book ID' : 'Giá trị lựa chọn'}
+                          aria-label="Lựa chọn cho quy trình" placeholder={expectedEventType === 'BOOK_SELECTED' ? 'Mã sách' : 'Giá trị lựa chọn'}
                           className="h-9 min-w-0 flex-1 border border-[#cbd2dc] bg-white px-2.5 text-xs text-[#252933] outline-none focus:border-cyan-700" />
                         <button type="submit" disabled={!waitInput.trim() || eventPending}
                           className="inline-flex h-9 items-center gap-1.5 bg-cyan-800 px-3 text-xs font-semibold text-white hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-50">
@@ -542,11 +565,11 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
             {isLibraryPatrol && (
               <section className="mb-4 border border-[#d9dce5] bg-white p-3.5">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-sm font-semibold text-[#252933]">Patrol coverage</h2>
+                  <h2 className="text-sm font-semibold text-[#252933]">Phạm vi tuần tra</h2>
                   <span className="text-xs font-semibold text-primary">
                     {latestCoverage
                       ? `${numericValue(latestCoverage.covered_paths) ?? 0} / ${numericValue(latestCoverage.total_paths) ?? 0} paths`
-                      : 'Not started'}
+                      : 'Chưa bắt đầu'}
                   </span>
                 </div>
                 {latestCoverage && (
@@ -556,9 +579,9 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                 )}
                 {patrolReport ? (
                   <div className="mt-3 space-y-2 border-t border-[#edf0f3] pt-3 text-xs text-[#596174]">
-                    <p className="font-semibold text-[#252933]">Report {String(patrolReport.report_id ?? '')}</p>
-                    <p>{numericValue(patrolReport.observation_count) ?? 0} observations · {numericValue(asRecord(patrolReport.path_coverage)?.covered_paths) ?? 0} paths covered</p>
-                    <p>Fallen books: {numericValue(patrolReport.fallen_book_count) ?? 0} · Obstacles: {numericValue(patrolReport.obstacle_count) ?? 0} · Warnings: {numericValue(patrolReport.warning_count) ?? 0}</p>
+                    <p className="font-semibold text-[#252933]">Báo cáo {String(patrolReport.report_id ?? '')}</p>
+                    <p>{numericValue(patrolReport.observation_count) ?? 0} ghi nhận · {numericValue(asRecord(patrolReport.path_coverage)?.covered_paths) ?? 0} tuyến đã tuần tra</p>
+                    <p>Sách bị rơi: {numericValue(patrolReport.fallen_book_count) ?? 0} · Chướng ngại vật: {numericValue(patrolReport.obstacle_count) ?? 0} · Cảnh báo: {numericValue(patrolReport.warning_count) ?? 0}</p>
                     {Array.isArray(patrolReport.observations) && patrolReport.observations.length > 0 && (
                       <ul className="mt-2 space-y-1.5">
                         {patrolReport.observations.map((item, index) => {
@@ -568,7 +591,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                       </ul>
                     )}
                   </div>
-                ) : <p className="mt-2 text-xs text-[#89909d]">The report and detected observations appear here when the patrol finishes.</p>}
+                ) : <p className="mt-2 text-xs text-[#89909d]">Báo cáo và các ghi nhận sẽ hiển thị tại đây sau khi hoàn tất tuần tra.</p>}
               </section>
             )}
             {orderedSteps.length ? (
@@ -602,11 +625,11 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-[#79808d]">Step {step.sequence} · {displayName(step.type)}</p>
-                          {isCurrent && <span className="shrink-0 text-[9px] font-bold uppercase tracking-wide text-amber-800">Now</span>}
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-[#79808d]">Bước {step.sequence} · {displayName(step.type)}</p>
+                          {isCurrent && <span className="shrink-0 text-[9px] font-bold uppercase tracking-wide text-amber-800">Hiện tại</span>}
                         </div>
                         <h3 className="mt-1 break-words text-sm font-semibold text-[#252933]">{step.name}</h3>
-                        {progress === 'waiting' && <p className="mt-1 text-[11px] text-amber-800">Waiting for input</p>}
+                        {progress === 'waiting' && <p className="mt-1 text-[11px] text-amber-800">Đang chờ dữ liệu đầu vào</p>}
                       </div>
                     </li>
                   )
@@ -614,11 +637,11 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
               </ol>
             ) : (
               <div className="border border-dashed border-[#cfd3dd] bg-white px-4 py-8 text-center text-sm text-[#687386]">
-                {mission ? 'Loading workflow steps…' : 'Connecting to mission…'}
+                {mission ? 'Đang tải các bước quy trình…' : 'Đang kết nối với nhiệm vụ…'}
               </div>
             )}
             {execution?.error && <div className="mt-4 border border-rose-200 bg-rose-50 px-3 py-3 text-xs text-rose-800">{execution.error}</div>}
-            <p className="mt-4 text-center text-[10px] text-[#89909d]">Progress refreshes automatically while the mission runs.</p>
+            <p className="mt-4 text-center text-[10px] text-[#89909d]">Tiến độ được tự động cập nhật trong khi nhiệm vụ chạy.</p>
           </div>
         </aside>
       </div>

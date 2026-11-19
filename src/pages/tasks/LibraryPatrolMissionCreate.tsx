@@ -161,22 +161,22 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10"><MapPinned className="h-5 w-5 text-primary" /></div>
             <div>
-              <h1 className="text-2xl font-bold text-[#17181c]">Create Library Patrol</h1>
-              <p className="mt-0.5 text-sm text-[#596174]">Select active-map waypoints in patrol order. The route starts from the robot's current pose.</p>
+              <h1 className="text-2xl font-bold text-[#17181c]">Tạo nhiệm vụ tuần tra thư viện</h1>
+              <p className="mt-0.5 text-sm text-[#596174]">Chọn các điểm mốc trên bản đồ theo thứ tự tuần tra. Lộ trình bắt đầu từ vị trí hiện tại của robot.</p>
             </div>
           </div>
         </header>
 
-        {loading ? <div className="border border-[#d9dce5] bg-white p-6 text-sm text-[#687386]">Loading active workflow and runtimes…</div> : (
+        {loading ? <div className="border border-[#d9dce5] bg-white p-6 text-sm text-[#687386]">Đang tải quy trình và môi trường chạy…</div> : (
           <form onSubmit={submit} className="space-y-5">
             <section className="grid gap-4 border border-[#d9dce5] bg-white p-5 sm:grid-cols-2">
               <label className="space-y-1.5 text-sm font-medium text-[#3f4654]">
                 Robot runtime
                 <select required value={runtimeId} onChange={(event) => setRuntimeId(event.target.value)} className={fieldClass}>
-                  <option value="">Choose runtime</option>
+                  <option value="">Chọn môi trường chạy</option>
                   {runtimes.map((runtime) => <option key={runtime.id} value={runtime.id}>{runtime.displayName} · {runtime.id.toUpperCase()}</option>)}
                 </select>
-                <span className="block text-xs font-normal text-[#687386]">REAL missions require Arm and a valid lease before Start.</span>
+                <span className="block text-xs font-normal text-[#687386]">Nhiệm vụ trên robot thực cần được cấp quyền điều khiển hợp lệ trước khi bắt đầu.</span>
               </label>
               <div className="space-y-1.5 text-sm font-medium text-[#3f4654]">
                 Active map
@@ -194,8 +194,8 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
                 <textarea maxLength={1000} value={description} onChange={(event) => setDescription(event.target.value)} className="min-h-20 w-full border border-[#d7d9e2] bg-white px-3 py-2 text-sm outline-none focus:border-primary" />
               </label>
               <div className="sm:col-span-2">
-                <p className="text-sm font-medium text-[#3f4654]">Active waypoints on the runtime map</p>
-                <p className="mt-1 text-xs text-[#687386]">Each click adds that waypoint to the route. Use the arrows to adjust the order.</p>
+                <p className="text-sm font-medium text-[#3f4654]">Các điểm mốc đang hoạt động trên bản đồ</p>
+                <p className="mt-1 text-xs text-[#687386]">Mỗi lần nhấp sẽ thêm điểm mốc vào lộ trình. Dùng các mũi tên để thay đổi thứ tự.</p>
                 {selectableEndpoints.length ? (
                   <div className="mt-3 divide-y divide-[#e9ebef] border border-[#d9dce5]">
                     {selectableEndpoints.map((endpoint) => (
@@ -206,11 +206,11 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
                       </label>
                     ))}
                   </div>
-                ) : <p className="mt-3 border border-dashed border-[#cfd3dd] bg-[#fbfbfc] px-4 py-6 text-center text-sm text-[#687386]">No active waypoint endpoints found on this map.</p>}
+                ) : <p className="mt-3 border border-dashed border-[#cfd3dd] bg-[#fbfbfc] px-4 py-6 text-center text-sm text-[#687386]">Không tìm thấy điểm mốc nào đang hoạt động trên bản đồ này.</p>}
               </div>
               {selectedEndpoints.length > 0 && (
                 <div className="sm:col-span-2">
-                  <p className="text-sm font-medium text-[#3f4654]">Patrol order ({selectedEndpoints.length})</p>
+                  <p className="text-sm font-medium text-[#3f4654]">Thứ tự tuần tra ({selectedEndpoints.length})</p>
                   <ol className="mt-2 space-y-2">
                     {selectedEndpoints.map((endpoint, index) => (
                       <li key={endpoint.id} className="flex items-center gap-3 border border-[#e0e3ea] bg-[#fbfcfe] px-3 py-2">
@@ -223,14 +223,14 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
                   </ol>
                 </div>
               )}
-              {workflow && <p className="sm:col-span-2 text-xs text-[#687386]">Workflow: <span className="font-medium text-[#3f4654]">{workflow.name}</span> · {workflow.id}</p>}
+              {workflow && <p className="sm:col-span-2 text-xs text-[#687386]">Quy trình: <span className="font-medium text-[#3f4654]">{workflow.name}</span> · {workflow.id}</p>}
             </section>
 
             {(workflowError || error) && <div role="alert" className="border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">{workflowError || error}</div>}
             <div className="flex flex-wrap justify-between gap-3">
-              <Link to="/tasks" className="inline-flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium text-[#596174] hover:bg-[#f8f9fb]">Cancel</Link>
+              <Link to="/tasks" className="inline-flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium text-[#596174] hover:bg-[#f8f9fb]">Hủy</Link>
               <button type="submit" disabled={submitting || loading || !!workflowError || !workflow || !map || selectedRuntime?.connected !== true || selectedRuntime.stale} className="inline-flex h-10 items-center gap-2 bg-primary px-5 text-sm font-semibold text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
-                {submitting ? 'Creating…' : <><Check className="h-4 w-4" />Create mission</>}
+                {submitting ? 'Đang tạo…' : <><Check className="h-4 w-4" />Tạo nhiệm vụ</>}
               </button>
             </div>
           </form>

@@ -107,7 +107,7 @@ function AisleList() {
       setActionNotice(null)
       await aisleApi.createAisle(formData)
       setCreateOpen(false)
-      setActionNotice('Aisle created successfully!')
+      setActionNotice('Đã tạo dãy sách thành công.')
       setPage(1)
       loadAisles()
     } catch (err) {
@@ -117,12 +117,12 @@ function AisleList() {
 
   const handleDelete = async (e: React.MouseEvent, aisle: AisleRecord) => {
     e.stopPropagation()
-    if (!window.confirm(`Are you sure you want to delete aisle "${aisle.name}"?`)) return
+    if (!window.confirm(`Bạn có chắc muốn xóa dãy sách "${aisle.name}" không?`)) return
 
     setDeletingId(aisle.id)
     try {
       await aisleApi.deleteAisle(aisle.id)
-      setActionNotice(`Aisle "${aisle.name}" deleted successfully!`)
+      setActionNotice(`Đã xóa dãy sách "${aisle.name}" thành công.`)
       loadAisles()
     } catch (err) {
       alert(getErrorMessage(err))
@@ -142,9 +142,9 @@ function AisleList() {
               <Route className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Aisles</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Dãy sách</h1>
               <p className="mt-0.5 text-sm text-[#596174]">
-                Manage library aisles and their corresponding floor locations.
+                Quản lý các dãy sách trong thư viện và vị trí trên từng tầng.
               </p>
             </div>
           </div>
@@ -154,7 +154,7 @@ function AisleList() {
             className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            Create Aisle
+            Thêm dãy sách
           </button>
         </header>
 
@@ -180,7 +180,7 @@ function AisleList() {
               onClick={loadAisles}
               className="ml-auto flex items-center gap-1 font-semibold underline hover:no-underline"
             >
-              <RefreshCw className="h-3.5 w-3.5" /> Retry
+              <RefreshCw className="h-3.5 w-3.5" /> Thử lại
             </button>
           </div>
         )}
@@ -192,7 +192,7 @@ function AisleList() {
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search by aisle name..."
+              placeholder="Tìm theo tên dãy sách..."
               className="h-10 w-full border border-[#d7d9e2] bg-white pl-9 pr-3 text-sm outline-none placeholder:text-[#7b8190] focus:border-primary"
             />
           </form>
@@ -203,12 +203,12 @@ function AisleList() {
               setFloorId(val)
               setPage(1)
             }}
-            ariaLabel="Filter by floor"
+            ariaLabel="Lọc theo tầng"
           >
-            <option value="ALL">All Floors</option>
+            <option value="ALL">Tất cả các tầng</option>
             {floors.map((floor) => (
               <option key={floor.id} value={floor.id}>
-                {floor.name} (Floor {floor.floorNumber})
+                {floor.name} (Tầng {floor.floorNumber})
               </option>
             ))}
           </SelectFilter>
@@ -219,12 +219,12 @@ function AisleList() {
               setStatus(val)
               setPage(1)
             }}
-            ariaLabel="Filter by status"
+            ariaLabel="Lọc theo trạng thái"
           >
-            <option value="ALL">All Statuses</option>
-            <option value="ACTIVE">Active</option>
-            <option value="INACTIVE">Inactive</option>
-            <option value="MAINTENANCE">Maintenance</option>
+            <option value="ALL">Tất cả trạng thái</option>
+            <option value="ACTIVE">Đang hoạt động</option>
+            <option value="INACTIVE">Ngừng hoạt động</option>
+            <option value="MAINTENANCE">Đang bảo trì</option>
           </SelectFilter>
 
           <button
@@ -234,13 +234,13 @@ function AisleList() {
             className="flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium text-[#3f4654] hover:bg-[#f1eff5] disabled:opacity-50"
           >
             <X className="h-4 w-4" />
-            Clear
+            Xóa bộ lọc
           </button>
         </div>
 
         <div className="flex items-center justify-between text-xs text-[#687386]">
           <p>
-            Showing {aisles.length} of {totalCount} aisles
+            Hiển thị {aisles.length}/{totalCount} dãy sách
           </p>
           {totalPages > 1 && (
             <div className="flex items-center gap-2">
@@ -250,7 +250,7 @@ function AisleList() {
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 className="border border-[#d7d9e2] bg-white px-2.5 py-1 disabled:opacity-40"
               >
-                Previous
+                Trước
               </button>
               <span>
                 {page} / {totalPages}
@@ -261,7 +261,7 @@ function AisleList() {
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 className="border border-[#d7d9e2] bg-white px-2.5 py-1 disabled:opacity-40"
               >
-                Next
+                Sau
               </button>
             </div>
           )}
@@ -273,22 +273,22 @@ function AisleList() {
               <thead>
                 <tr className="border-b border-[#d9dce5] bg-[#f5f4f8]">
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Aisle Name
+                    Tên dãy sách
                   </th>
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Floor
+                    Tầng
                   </th>
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Shelves Count
+                    Số kệ
                   </th>
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Description
+                    Mô tả
                   </th>
                   <th className="w-[140px] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Status
+                    Trạng thái
                   </th>
                   <th className="w-[90px] px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Actions
+                    Thao tác
                   </th>
                 </tr>
               </thead>
@@ -297,7 +297,7 @@ function AisleList() {
                   <tr>
                     <td colSpan={6} className="px-6 py-14 text-center">
                       <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-                      <p className="mt-3 font-medium text-[#3f4654]">Loading aisles list...</p>
+                      <p className="mt-3 font-medium text-[#3f4654]">Đang tải danh sách dãy sách...</p>
                     </td>
                   </tr>
                 ) : aisles.length > 0 ? (
@@ -307,7 +307,7 @@ function AisleList() {
                       onClick={() => navigate(`/aisles/${item.id}`)}
                       role="link"
                       tabIndex={0}
-                      aria-label={`Open ${item.name}`}
+                      aria-label={`Mở ${item.name}`}
                       className="cursor-pointer border-b border-[#d9dce5] last:border-b-0 hover:bg-[#faf9fc]"
                     >
                       <td className="px-4 py-4 font-medium text-primary hover:underline">
@@ -320,14 +320,14 @@ function AisleList() {
                             onClick={(e) => e.stopPropagation()}
                             className="text-[#17181c] hover:text-primary hover:underline"
                           >
-                            {item.floor.name} (Floor {item.floor.floorNumber})
+                            {item.floor.name} (Tầng {item.floor.floorNumber})
                           </Link>
                         ) : (
                           '—'
                         )}
                       </td>
                       <td className="px-4 py-4 text-[#596174]">
-                        {item.shelves ? `${item.shelves.length} shelves` : '—'}
+                        {item.shelves ? `${item.shelves.length} kệ` : '—'}
                       </td>
                       <td className="px-4 py-4 text-[#596174]">
                         {item.description || '—'}
@@ -341,7 +341,7 @@ function AisleList() {
                           onClick={(e) => handleDelete(e, item)}
                           disabled={deletingId === item.id}
                           className="p-1 text-[#687386] hover:text-red-600 disabled:opacity-50"
-                          title="Delete aisle"
+                          title="Xóa dãy sách"
                         >
                           {deletingId === item.id ? (
                             <Loader2 className="h-4 w-4 animate-spin text-red-500" />
@@ -355,8 +355,8 @@ function AisleList() {
                 ) : (
                   <EmptyTable
                     colSpan={6}
-                    title="No aisles found"
-                    description="Try changing your filters or search keywords."
+                    title="Không tìm thấy dãy sách"
+                    description="Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm."
                   />
                 )}
               </tbody>
@@ -367,7 +367,7 @@ function AisleList() {
 
       {createOpen && (
         <AisleFormDialog
-          title="Create Aisle"
+          title="Thêm dãy sách"
           floors={floors}
           onClose={() => setCreateOpen(false)}
           onSubmit={handleCreate}
@@ -417,7 +417,7 @@ function AisleDetailView({ id }: { id: string }) {
 
   const handleDelete = async () => {
     if (!aisle) return
-    if (!window.confirm(`Are you sure you want to delete aisle "${aisle.name}"?`)) return
+    if (!window.confirm(`Bạn có chắc muốn xóa dãy sách "${aisle.name}" không?`)) return
 
     setDeleting(true)
     try {
@@ -433,7 +433,7 @@ function AisleDetailView({ id }: { id: string }) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-3 text-sm text-[#596174]">Loading aisle details...</p>
+        <p className="mt-3 text-sm text-[#596174]">Đang tải thông tin dãy sách...</p>
       </div>
     )
   }
@@ -444,10 +444,10 @@ function AisleDetailView({ id }: { id: string }) {
         <div className="max-w-md rounded-md border border-[#fecaca] bg-white p-6 shadow-sm">
           <div className="flex items-center gap-2 text-red-600">
             <AlertCircle className="h-5 w-5" />
-            <h1 className="text-lg font-semibold">Aisle Not Found</h1>
+            <h1 className="text-lg font-semibold">Không tìm thấy dãy sách</h1>
           </div>
           <p className="mt-2 text-sm text-[#596174]">
-            {errorNotice || 'The requested aisle does not exist or has been deleted.'}
+            {errorNotice || 'Dãy sách yêu cầu không tồn tại hoặc đã bị xóa.'}
           </p>
           <div className="mt-4 flex items-center gap-3">
             <button
@@ -455,10 +455,10 @@ function AisleDetailView({ id }: { id: string }) {
               onClick={loadAisle}
               className="flex items-center gap-1.5 border border-[#d7d9e2] bg-white px-3 py-1.5 text-xs font-semibold text-[#3f4654] hover:bg-[#f1eff5]"
             >
-              <RefreshCw className="h-3.5 w-3.5" /> Retry
+              <RefreshCw className="h-3.5 w-3.5" /> Thử lại
             </button>
             <Link to="/aisles" className="text-xs font-semibold text-primary hover:underline">
-              ← Back to aisles list
+              ← Quay lại danh sách dãy sách
             </Link>
           </div>
         </div>
@@ -476,7 +476,7 @@ function AisleDetailView({ id }: { id: string }) {
         className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" />
-        Aisles List
+        Danh sách dãy sách
       </Link>
 
       <header className="mt-6 flex flex-wrap items-center justify-between gap-4">
@@ -486,7 +486,7 @@ function AisleDetailView({ id }: { id: string }) {
           </div>
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-primary">
-              {floor ? `${floor.name} (Floor ${floor.floorNumber})` : 'Aisle'}
+              {floor ? `${floor.name} (Tầng ${floor.floorNumber})` : 'Dãy sách'}
             </p>
             <h1 className="text-2xl font-bold tracking-tight">{aisle.name}</h1>
           </div>
@@ -498,7 +498,7 @@ function AisleDetailView({ id }: { id: string }) {
             className="flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium hover:bg-[#f1eff5]"
           >
             <Pencil className="h-4 w-4" />
-            Edit Aisle
+            Sửa dãy sách
           </button>
           <button
             type="button"
@@ -507,7 +507,7 @@ function AisleDetailView({ id }: { id: string }) {
             className="flex h-10 items-center gap-2 border border-red-200 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
           >
             {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-            Delete Aisle
+            Xóa dãy sách
           </button>
         </div>
       </header>
@@ -517,24 +517,24 @@ function AisleDetailView({ id }: { id: string }) {
         <dl className="divide-y divide-[#d9dce5]">
           <DetailRow label="ID (GUID)" value={aisle.id} mono />
           <div className="grid grid-cols-[150px_1fr] gap-4 px-4 py-4 text-sm sm:grid-cols-[180px_1fr]">
-            <dt className="text-[#687386]">Floor</dt>
+            <dt className="text-[#687386]">Tầng</dt>
             <dd>
               {floor ? (
                 <Link
                   to={`/floors/${floor.id}`}
                   className="font-medium text-primary hover:underline"
                 >
-                  {floor.name} (Floor #{floor.floorNumber})
+                  {floor.name} (Tầng #{floor.floorNumber})
                 </Link>
               ) : (
                 '—'
               )}
             </dd>
           </div>
-          <DetailRow label="Aisle Name" value={aisle.name} />
-          <DetailRow label="Description" value={aisle.description || '—'} />
+          <DetailRow label="Tên dãy sách" value={aisle.name} />
+          <DetailRow label="Mô tả" value={aisle.description || '—'} />
           <div className="grid grid-cols-[150px_1fr] gap-4 px-4 py-4 text-sm sm:grid-cols-[180px_1fr]">
-            <dt className="text-[#687386]">Status</dt>
+            <dt className="text-[#687386]">Trạng thái</dt>
             <dd>
               <StatusBadge status={aisle.status} />
             </dd>
@@ -548,9 +548,9 @@ function AisleDetailView({ id }: { id: string }) {
           <div className="flex items-center gap-2">
             <Warehouse className="h-5 w-5 text-primary" />
             <div>
-              <h2 className="text-lg font-semibold">Shelves</h2>
+              <h2 className="text-lg font-semibold">Kệ</h2>
               <p className="mt-0.5 text-sm text-[#687386]">
-                {shelves.length} shelf/shelves assigned to this aisle.
+                Có {shelves.length} kệ thuộc dãy sách này.
               </p>
             </div>
           </div>
@@ -559,7 +559,7 @@ function AisleDetailView({ id }: { id: string }) {
             className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            Manage Shelves
+            Quản lý kệ
           </Link>
         </div>
 
@@ -569,10 +569,10 @@ function AisleDetailView({ id }: { id: string }) {
               <thead>
                 <tr className="border-b border-[#d9dce5] bg-[#f5f4f8]">
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Shelf Name
+                    Tên kệ
                   </th>
                   <th className="w-[120px] px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Actions
+                    Thao tác
                   </th>
                 </tr>
               </thead>
@@ -594,7 +594,7 @@ function AisleDetailView({ id }: { id: string }) {
                           to={`/shelves/${shelf.id}`}
                           className="text-xs font-semibold text-primary hover:underline"
                         >
-                          View details →
+                          Xem chi tiết →
                         </Link>
                       </td>
                     </tr>
@@ -602,8 +602,8 @@ function AisleDetailView({ id }: { id: string }) {
                 ) : (
                   <EmptyTable
                     colSpan={2}
-                    title="No shelves found"
-                    description="No shelves currently assigned to this aisle."
+                    title="Không tìm thấy kệ"
+                    description="Chưa có kệ nào được gán cho dãy sách này."
                   />
                 )}
               </tbody>
@@ -614,7 +614,7 @@ function AisleDetailView({ id }: { id: string }) {
 
       {editing && (
         <AisleFormDialog
-          title="Update Aisle"
+          title="Cập nhật dãy sách"
           floors={floors}
           initial={{
             floorId: aisle.floorId,
@@ -656,7 +656,7 @@ function AisleFormDialog({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!form.floorId) {
-      alert('Please select a floor for the aisle!')
+      alert('Vui lòng chọn tầng cho dãy sách!')
       return
     }
     setSubmitting(true)
@@ -681,7 +681,7 @@ function AisleFormDialog({
         </header>
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           <label className="block text-sm font-medium text-[#3f4654]">
-            Floor
+            Tầng
             <select
               required
               value={form.floorId}
@@ -689,48 +689,48 @@ function AisleFormDialog({
               className={input}
             >
               <option value="" disabled>
-                -- Select Floor --
+                -- Chọn tầng --
               </option>
               {floors.map((floor) => (
                 <option key={floor.id} value={floor.id}>
-                  {floor.name} (Floor {floor.floorNumber})
+                  {floor.name} (Tầng {floor.floorNumber})
                 </option>
               ))}
             </select>
           </label>
           <label className="block text-sm font-medium text-[#3f4654]">
-            Aisle Name
+            Tên dãy sách
             <input
               required
               maxLength={100}
               value={form.name}
               onChange={(event) => setForm({ ...form, name: event.target.value })}
-              placeholder="e.g. Aisle A1 - Science Books"
+              placeholder="Ví dụ: Dãy sách A1 - Sách khoa học"
               className={input}
             />
           </label>
           <label className="block text-sm font-medium text-[#3f4654]">
-            Description
+            Mô tả
             <textarea
               maxLength={500}
               value={form.description || ''}
               onChange={(event) =>
                 setForm({ ...form, description: event.target.value || null })
               }
-              placeholder="Notes about this aisle..."
+              placeholder="Ghi chú về dãy sách..."
               className={`${input} h-20 py-2`}
             />
           </label>
           <label className="block text-sm font-medium text-[#3f4654]">
-            Status
+            Trạng thái
             <select
               value={form.status}
               onChange={(event) => setForm({ ...form, status: event.target.value as AisleStatus })}
               className={input}
             >
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="INACTIVE">INACTIVE</option>
-              <option value="MAINTENANCE">MAINTENANCE</option>
+              <option value="ACTIVE">Đang hoạt động</option>
+              <option value="INACTIVE">Ngừng hoạt động</option>
+              <option value="MAINTENANCE">Đang bảo trì</option>
             </select>
           </label>
           <footer className="flex justify-end gap-2 border-t pt-4">
@@ -740,7 +740,7 @@ function AisleFormDialog({
               disabled={submitting}
               className="h-10 border border-[#d7d9e2] px-4 text-sm font-medium text-[#3f4654] hover:bg-[#f1eff5]"
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
@@ -748,7 +748,7 @@ function AisleFormDialog({
               className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              Save changes
+              Lưu thay đổi
             </button>
           </footer>
         </form>
@@ -828,9 +828,9 @@ function StatusBadge({ status }: { status: string }) {
   }
 
   const labels: Record<string, string> = {
-    ACTIVE: 'Active',
-    INACTIVE: 'Inactive',
-    MAINTENANCE: 'Maintenance',
+    ACTIVE: 'Đang hoạt động',
+    INACTIVE: 'Ngừng hoạt động',
+    MAINTENANCE: 'Đang bảo trì',
   }
 
   return (

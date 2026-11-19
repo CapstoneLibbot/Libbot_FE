@@ -360,9 +360,9 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
           </button>
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <span>Book Transactions</span>
+              <span>Giao dịch sách</span>
               <span>/</span>
-              <span>Book Receipts</span>
+              <span>Phiếu nhập sách</span>
               <span>/</span>
               <span className="text-primary font-mono">{receipt.code || receipt.id.slice(0, 8).toUpperCase()}</span>
             </div>
@@ -467,7 +467,7 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
         {/* Left Column: Receipt Metadata */}
         <div className="space-y-6 lg:col-span-4">
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-base font-bold text-slate-900">Receipt Details</h2>
+            <h2 className="text-base font-bold text-slate-900">Thông tin phiếu nhập</h2>
             <p className="mt-0.5 text-xs text-slate-500">
               Select receipt type and received date.
             </p>
@@ -489,8 +489,8 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
                     }`}
                   >
                     <PackagePlus className="h-5 w-5" />
-                    <span className="text-xs font-semibold">New Acquisition</span>
-                    <span className="text-[10px] text-slate-400">Purchases & Donations</span>
+                    <span className="text-xs font-semibold">Nhập mới</span>
+                    <span className="text-[10px] text-slate-400">Mua và quyên tặng</span>
                   </button>
 
                   <button
@@ -503,8 +503,8 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
                     }`}
                   >
                     <ArrowDownLeft className="h-5 w-5" />
-                    <span className="text-xs font-semibold">Borrow Return</span>
-                    <span className="text-[10px] text-slate-400">Patron Check-in</span>
+                    <span className="text-xs font-semibold">Trả sách mượn</span>
+                    <span className="text-[10px] text-slate-400">Bạn đọc trả sách</span>
                   </button>
                 </div>
               </div>
@@ -529,7 +529,7 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="e.g. Purchase order PO-8839 from Pearson Publisher"
+                  placeholder="Ví dụ: Đơn mua hàng PO-8839 từ nhà xuất bản Pearson"
                   value={generalNote}
                   onChange={(e) => setGeneralNote(e.target.value)}
                   className="mt-1.5 w-full rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -540,21 +540,21 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
 
           {/* Summary Box */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-sm font-bold text-slate-900">Summary</h2>
+            <h2 className="text-sm font-bold text-slate-900">Tóm tắt</h2>
             <div className="mt-3 divide-y divide-slate-100 text-xs">
               <div className="flex justify-between py-2 text-slate-600">
-                <span>Receipt Type:</span>
+                <span>Loại phiếu nhập:</span>
                 <span className="font-semibold text-slate-900">
                   {receiptType === 'NEW_ACQUISITION' ? 'New Acquisition' : 'Borrow Return'}
                 </span>
               </div>
               <div className="flex justify-between py-2 text-slate-600">
-                <span>Total Copies:</span>
+                <span>Tổng số bản:</span>
                 <span className="font-bold text-primary">{items.length} copies</span>
               </div>
               <div className="flex justify-between py-2 text-slate-600">
-                <span>Current Status:</span>
-                <span className="font-semibold text-slate-700">DRAFT</span>
+                <span>Trạng thái hiện tại:</span>
+                <span className="font-semibold text-slate-700">BẢN NHÁP</span>
               </div>
             </div>
           </div>
@@ -566,10 +566,10 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Barcode className="h-5 w-5 text-primary" />
-                <h2 className="text-base font-bold text-slate-900">Scan & Add Book Copies</h2>
+                <h2 className="text-base font-bold text-slate-900">Quét và thêm bản sách</h2>
               </div>
               <span className="text-xs text-slate-400">
-                Tip: Press <kbd className="rounded border bg-slate-100 px-1 py-0.5 font-mono">Enter</kbd> to add scanned barcode
+                Mẹo: Nhấn <kbd className="rounded border bg-slate-100 px-1 py-0.5 font-mono">Enter</kbd> để thêm mã vạch đã quét
               </span>
             </div>
 
@@ -585,7 +585,7 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
                     <input
                       type="text"
                       autoFocus
-                      placeholder="Scan or enter barcode (e.g. BK-0001, BK-0002, BK-0005)..."
+                      placeholder="Quét hoặc nhập mã vạch (ví dụ: BK-0001, BK-0002, BK-0005)..."
                       value={scanBarcode}
                       onChange={(e) => setScanBarcode(e.target.value)}
                       onKeyDown={handleKeyDownBarcode}
@@ -627,7 +627,7 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
                         <BookOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                         <input
                           type="text"
-                          placeholder="Search by title, author, or ISBN..."
+                          placeholder="Tìm theo tên sách, tác giả hoặc ISBN..."
                           value={isBookDropdownOpen ? bookSearchQuery : currentBook?.title || ''}
                           onFocus={() => {
                             setIsBookDropdownOpen(true)
@@ -711,7 +711,7 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
                       {/* Level Quick Select Pills */}
                       {currentShelfLevels.length > 1 && (
                         <div className="flex items-center gap-1.5 text-[11px]">
-                          <span className="text-slate-400">Level:</span>
+                          <span className="text-slate-400">Tầng:</span>
                           {currentShelfLevels.map((lvl) => (
                             <button
                               key={lvl.id}
@@ -740,7 +740,7 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Special edition, donor note, condition remarks..."
+                  placeholder="Ví dụ: Ấn bản đặc biệt, ghi chú người tặng, tình trạng sách..."
                   value={itemNote}
                   onChange={(e) => setItemNote(e.target.value)}
                   className="mt-1.5 h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -769,7 +769,7 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Barcode className="h-8 w-8 text-slate-300" />
-                <p className="mt-2 text-sm font-semibold text-slate-700">No copies added to this draft yet</p>
+                <p className="mt-2 text-sm font-semibold text-slate-700">Chưa thêm bản sách nào vào bản nháp</p>
                 <p className="text-xs text-slate-400">
                   Scan a barcode above or select standard sample codes (e.g. BK-0001, BK-0002).
                 </p>
@@ -780,14 +780,14 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
                   <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                     <tr>
                       <th className="px-4 py-3">#</th>
-                      <th className="px-4 py-3">Barcode</th>
-                      <th className="px-4 py-3">Book Title</th>
+                      <th className="px-4 py-3">Mã vạch</th>
+                      <th className="px-4 py-3">Tên sách</th>
                       <th className="px-4 py-3">ISBN</th>
                       <th className="px-4 py-3">
                         {receiptType === 'NEW_ACQUISITION' ? 'Target Shelf' : 'Assigned Shelf'}
                       </th>
-                      <th className="px-4 py-3">Note</th>
-                      <th className="px-4 py-3 text-right">Action</th>
+                      <th className="px-4 py-3">Ghi chú</th>
+                      <th className="px-4 py-3 text-right">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -806,7 +806,7 @@ export default function ReceiptDraftEditor({ receipt, onUpdate }: ReceiptDraftEd
                             type="button"
                             onClick={() => handleRemoveItem(it.tempId)}
                             className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
-                            title="Remove copy from draft"
+                            title="Xóa bản sách khỏi bản nháp"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
