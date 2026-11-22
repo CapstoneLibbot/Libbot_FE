@@ -5,6 +5,7 @@ import MapViewer from '@/components/map/MapViewer'
 import SdfScene3D from '@/components/map/SdfScene3D'
 import { apiGet, apiPost, type BackendMission, type BackendWorkflow, type MissionExecutionState, type RobotRuntime } from '@/lib/missionApi'
 import { armRuntime, disarmRuntime } from '@/features/maps/api/runtimeApi'
+import { useBatteryDisplay } from '@/lib/useBatteryDisplay'
 
 type StepEvent = MissionExecutionState
 type StepProgress = 'pending' | 'running' | 'waiting' | 'completed' | 'failed'
@@ -63,6 +64,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   const [execution, setExecution] = useState<MissionExecutionState | null>(null)
   const [events, setEvents] = useState<StepEvent[]>([])
   const [runtime, setRuntime] = useState<RobotRuntime | null>(null)
+  const batteryDisplay = useBatteryDisplay(runtime?.telemetry?.battery, runtime?.id)
   const [spawnPose, setSpawnPose] = useState<RobotPose | null>(null)
   const [simulationBookTarget, setSimulationBookTarget] = useState<SimulationBookTarget | null>(null)
   const [roomLabels, setRoomLabels] = useState<{ label: string; x: number; y: number }[]>([])
@@ -482,7 +484,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
             <h2 className="mt-1 break-words text-base font-semibold">{workflow?.name ?? mission?.workflowName ?? 'Workflow'}</h2>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#687386]">
               <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />Updated {formatTime(execution?.updatedAt)}</span>
-              {runtime?.telemetry?.battery !== null && runtime?.telemetry?.battery !== undefined && <span>Battery {Math.round(runtime.telemetry.battery)}%</span>}
+              {batteryDisplay !== null && <span>Battery {batteryDisplay}%</span>}
             </div>
             {currentStep && missionInProgress && (
               <div className="mt-4 border-l-2 border-amber-500 bg-amber-50 px-3 py-2.5">

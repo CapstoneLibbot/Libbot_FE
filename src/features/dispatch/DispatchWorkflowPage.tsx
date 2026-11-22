@@ -47,6 +47,7 @@ import type {
   MissionExecution,
 } from './types'
 import { isTerminalMissionStatus, parseInitialContext } from './utils'
+import { useBatteryDisplay } from '@/lib/useBatteryDisplay'
 
 type SelectionMode = 'INITIAL_POSE' | 'GOAL'
 type ViewMode = 'SPLIT' | '2D' | '3D'
@@ -83,6 +84,7 @@ export default function DispatchWorkflowPage() {
 
   const selectedWorkflow = workflows.find((workflow) => workflow.id === workflowId) ?? null
   const telemetry = runtime?.telemetry
+  const batteryDisplay = useBatteryDisplay(telemetry?.battery, runtime?.id)
   const isReal = runtimeId === 'real'
   const online = Boolean(runtime?.connected && !runtime.stale)
   const localized = telemetry?.localizationState === 'LOCALIZED'
@@ -377,7 +379,7 @@ export default function DispatchWorkflowPage() {
               <Metric label="Connection" value={online ? 'Online' : 'Offline'} />
               <Metric label="Localization" value={telemetry?.localizationState ?? 'UNKNOWN'} />
               <Metric label="Navigation" value={telemetry?.navigationState ?? 'IDLE'} />
-              <Metric label="Battery" value={telemetry?.battery == null ? '—' : `${telemetry.battery.toFixed(0)}%`} />
+              <Metric label="Battery" value={batteryDisplay == null ? '—' : `${batteryDisplay}%`} />
               <Metric label="Pose" value={telemetry ? `${telemetry.pose.x.toFixed(2)}, ${telemetry.pose.y.toFixed(2)}` : '—'} />
             </ControlCard>
 

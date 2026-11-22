@@ -26,6 +26,7 @@ import {
   Unlock,
 } from 'lucide-react'
 import { Link } from 'react-router'
+import { useBatteryDisplay } from '@/lib/useBatteryDisplay'
 
 import LiveOccupancyMap from '../../features/maps/components/LiveOccupancyMap'
 import RealtimeCamera from '../../features/maps/components/RealtimeCamera'
@@ -88,6 +89,7 @@ function messageOf(error: unknown) {
 
 function CreateMap() {
   const [runtime, setRuntime] = useState<RobotRuntime | null>(null)
+  const batteryDisplay = useBatteryDisplay(runtime?.telemetry?.battery, runtime?.id)
   const [grid, setGrid] = useState<LiveOccupancyGrid | null>(null)
   const [leaseId, setLeaseId] = useState<string | null>(null)
   const [speed, setSpeed] = useState(0.1)
@@ -677,9 +679,9 @@ function CreateMap() {
               <div>
                 <span className="text-xs text-[#747b8b]">Pin</span>
                 <p className="mt-0.5 font-mono font-semibold text-[#252933]">
-                  {runtime?.telemetry?.battery == null
+                  {batteryDisplay == null
                     ? '—'
-                    : `${runtime.telemetry.battery.toFixed(0)}%`}
+                    : `${batteryDisplay}%`}
                 </p>
               </div>
             </div>
