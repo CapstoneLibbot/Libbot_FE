@@ -27,7 +27,7 @@ export interface FloorWriteRequest {
   name: string
   floorNumber: number
   description?: string | null
-  status?: FloorStatus
+  status: FloorStatus
 }
 
 export interface FloorOptionRecord {

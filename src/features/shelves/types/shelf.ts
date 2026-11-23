@@ -57,6 +57,12 @@ export interface ShelfQueryParams extends PaginationParams {
   expand?: string
 }
 
+export interface ShelfLevelQueryParams extends PaginationParams {
+  shelfId?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
 export interface EndpointOptionRecord {
   id: string
   mapId: string

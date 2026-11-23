@@ -231,7 +231,9 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/book-transactions?tab=issues')}
+            onClick={() => navigate(-1)}
+            aria-label="Quay lại"
+            title="Quay lại"
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />

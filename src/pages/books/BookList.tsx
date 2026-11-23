@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertCircle, BookOpen, ChevronDown, Loader2, Plus, Search, X } from 'lucide-react'
+import { AlertCircle, BookOpen, ChevronDown, Eye, Loader2, Plus, Search, X } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
 import { bookApi } from '@/features/books/api/bookApi'
@@ -199,7 +199,7 @@ function BookList() {
 
         <div className="overflow-hidden border border-[#d9dce5] bg-white">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px] text-left text-sm">
+            <table className="w-full min-w-[780px] text-left text-sm">
               <thead>
                 <tr className="border-b border-[#d9dce5] bg-[#f5f4f8]">
                   <Header>ISBN</Header>
@@ -207,6 +207,9 @@ function BookList() {
                   <Header>Tác giả</Header>
                   <Header>Thể loại</Header>
                   <Header>Bản sao (Có sẵn / Tổng số)</Header>
+                  <th className="w-28 px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
+                    Thao tác
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -240,11 +243,25 @@ function BookList() {
                         <span className="font-semibold text-[#087443]">{book.availableCopies ?? 0}</span>
                         <span className="text-[#687386]"> / {book.totalCopies ?? 0} bản sao</span>
                       </td>
+                      <td className="px-4 py-4 text-right">
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            navigate(`/book/${book.id}`)
+                          }}
+                          title={`Xem chi tiết ${book.title}`}
+                          aria-label={`Xem chi tiết ${book.title}`}
+                          className="inline-flex h-8 w-8 items-center justify-center text-[#596174] hover:bg-[#eff5ff] hover:text-primary"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="px-6 py-14 text-center">
+                    <td colSpan={6} className="px-6 py-14 text-center">
                       <BookOpen className="mx-auto h-8 w-8 text-[#89909f]" />
                       <p className="mt-3 font-medium text-[#3f4654]">Không tìm thấy sách</p>
                       <p className="mt-1 text-sm text-[#7b8190]">
@@ -290,18 +307,26 @@ export type BookFormData = {
   publication_year: number | null
 }
 
+const MAX_BOOK_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+
 export function BookFormDialog({
   title,
   initial,
   categories,
   onClose,
   onSubmit,
+  categoriesLoading = false,
+  categoriesError = '',
+  onRetryCategories,
 }: {
   title: string
   initial?: BookFormData
   categories?: BookCategoryRecord[]
   onClose: () => void
   onSubmit: (data: BookFormData) => void
+  categoriesLoading?: boolean
+  categoriesError?: string
+  onRetryCategories?: () => void
 }) {
   const [form, setForm] = useState<BookFormData>(
     initial || {
@@ -315,6 +340,9 @@ export function BookFormDialog({
       publication_year: null,
     },
   )
+  const [imageError, setImageError] = useState('')
+  const [imagePreviewError, setImagePreviewError] = useState(false)
+  const [isReadingImage, setIsReadingImage] = useState(false)
 
   const activeCategories = categories || initialBookCategories.map((c) => ({
     id: String(c.id),
@@ -324,8 +352,44 @@ export function BookFormDialog({
   const input =
     'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm outline-none focus:border-primary'
 
+  const handleImageFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0]
+    event.currentTarget.value = ''
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setImageError('Vui lòng chọn tệp hình ảnh.')
+      return
+    }
+
+    if (file.size > MAX_BOOK_IMAGE_SIZE_BYTES) {
+      setImageError('Ảnh không được vượt quá 5 MB.')
+      return
+    }
+
+    setImageError('')
+    setIsReadingImage(true)
+    const reader = new FileReader()
+    reader.onload = () => {
+      const imageData = reader.result
+      if (typeof imageData !== 'string') {
+        setImageError('Không thể đọc tệp ảnh này.')
+        setIsReadingImage(false)
+        return
+      }
+      setForm((current) => ({ ...current, image_url: imageData }))
+      setImagePreviewError(false)
+      setIsReadingImage(false)
+    }
+    reader.onerror = () => {
+      setImageError('Không thể đọc tệp ảnh này.')
+      setIsReadingImage(false)
+    }
+    reader.readAsDataURL(file)
+  }
+
   const stringField = (
-    key: 'isbn' | 'title' | 'author' | 'image_url' | 'description' | 'publisher',
+    key: 'isbn' | 'title' | 'author' | 'description' | 'publisher',
     label: string,
     required = false,
   ) => (
@@ -343,7 +407,7 @@ export function BookFormDialog({
       ) : (
         <input
           required={required}
-          maxLength={key === 'isbn' ? 20 : key === 'image_url' ? 1000 : 255}
+          maxLength={key === 'isbn' ? 20 : 255}
           value={form[key] || ''}
           onChange={(event) =>
             setForm({ ...form, [key]: event.target.value || null })
@@ -403,6 +467,7 @@ export function BookFormDialog({
                     category_id: event.target.value || null,
                   })
                 }
+                disabled={categoriesLoading || Boolean(categoriesError)}
                 className={`${input} mt-1.5`}
               >
                 <option value="">Chưa phân loại</option>
@@ -412,6 +477,25 @@ export function BookFormDialog({
                   </option>
                 ))}
               </select>
+              {categoriesLoading && (
+                <p role="status" className="mt-1 text-xs text-[#687386]">
+                  Đang tải danh sách thể loại...
+                </p>
+              )}
+              {categoriesError && (
+                <div role="alert" className="mt-1 flex items-center justify-between gap-2 text-xs text-[#a12820]">
+                  <span>{categoriesError}</span>
+                  {onRetryCategories && (
+                    <button
+                      type="button"
+                      onClick={onRetryCategories}
+                      className="shrink-0 font-semibold underline"
+                    >
+                      Thử lại
+                    </button>
+                  )}
+                </div>
+              )}
             </label>
             {stringField('publisher', 'Nhà xuất bản')}
             <label className="text-sm font-medium">
@@ -429,7 +513,55 @@ export function BookFormDialog({
                 className={`${input} mt-1.5`}
               />
             </label>
-            {stringField('image_url', 'Đường dẫn ảnh')}
+            <div className="space-y-2 sm:col-span-2">
+              <label className="block text-sm font-medium">
+                Đường dẫn ảnh
+                <input
+                  type="text"
+                  value={form.image_url || ''}
+                  onChange={(event) => {
+                    setForm({ ...form, image_url: event.target.value || null })
+                    setImagePreviewError(false)
+                    setImageError('')
+                  }}
+                  placeholder="Dán URL ảnh vào đây"
+                  className={`${input} mt-1.5`}
+                />
+              </label>
+              <label className="block text-sm font-medium">
+                Hoặc chọn ảnh từ thiết bị (tối đa 5 MB)
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={isReadingImage}
+                  onChange={handleImageFile}
+                  className="mt-1.5 block w-full text-sm text-[#596174] file:mr-3 file:border-0 file:bg-[#f1eff5] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#3f4654] hover:file:bg-[#e8e6ee] disabled:opacity-50"
+                />
+              </label>
+              {isReadingImage && (
+                <p role="status" className="text-xs text-[#687386]">
+                  Đang đọc ảnh...
+                </p>
+              )}
+              {imageError && (
+                <p role="alert" className="text-xs text-[#a12820]">
+                  {imageError}
+                </p>
+              )}
+              {form.image_url && !imagePreviewError && (
+                <img
+                  src={form.image_url}
+                  alt="Xem trước ảnh bìa"
+                  onError={() => setImagePreviewError(true)}
+                  className="max-h-40 max-w-full border border-[#d9dce5] bg-white object-contain p-2"
+                />
+              )}
+              {form.image_url && imagePreviewError && (
+                <p role="status" className="text-xs text-[#a12820]">
+                  Không thể xem trước ảnh. Hãy kiểm tra lại đường dẫn ảnh.
+                </p>
+              )}
+            </div>
             {stringField('description', 'Mô tả')}
           </div>
           <footer className="flex justify-end gap-2 border-t border-[#e4e6eb] pt-4">
@@ -442,7 +574,8 @@ export function BookFormDialog({
             </button>
             <button
               type="submit"
-              className="h-10 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
+              disabled={isReadingImage}
+              className="h-10 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Lưu
             </button>

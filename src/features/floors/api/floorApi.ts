@@ -32,7 +32,7 @@ export const floorApi = {
   },
 
   /** Lấy chi tiết 1 tầng theo ID */
-  getFloorById: (id: string, expand = 'aisles,maps'): Promise<FloorRecord> => {
+  getFloorById: (id: string, expand = 'aisles'): Promise<FloorRecord> => {
     return httpClient.get(FLOOR_ENDPOINTS.DETAIL(id), {
       params: { expand },
     })

@@ -33,6 +33,7 @@ export interface BookItemWriteRequest {
   barcode: string
   expectedShelfLevelId?: string | null
   currentShelfLevelId?: string | null
+  lastInventoryAtUtc?: string | null
   status?: BookItemStatus | string
 }
 

@@ -46,10 +46,10 @@ export default function ReceiptDetail() {
           {error || 'Không thể tải phiếu nhập được yêu cầu.'}
         </p>
         <button
-          onClick={() => navigate('/book-transactions')}
+          onClick={() => navigate(-1)}
           className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90"
         >
-          <ArrowLeft className="h-4 w-4" /> Quay lại giao dịch sách
+          <ArrowLeft className="h-4 w-4" /> Quay lại
         </button>
       </div>
     )

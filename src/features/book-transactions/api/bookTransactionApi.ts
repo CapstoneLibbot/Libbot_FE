@@ -211,7 +211,7 @@ export const bookTransactionApi = {
     if (!trimmed) return null
 
     try {
-      const res = await httpClient.get<any>('/book-items', {
+      const res = await httpClient.get<any>('/books/items', {
         params: { barcode: trimmed },
       })
       const items = Array.isArray(res) ? res : res?.items || []

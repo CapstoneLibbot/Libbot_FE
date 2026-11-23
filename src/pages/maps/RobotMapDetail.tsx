@@ -214,8 +214,9 @@ function RobotMapDetail() {
         <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate('/maps')}
-            aria-label="Quay lại bản đồ"
+            onClick={() => navigate(-1)}
+            aria-label="Quay lại"
+            title="Quay lại"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-[#c4c5cc] transition hover:bg-white/10 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />

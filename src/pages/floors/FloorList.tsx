@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import {
   AlertCircle,
   ChevronDown,
+  Eye,
   Layers3,
   Loader2,
   Plus,
   RefreshCw,
   Search,
-  Trash2,
   X,
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
@@ -34,7 +34,6 @@ function FloorList() {
   const [isLoading, setIsLoading] = useState(true)
   const [errorNotice, setErrorNotice] = useState<string | null>(null)
   const [actionNotice, setActionNotice] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const loadFloors = async () => {
     setIsLoading(true)
@@ -77,29 +76,13 @@ function FloorList() {
   const handleCreate = async (formData: FloorFormData) => {
     try {
       setActionNotice(null)
-      await floorApi.createFloor(formData)
+      await floorApi.createFloor({ ...formData, status: 'ACTIVE' })
       setCreateOpen(false)
       setActionNotice('Floor created successfully!')
       setPage(1)
       loadFloors()
     } catch (err) {
       alert(getErrorMessage(err))
-    }
-  }
-
-  const handleDelete = async (e: React.MouseEvent, floor: FloorRecord) => {
-    e.stopPropagation()
-    if (!window.confirm(`Are you sure you want to delete "${floor.name}"?`)) return
-
-    setDeletingId(floor.id)
-    try {
-      await floorApi.deleteFloor(floor.id)
-      setActionNotice(`Floor "${floor.name}" deleted successfully!`)
-      loadFloors()
-    } catch (err) {
-      alert(getErrorMessage(err))
-    } finally {
-      setDeletingId(null)
     }
   }
 
@@ -286,16 +269,15 @@ function FloorList() {
                       <td className="px-4 py-4 text-right">
                         <button
                           type="button"
-                          onClick={(e) => handleDelete(e, floor)}
-                          disabled={deletingId === floor.id}
-                          className="p-1 text-[#687386] hover:text-red-600 disabled:opacity-50"
-                          title="Xóa tầng"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            navigate(`/floors/${floor.id}`)
+                          }}
+                          className="inline-flex h-8 w-8 items-center justify-center text-[#596174] hover:bg-[#eff5ff] hover:text-primary"
+                          title={`Xem chi tiết ${floor.name}`}
+                          aria-label={`Xem chi tiết ${floor.name}`}
                         >
-                          {deletingId === floor.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-red-500" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
+                          <Eye className="h-4 w-4" />
                         </button>
                       </td>
                     </tr>
@@ -339,6 +321,7 @@ export function FloorFormDialog({
   onClose: () => void
   onSubmit: (data: FloorFormData) => void
 }) {
+  const isEditing = Boolean(initial)
   const [data, setData] = useState<FloorFormData>(
     initial || {
       name: '',
@@ -360,83 +343,124 @@ export function FloorFormDialog({
   }
 
   const input =
-    'mt-1.5 h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#17181c] outline-none focus:border-primary'
+    'mt-2 h-11 w-full rounded-lg border border-[#d7d9e2] bg-white px-3.5 text-sm text-[#17181c] outline-none transition placeholder:text-[#9aa1ae] focus:border-primary focus:ring-4 focus:ring-primary/10'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#151922]/45 p-4">
-      <section className="w-full max-w-lg bg-white shadow-xl">
-        <header className="flex justify-between border-b p-5">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <button type="button" onClick={onClose} className="text-[#687386] hover:text-[#17181c]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#151922]/55 p-4 backdrop-blur-sm sm:p-6">
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="floor-form-title"
+        className="my-auto w-full max-w-xl overflow-hidden rounded-2xl border border-white/70 bg-white shadow-2xl shadow-[#17181c]/20"
+      >
+        <header className="flex items-start justify-between gap-4 border-b border-[#e8e7ed] bg-gradient-to-br from-white to-[#f7f5fc] px-6 py-5 sm:px-7">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Layers3 className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+                Quản lý thư viện
+              </p>
+              <h2 id="floor-form-title" className="mt-1 text-xl font-bold tracking-tight text-[#17181c]">
+                {title}
+              </h2>
+              <p className="mt-1 text-sm leading-5 text-[#687386]">
+                {isEditing
+                  ? 'Cập nhật thông tin và trạng thái của tầng.'
+                  : 'Điền thông tin để thêm tầng mới vào thư viện.'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            aria-label="Đóng"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#687386] transition hover:bg-[#eceaf2] hover:text-[#17181c] disabled:opacity-50"
+          >
             <X className="h-4 w-4" />
           </button>
         </header>
-        <form onSubmit={handleSubmit} className="space-y-4 p-5">
-          <label className="block text-sm font-medium text-[#3f4654]">
-            Số tầng
-            <input
-              type="number"
-              required
-              min={-5}
-              max={100}
-              value={data.floorNumber}
-              onChange={(event) =>
-                setData({ ...data, floorNumber: parseInt(event.target.value, 10) || 0 })
-              }
-              className={input}
-            />
-          </label>
-          <label className="block text-sm font-medium text-[#3f4654]">
-            Tên tầng
-            <input
-              required
-              maxLength={100}
-              value={data.name}
-              onChange={(event) => setData({ ...data, name: event.target.value })}
-              placeholder="Ví dụ: Tầng 1 - Phòng đọc chính"
-              className={input}
-            />
-          </label>
-          <label className="block text-sm font-medium text-[#3f4654]">
-            Mô tả
+        <form onSubmit={handleSubmit} className="space-y-5 px-6 py-6 sm:px-7">
+          <div className="grid gap-5 sm:grid-cols-[0.8fr_1.2fr]">
+            <label className="block text-sm font-semibold text-[#3f4654]">
+              Số tầng
+              <input
+                type="number"
+                required
+                min={-5}
+                max={100}
+                value={data.floorNumber}
+                onChange={(event) =>
+                  setData({ ...data, floorNumber: parseInt(event.target.value, 10) || 0 })
+                }
+                className={input}
+              />
+              <span className="mt-1.5 block text-xs font-normal text-[#89909f]">
+                Có thể nhập tầng hầm, ví dụ -1.
+              </span>
+            </label>
+            <label className="block text-sm font-semibold text-[#3f4654]">
+              Tên tầng
+              <input
+                required
+                maxLength={100}
+                value={data.name}
+                onChange={(event) => setData({ ...data, name: event.target.value })}
+                placeholder="Ví dụ: Tầng 1 - Phòng đọc chính"
+                className={input}
+              />
+              <span className="mt-1.5 block text-xs font-normal text-[#89909f]">
+                Tối đa 100 ký tự.
+              </span>
+            </label>
+          </div>
+          <label className="block text-sm font-semibold text-[#3f4654]">
+            Mô tả <span className="font-normal text-[#89909f]">(không bắt buộc)</span>
             <textarea
               maxLength={500}
               value={data.description || ''}
               onChange={(event) =>
                 setData({ ...data, description: event.target.value || null })
               }
-              placeholder="Ghi chú về tầng..."
-              className={`${input} h-20 py-2`}
+              placeholder="Ghi chú về khu vực hoặc chức năng của tầng..."
+              className={`${input} min-h-24 resize-y py-3`}
             />
+            <span className="mt-1.5 block text-right text-xs font-normal text-[#89909f]">
+              {(data.description || '').length}/500
+            </span>
           </label>
-          <label className="block text-sm font-medium text-[#3f4654]">
-            Trạng thái
-            <select
-              value={data.status}
-              onChange={(event) => setData({ ...data, status: event.target.value as FloorStatus })}
-              className={input}
-            >
-              <option value="ACTIVE">Đang hoạt động</option>
-              <option value="INACTIVE">Ngừng hoạt động</option>
-              <option value="MAINTENANCE">Đang bảo trì</option>
-            </select>
-          </label>
-          <footer className="flex justify-end gap-2 border-t pt-4">
+          {isEditing && (
+            <label className="block text-sm font-semibold text-[#3f4654]">
+              Trạng thái
+              <select
+                value={data.status}
+                onChange={(event) => setData({ ...data, status: event.target.value as FloorStatus })}
+                className={input}
+              >
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="INACTIVE">Ngừng hoạt động</option>
+                <option value="MAINTENANCE">Đang bảo trì</option>
+              </select>
+            </label>
+          )}
+          <footer className="-mx-6 -mb-6 flex flex-col-reverse gap-2 border-t border-[#e8e7ed] bg-[#faf9fc] px-6 py-4 sm:-mx-7 sm:-mb-6 sm:flex-row sm:justify-end sm:px-7">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="h-10 border border-[#d7d9e2] px-4 text-sm font-medium text-[#3f4654] hover:bg-[#f1eff5]"
+              className="h-10 rounded-lg border border-[#d7d9e2] bg-white px-4 text-sm font-semibold text-[#3f4654] transition hover:bg-[#f1eff5] disabled:opacity-50"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
+              className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              Lưu thay đổi
+              {submitting ? (isEditing ? 'Đang lưu...' : 'Đang tạo...') : isEditing ? 'Lưu thay đổi' : 'Tạo thêm Tầng'}
             </button>
           </footer>
         </form>

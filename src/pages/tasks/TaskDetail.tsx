@@ -1,6 +1,6 @@
 import { Activity, ArrowLeft, CalendarClock, CheckCircle2, Star, X } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import MapViewer, { type MapEndpoint, type MapRoutePoint } from '@/components/map/MapViewer'
 import LiveMissionDetail from '@/components/tasks/LiveMissionDetail'
 import { getFeedback, getInventoryReport, getJobById, getJobEvents } from '@/lib/jobData'
@@ -51,6 +51,7 @@ function formatEventValue(value: unknown): string {
 
 function TaskDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [showInventoryDetails, setShowInventoryDetails] = useState(false)
   const jobId = Number(id)
   const job = getJobById(jobId)
@@ -67,9 +68,13 @@ function TaskDetail() {
     return (
       <div className="min-h-full bg-[#f9f7fd] p-5 sm:p-8">
         <div className="mx-auto max-w-5xl">
-          <Link to="/tasks" className="inline-flex items-center gap-2 text-sm font-medium text-[#596174] hover:text-primary">
-            <ArrowLeft className="h-4 w-4" />Quay lại danh sách nhiệm vụ
-          </Link>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#596174] hover:text-primary"
+          >
+            <ArrowLeft className="h-4 w-4" />Quay lại
+          </button>
           <div className="mt-8 border border-[#d9dce5] bg-white px-6 py-12 text-center">
             <h1 className="text-lg font-semibold text-[#252933]">Không tìm thấy nhiệm vụ</h1>
             <p className="mt-2 text-sm text-[#687386]">Mã nhiệm vụ yêu cầu không tồn tại trong dữ liệu hiện tại.</p>
@@ -108,9 +113,15 @@ function TaskDetail() {
     <div className="flex min-h-screen flex-col overflow-hidden bg-[#0c0d10] text-white xl:h-screen">
       <header className="flex min-h-14 shrink-0 items-center justify-between gap-4 border-b border-white/10 bg-[#121318] px-4 py-2">
         <div className="flex min-w-0 items-center gap-3">
-          <Link to="/tasks" aria-label="Quay lại danh sách nhiệm vụ" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/55 hover:bg-white/8 hover:text-white">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label="Quay lại"
+            title="Quay lại"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/55 hover:bg-white/8 hover:text-white"
+          >
             <ArrowLeft className="h-4 w-4" />
-          </Link>
+          </button>
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-white/40">Nhiệm vụ #{job.id}</p>
             <h1 className="truncate text-sm font-semibold text-white">{job.name}</h1>

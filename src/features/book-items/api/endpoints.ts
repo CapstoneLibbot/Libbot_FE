@@ -1,4 +1,4 @@
 export const BOOK_ITEM_ENDPOINTS = {
-  LIST: '/book-items',
-  DETAIL: (id: string) => `/book-items/${encodeURIComponent(id)}`,
+  LIST: '/books/items',
+  DETAIL: (id: string) => `/books/items/${encodeURIComponent(id)}`,
 } as const

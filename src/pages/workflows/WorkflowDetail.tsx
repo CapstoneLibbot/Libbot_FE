@@ -1,5 +1,5 @@
 import { Activity, ArrowLeft, CalendarDays, ListChecks } from 'lucide-react'
-import { Link, useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { getWorkflowById } from '@/lib/workflowData'
 import { WorkflowStatus, WorkflowStepType } from '@/types/workflow'
 
@@ -27,19 +27,21 @@ const stepTypeLabels: Record<string, string> = {
 
 function WorkflowDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const workflow = getWorkflowById(Number(id))
 
   if (!workflow) {
     return (
       <div className="min-h-full bg-[#f9f7fd] p-5 sm:p-8">
         <div className="mx-auto max-w-5xl">
-          <Link
-            to="/workflows"
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 text-sm font-medium text-[#596174] transition hover:text-primary"
           >
             <ArrowLeft className="h-4 w-4" />
-            Quay lại Workflows
-          </Link>
+            Quay lại
+          </button>
           <div className="mt-8 border border-[#d9dce5] bg-white px-6 py-12 text-center">
             <h1 className="text-lg font-semibold text-[#252933]">Không tìm thấy quy trình</h1>
             <p className="mt-2 text-sm text-[#687386]">Quy trình có thể đã bị xóa hoặc mã không hợp lệ.</p>
@@ -54,13 +56,14 @@ function WorkflowDetail() {
   return (
     <div className="min-h-full bg-[#f9f7fd] p-5 sm:p-8">
       <div className="mx-auto max-w-5xl space-y-6">
-        <Link
-          to="/workflows"
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-sm font-medium text-[#596174] transition hover:text-primary"
         >
           <ArrowLeft className="h-4 w-4" />
-          Quay lại Workflows
-        </Link>
+          Quay lại
+        </button>
 
         <section className="border border-[#d9dce5] bg-white p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   AlertCircle,
   ArrowLeft,
+  Eye,
   Layers3,
   Loader2,
   Map as MapIcon,
@@ -13,8 +14,11 @@ import {
 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router'
 
+import { aisleApi } from '@/features/aisles/api/aisleApi'
+import type { AisleWriteRequest } from '@/features/aisles/types/aisle'
 import { floorApi } from '@/features/floors/api/floorApi'
 import type { FloorRecord } from '@/features/floors/types/floor'
+import { AisleFormDialog } from '@/pages/aisles/AisleDetail'
 import { FloorFormDialog, StatusBadge, type FloorFormData } from './FloorList'
 import { getErrorMessage } from '@/services/http/error'
 
@@ -26,6 +30,7 @@ function FloorDetail() {
   const [isLoading, setIsLoading] = useState(true)
   const [errorNotice, setErrorNotice] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
+  const [creatingAisle, setCreatingAisle] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
   const loadFloor = async () => {
@@ -33,7 +38,7 @@ function FloorDetail() {
     setIsLoading(true)
     setErrorNotice(null)
     try {
-      const data = await floorApi.getFloorById(id, 'aisles,maps')
+      const data = await floorApi.getFloorById(id, 'aisles')
       setFloor(data)
     } catch (err) {
       setErrorNotice(getErrorMessage(err))
@@ -53,6 +58,17 @@ function FloorDetail() {
       setFloor((prev) => (prev ? { ...prev, ...updated } : updated))
       setEditing(false)
       loadFloor()
+    } catch (err) {
+      alert(getErrorMessage(err))
+    }
+  }
+
+  const handleCreateAisle = async (data: AisleWriteRequest) => {
+    if (!floor) return
+    try {
+      await aisleApi.createAisle({ ...data, floorId: floor.id, status: 'ACTIVE' })
+      setCreatingAisle(false)
+      await loadFloor()
     } catch (err) {
       alert(getErrorMessage(err))
     }
@@ -100,9 +116,13 @@ function FloorDetail() {
             >
               <RefreshCw className="h-3.5 w-3.5" /> Thử lại
             </button>
-            <Link to="/floors" className="text-xs font-semibold text-primary hover:underline">
-              ← Quay lại danh sách tầng
-            </Link>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="text-xs font-semibold text-primary hover:underline"
+            >
+              ← Quay lại
+            </button>
           </div>
         </div>
       </div>
@@ -114,13 +134,14 @@ function FloorDetail() {
 
   return (
     <div className="min-h-full bg-[#f9f7fd] p-5 text-[#17181c] sm:p-8">
-      <Link
-        to="/floors"
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
         className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" />
-        Danh sách tầng
-      </Link>
+        Quay lại
+      </button>
 
       <header className="mt-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -183,13 +204,14 @@ function FloorDetail() {
               </p>
             </div>
           </div>
-          <Link
-            to="/aisles"
+          <button
+            type="button"
+            onClick={() => setCreatingAisle(true)}
             className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            Xem danh sách dãy sách
-          </Link>
+            Thêm dãy sách cho tầng {floor.name}
+          </button>
         </div>
 
         <div className="mt-4 overflow-hidden border border-[#d9dce5] bg-white shadow-sm">
@@ -219,12 +241,18 @@ function FloorDetail() {
                         {aisle.name}
                       </td>
                       <td className="px-4 py-4 text-right">
-                        <Link
-                          to={`/aisles/${aisle.id}`}
-                          className="text-xs font-semibold text-primary hover:underline"
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            navigate(`/aisles/${aisle.id}`)
+                          }}
+                          title={`Xem chi tiết ${aisle.name}`}
+                          aria-label={`Xem chi tiết ${aisle.name}`}
+                          className="inline-flex h-8 w-8 items-center justify-center text-[#596174] hover:bg-[#eff5ff] hover:text-primary"
                         >
-                          Xem chi tiết →
-                        </Link>
+                          <Eye className="h-4 w-4" />
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -293,6 +321,14 @@ function FloorDetail() {
           }}
           onClose={() => setEditing(false)}
           onSubmit={handleUpdate}
+        />
+      )}
+      {creatingAisle && (
+        <AisleFormDialog
+          title={`Thêm dãy sách cho tầng ${floor.name}`}
+          fixedFloor={floor}
+          onClose={() => setCreatingAisle(false)}
+          onSubmit={handleCreateAisle}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, ArrowLeft, Check, Circle, Clock3, Play, Radio, Send, XCircle } from 'lucide-react'
-import { Link } from 'react-router'
+import { useNavigate } from 'react-router'
 import MapViewer from '@/components/map/MapViewer'
 import SdfScene3D from '@/components/map/SdfScene3D'
 import { apiGet, apiPost, type BackendMission, type BackendWorkflow, type MissionExecutionState, type RobotRuntime } from '@/lib/missionApi'
@@ -81,6 +81,7 @@ function numericValue(value: unknown): number | null {
 }
 
 function LiveMissionDetail({ missionId }: { missionId: string }) {
+  const navigate = useNavigate()
   const [mission, setMission] = useState<BackendMission | null>(null)
   const [workflow, setWorkflow] = useState<BackendWorkflow | null>(null)
   const [execution, setExecution] = useState<MissionExecutionState | null>(null)
@@ -366,7 +367,13 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   if (!mission && error) {
     return (
       <div className="min-h-screen bg-[#0c0d10] p-6 text-white">
-        <Link to="/tasks" className="inline-flex items-center gap-2 text-sm text-white/65 hover:text-white"><ArrowLeft className="h-4 w-4" />Quay lại Nhiệm vụ</Link>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-sm text-white/65 hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" />Quay lại
+        </button>
         <section role="alert" className="mx-auto mt-10 max-w-2xl border border-rose-400/30 bg-rose-500/10 p-6">
           <h1 className="text-lg font-semibold">Không thể mở trình theo dõi nhiệm vụ</h1>
           <p className="mt-2 text-sm text-white/65">{error}. Hãy kiểm tra backend đang chạy và VITE_API_BASE_URL trỏ đúng địa chỉ.</p>
@@ -379,7 +386,15 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     <div className="flex min-h-screen flex-col overflow-hidden bg-[#0c0d10] text-white xl:h-screen">
       <header className="flex min-h-14 shrink-0 items-center justify-between gap-4 border-b border-white/10 bg-[#121318] px-4 py-2">
         <div className="flex min-w-0 items-center gap-3">
-          <Link to="/tasks" aria-label="Quay lại Nhiệm vụ" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/55 hover:bg-white/10 hover:text-white"><ArrowLeft className="h-4 w-4" /></Link>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label="Quay lại"
+            title="Quay lại"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/55 hover:bg-white/10 hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-white/40">Trình theo dõi quy trình robot</p>
             <h1 className="truncate text-sm font-semibold">{mission?.workflowName ?? 'Đang tải nhiệm vụ…'}</h1>

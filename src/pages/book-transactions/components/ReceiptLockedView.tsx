@@ -153,7 +153,9 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/book-transactions')}
+            onClick={() => navigate(-1)}
+            aria-label="Quay lại"
+            title="Quay lại"
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -435,7 +437,7 @@ export default function ReceiptLockedView({ receipt, onUpdate }: ReceiptLockedVi
                             <th className="px-4 py-2.5 w-12">#</th>
                             <th className="px-4 py-2.5">Mã vạch</th>
                             <th className="px-4 py-2.5">
-                              {receipt.receiptType === 'NEW_ACQUISITION' ? 'Vị trí kệ dự kiến' : 'Kệ được phân công'}
+                              {receipt.receiptType === 'NEW_ACQUISITION' ? 'Vị trí tầng kệ mặc định' : 'Kệ được phân công'}
                             </th>
                             <th className="px-4 py-2.5">Ghi chú bản sách</th>
                           </tr>

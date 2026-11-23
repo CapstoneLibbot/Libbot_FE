@@ -208,7 +208,7 @@ export default function InventoryPage() {
                       <th className="px-4 py-3">Mã vạch</th>
                       <th className="px-4 py-3">Kệ đích</th>
                       <th className="px-4 py-3">Kết quả đối chiếu</th>
-                      <th className="px-4 py-3">Kệ dự kiến</th>
+                      <th className="px-4 py-3">Kệ mặc định</th>
                       <th className="px-4 py-3">Thời gian</th>
                     </tr>
                   </thead>

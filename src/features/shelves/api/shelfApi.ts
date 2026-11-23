@@ -4,6 +4,7 @@ import type { PaginatedData } from '@/types/api'
 import type {
   EndpointOptionRecord,
   ShelfLevelRecord,
+  ShelfLevelQueryParams,
   ShelfLevelWriteRequest,
   ShelfOptionRecord,
   ShelfQueryParams,
@@ -13,19 +14,43 @@ import type {
 
 export const shelfApi = {
   /** Lấy danh sách kệ sách có phân trang và bộ lọc */
-  getShelves: (params?: ShelfQueryParams): Promise<PaginatedData<ShelfRecord>> => {
-    return httpClient.get(SHELF_ENDPOINTS.LIST, {
-      params: {
-        page: params?.page ?? 1,
-        pageSize: params?.pageSize ?? 20,
-        search: params?.searchTerm || undefined,
-        aisleId: params?.aisleId === 'ALL' ? undefined : params?.aisleId,
-        status: params?.status === 'ALL' ? undefined : params?.status,
+  getShelves: async (params?: ShelfQueryParams): Promise<PaginatedData<ShelfRecord>> => {
+    const response = await httpClient.get<PaginatedData<ShelfRecord> | ShelfRecord[]>(
+      SHELF_ENDPOINTS.LIST,
+      {
+        params: {
+          page: params?.page ?? 1,
+          pageSize: params?.pageSize ?? 20,
+          search: params?.searchTerm || undefined,
+          aisleId: params?.aisleId === 'ALL' ? undefined : params?.aisleId,
+          status: params?.status === 'ALL' ? undefined : params?.status,
+          sortBy: params?.sortBy ?? 'name',
+          sortOrder: params?.sortOrder ?? 'asc',
+          expand: params?.expand ?? 'aisle,levels,endpoints',
+        },
+      },
+    )
+
+    if (Array.isArray(response)) {
+      const page = params?.page ?? 1
+      const pageSize = params?.pageSize ?? response.length
+
+      return {
+        items: response,
+        page,
+        pageSize,
+        totalCount: response.length,
+        totalPages: pageSize > 0 ? Math.ceil(response.length / pageSize) : 0,
         sortBy: params?.sortBy ?? 'name',
         sortOrder: params?.sortOrder ?? 'asc',
-        expand: params?.expand ?? 'aisle,levels,endpoints',
-      },
-    })
+      }
+    }
+
+    if (response && Array.isArray(response.items)) {
+      return response
+    }
+
+    throw new Error('Phản hồi danh sách kệ không hợp lệ.')
   },
 
   /** Lấy danh sách rút gọn các kệ sách phục vụ Dropdown / Select box */
@@ -65,8 +90,21 @@ export const shelfApi = {
 
   /** Lấy danh sách các tầng kệ của 1 kệ sách */
   getLevelsByShelfId: (shelfId: string, sortOrder: 'asc' | 'desc' = 'asc'): Promise<PaginatedData<ShelfLevelRecord>> => {
-    return httpClient.get(SHELF_ENDPOINTS.LEVELS_BY_SHELF(shelfId), {
-      params: { sortOrder },
+    return httpClient.get(SHELF_ENDPOINTS.LEVELS, {
+      params: { shelfId, sortOrder },
+    })
+  },
+
+  /** Lấy danh sách tầng kệ có phân trang và sắp xếp */
+  getShelfLevels: (params?: ShelfLevelQueryParams): Promise<PaginatedData<ShelfLevelRecord>> => {
+    return httpClient.get(SHELF_ENDPOINTS.LEVELS, {
+      params: {
+        page: params?.page ?? 1,
+        pageSize: params?.pageSize ?? 20,
+        shelfId: params?.shelfId,
+        sortBy: params?.sortBy ?? 'levelNumber',
+        sortOrder: params?.sortOrder ?? 'asc',
+      },
     })
   },
 
@@ -77,7 +115,7 @@ export const shelfApi = {
 
   /** Tạo tầng kệ mới cho kệ */
   createLevel: (shelfId: string, payload: ShelfLevelWriteRequest): Promise<ShelfLevelRecord> => {
-    return httpClient.post(SHELF_ENDPOINTS.LEVELS_BY_SHELF(shelfId), {
+    return httpClient.post(SHELF_ENDPOINTS.LEVELS, {
       ...payload,
       shelfId,
     })

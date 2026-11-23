@@ -16,23 +16,30 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 
 import { bookApi } from '@/features/books/api/bookApi'
 import { bookItemApi } from '@/features/book-items/api/bookItemApi'
 import { shelfApi } from '@/features/shelves/api/shelfApi'
-import type { BookRecord } from '@/features/books/types/book'
+import type { BookCategoryRecord, BookRecord } from '@/features/books/types/book'
 import type { BookItemRecord, BookItemWriteRequest } from '@/features/book-items/types/bookItem'
-import type { ShelfRecord } from '@/features/shelves/types/shelf'
+import type { ShelfLevelRecord, ShelfRecord } from '@/features/shelves/types/shelf'
 import type { BookItemStatus } from '@/types/enums'
 import { getErrorMessage } from '@/services/http/error'
 import { BookFormDialog, type BookFormData } from './BookList'
 
 export default function BookDetail() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [book, setBook] = useState<BookRecord | null>(null)
   const [items, setItems] = useState<BookItemRecord[]>([])
   const [shelves, setShelves] = useState<ShelfRecord[]>([])
+  const [shelfLevels, setShelfLevels] = useState<ShelfLevelRecord[]>([])
+  const [shelfLevelsLoading, setShelfLevelsLoading] = useState(true)
+  const [shelfLevelsError, setShelfLevelsError] = useState('')
+  const [categories, setCategories] = useState<BookCategoryRecord[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+  const [categoriesError, setCategoriesError] = useState('')
 
   const [isLoading, setIsLoading] = useState(true)
   const [errorNotice, setErrorNotice] = useState<string | null>(null)
@@ -43,14 +50,43 @@ export default function BookDetail() {
   const [itemFormError, setItemFormError] = useState('')
   const [deletingItemId, setDeletingItemId] = useState('')
 
+  const loadCategories = useCallback(async () => {
+    setCategoriesLoading(true)
+    setCategoriesError('')
+    try {
+      setCategories(await bookApi.getCategories())
+    } catch (err) {
+      setCategoriesError(getErrorMessage(err))
+    } finally {
+      setCategoriesLoading(false)
+    }
+  }, [])
+
+  const loadShelfLevels = useCallback(async () => {
+    setShelfLevelsLoading(true)
+    setShelfLevelsError('')
+    try {
+      const response = await shelfApi.getShelfLevels({
+        page: 1,
+        pageSize: 20,
+        sortBy: 'levelNumber',
+        sortOrder: 'asc',
+      })
+      setShelfLevels(response.items)
+    } catch (err) {
+      setShelfLevelsError(getErrorMessage(err))
+    } finally {
+      setShelfLevelsLoading(false)
+    }
+  }, [])
+
   const loadData = useCallback(async () => {
     if (!id) return
     setIsLoading(true)
     setErrorNotice(null)
     try {
-      const [bookData, itemsData, shelvesData] = await Promise.all([
+      const [bookData, shelvesData] = await Promise.all([
         bookApi.getBookById(id, 'items,category'),
-        bookItemApi.getBookItems({ bookId: id, pageSize: 100 }),
         shelfApi.getShelves({ page: 1, pageSize: 100, expand: 'levels' }).catch(() => ({
           items: [] as ShelfRecord[],
           page: 1,
@@ -62,7 +98,7 @@ export default function BookDetail() {
         })),
       ])
       setBook(bookData)
-      setItems(itemsData.items || [])
+      setItems((bookData.items ?? []).map((item) => ({ ...item, bookId: bookData.id })))
       setShelves(shelvesData.items || [])
     } catch (err) {
       setErrorNotice(getErrorMessage(err))
@@ -75,20 +111,28 @@ export default function BookDetail() {
     void loadData()
   }, [loadData])
 
+  useEffect(() => {
+    void loadCategories()
+  }, [loadCategories])
+
+  useEffect(() => {
+    void loadShelfLevels()
+  }, [loadShelfLevels])
+
   // Map levelId -> { shelfName, levelName, levelNumber }
   const levelLookup = useMemo(() => {
     const map = new Map<string, { shelfName: string; levelName: string; levelNumber: number }>()
-    shelves.forEach((s) => {
-      s.levels?.forEach((lvl) => {
-        map.set(lvl.id, {
-          shelfName: s.name,
-          levelName: lvl.name || `Tầng ${lvl.levelNumber}`,
-          levelNumber: lvl.levelNumber,
-        })
+    const shelfNames = new Map(shelves.map((shelf) => [shelf.id, shelf.name]))
+
+    shelfLevels.forEach((level) => {
+      map.set(level.id, {
+        shelfName: shelfNames.get(level.shelfId) || 'Kệ',
+        levelName: level.name || `Tầng ${level.levelNumber}`,
+        levelNumber: level.levelNumber,
       })
     })
     return map
-  }, [shelves])
+  }, [shelves, shelfLevels])
 
   const handleUpdateBook = async (formData: BookFormData) => {
     if (!id) return
@@ -119,6 +163,9 @@ export default function BookDetail() {
         const created = await bookItemApi.createBookItem({
           ...payload,
           bookId: book.id,
+          currentShelfLevelId: payload.expectedShelfLevelId ?? null,
+          lastInventoryAtUtc: null,
+          status: 'AVAILABLE',
         })
         setItems((prev) => [created, ...prev])
         setBook((prev) => (prev ? { ...prev, totalCopies: (prev.totalCopies ?? items.length) + 1 } : prev))
@@ -162,9 +209,13 @@ export default function BookDetail() {
   if (errorNotice || !book) {
     return (
       <div className="min-h-full bg-[#f9f7fd] p-6 text-[#17181c] md:p-8">
-        <Link to="/book" className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary">
-          <ArrowLeft className="h-4 w-4" /> Quay lại danh sách sách
-        </Link>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" /> Quay lại
+        </button>
         <div className="mt-6 max-w-xl border border-[#efc7c4] bg-[#fff1f0] p-5 text-[#a12820]">
           <h2 className="text-base font-semibold">Không tìm thấy sách</h2>
           <p className="mt-1 text-sm">{errorNotice || 'Sách này không tồn tại hoặc đã bị xóa.'}</p>
@@ -181,7 +232,6 @@ export default function BookDetail() {
   }
 
   const totalCopies = book.totalCopies ?? items.length
-  const availableCopies = book.availableCopies ?? items.filter((i) => i.status === 'AVAILABLE').length
   const correctCount = items.filter(
     (i) => i.expectedShelfLevelId && i.expectedShelfLevelId === i.currentShelfLevelId,
   ).length
@@ -191,11 +241,20 @@ export default function BookDetail() {
       i.expectedShelfLevelId &&
       i.currentShelfLevelId !== i.expectedShelfLevelId,
   ).length
-  const missingCount = items.filter((i) => !i.currentShelfLevelId || i.status === 'MISSING').length
+  const missingCount = items.filter(
+    (i) => !i.currentShelfLevelId || i.status.toUpperCase() === 'MISSING',
+  ).length
 
   return (
     <div className="min-h-full bg-[#f9f7fd] p-5 text-[#17181c] sm:p-8">
       <div className="mx-auto max-w-[1200px] space-y-6">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" /> Quay lại
+        </button>
         {/* Breadcrumb */}
         <Link
           to="/book"
@@ -273,9 +332,6 @@ export default function BookDetail() {
               <Layers className="h-5 w-5 text-primary" />
               <div>
                 <h2 className="text-lg font-semibold">Các bản sách</h2>
-                <p className="text-xs text-[#687386]">
-                  Có {totalCopies} bản sách ({availableCopies} bản có thể cho mượn)
-                </p>
               </div>
             </div>
             <button
@@ -306,7 +362,7 @@ export default function BookDetail() {
                 <thead>
                   <tr className="border-b border-[#d9dce5] bg-[#f5f4f8] text-[11px] font-semibold uppercase text-[#3f4654]">
                     <th className="px-4 py-3">Mã vạch</th>
-                    <th className="px-4 py-3">Tầng kệ dự kiến</th>
+                    <th className="px-4 py-3">Tầng kệ mặc định</th>
                     <th className="px-4 py-3">Vị trí thực tế</th>
                     <th className="px-4 py-3">Trạng thái vị trí</th>
                     <th className="px-4 py-3">Tình trạng bản sách</th>
@@ -351,6 +407,10 @@ export default function BookDetail() {
       {bookEditorOpen && (
         <BookFormDialog
           title="Cập nhật sách"
+          categories={categories}
+          categoriesLoading={categoriesLoading}
+          categoriesError={categoriesError}
+          onRetryCategories={() => void loadCategories()}
           initial={{
             title: book.title,
             author: book.author || null,
@@ -372,6 +432,10 @@ export default function BookDetail() {
           bookId={book.id}
           item={itemEditor === 'CREATE' ? undefined : itemEditor}
           shelves={shelves}
+          shelfLevels={shelfLevels}
+          shelfLevelsLoading={shelfLevelsLoading}
+          shelfLevelsError={shelfLevelsError}
+          onRetryShelfLevels={() => void loadShelfLevels()}
           saving={itemSaving}
           errorMessage={itemFormError}
           onClose={() => setItemEditor(null)}
@@ -452,7 +516,7 @@ function ItemTableRow({
             {new Date(item.lastInventoryAtUtc).toLocaleDateString()}
           </span>
         ) : (
-          '—'
+          'Chưa kiểm kê'
         )}
       </td>
       <td className="px-4 py-3.5">
@@ -513,6 +577,10 @@ interface BookItemFormDialogProps {
   bookId: string
   item?: BookItemRecord
   shelves: ShelfRecord[]
+  shelfLevels: ShelfLevelRecord[]
+  shelfLevelsLoading: boolean
+  shelfLevelsError: string
+  onRetryShelfLevels: () => void
   saving: boolean
   errorMessage: string
   onClose: () => void
@@ -523,6 +591,10 @@ function BookItemFormDialog({
   bookId,
   item,
   shelves,
+  shelfLevels,
+  shelfLevelsLoading,
+  shelfLevelsError,
+  onRetryShelfLevels,
   saving,
   errorMessage,
   onClose,
@@ -532,9 +604,11 @@ function BookItemFormDialog({
   const [expectedLevelId, setExpectedLevelId] = useState<string>(item?.expectedShelfLevelId ?? '')
   const [currentLevelId, setCurrentLevelId] = useState<string>(item?.currentShelfLevelId ?? '')
   const [status, setStatus] = useState<BookItemStatus | string>(item?.status ?? 'AVAILABLE')
+  const isCreate = !item
 
   const inputClass =
     'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#17181c] outline-none focus:border-primary'
+  const shelfNames = new Map(shelves.map((shelf) => [shelf.id, shelf.name]))
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -542,8 +616,12 @@ function BookItemFormDialog({
       bookId,
       barcode: barcode.trim(),
       expectedShelfLevelId: expectedLevelId || null,
-      currentShelfLevelId: currentLevelId === 'NULL' || !currentLevelId ? null : currentLevelId,
-      status,
+      currentShelfLevelId: isCreate
+        ? expectedLevelId || null
+        : currentLevelId === 'NULL' || !currentLevelId
+          ? null
+          : currentLevelId,
+      ...(isCreate ? { lastInventoryAtUtc: null, status: 'AVAILABLE' } : { status }),
     })
   }
 
@@ -592,59 +670,85 @@ function BookItemFormDialog({
             </label>
 
             <label className="block space-y-1.5 text-sm font-medium">
-              Tầng kệ dự kiến
+              Tầng kệ mặc định
               <select
+                required={isCreate}
                 value={expectedLevelId}
                 onChange={(e) => setExpectedLevelId(e.target.value)}
+                disabled={shelfLevelsLoading || Boolean(shelfLevelsError)}
                 className={`${inputClass} appearance-none`}
               >
-                <option value="">Chưa gán vị trí</option>
-                {shelves.map((s) => (
-                  <optgroup key={s.id} label={`Shelf: ${s.name}`}>
-                    {s.levels?.map((lvl) => (
-                      <option key={lvl.id} value={lvl.id}>
-                        {s.name} → Tầng {lvl.levelNumber} ({lvl.name})
-                      </option>
-                    ))}
-                  </optgroup>
+                <option value="">
+                  {isCreate ? 'Chọn tầng kệ mặc định' : 'Chưa gán vị trí'}
+                </option>
+                {shelfLevels.map((level) => (
+                  <option key={level.id} value={level.id}>
+                    {shelfNames.get(level.shelfId) || 'Kệ'} → Tầng {level.levelNumber} ({level.name})
+                  </option>
                 ))}
               </select>
+              {shelfLevelsLoading && (
+                <p role="status" className="text-xs text-[#687386]">
+                  Đang tải danh sách tầng kệ...
+                </p>
+              )}
+              {shelfLevelsError && (
+                <div role="alert" className="flex items-center justify-between gap-2 text-xs text-[#a12820]">
+                  <span>{shelfLevelsError}</span>
+                  <button
+                    type="button"
+                    onClick={onRetryShelfLevels}
+                    className="shrink-0 font-semibold underline"
+                  >
+                    Thử lại
+                  </button>
+                </div>
+              )}
+              {!shelfLevelsLoading && !shelfLevelsError && shelfLevels.length === 0 && (
+                <p role="status" className="text-xs text-[#687386]">
+                  Chưa có tầng kệ nào trong hệ thống.
+                </p>
+              )}
             </label>
 
-            <label className="block space-y-1.5 text-sm font-medium">
-              Vị trí thực tế ghi nhận
-              <select
-                value={currentLevelId || 'NULL'}
-                onChange={(e) => setCurrentLevelId(e.target.value)}
-                className={`${inputClass} appearance-none`}
-              >
-                <option value="NULL">Không tìm thấy / Bị thiếu</option>
-                {shelves.map((s) => (
-                  <optgroup key={s.id} label={`Shelf: ${s.name}`}>
-                    {s.levels?.map((lvl) => (
-                      <option key={lvl.id} value={lvl.id}>
-                        {s.name} → Tầng {lvl.levelNumber} ({lvl.name})
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            </label>
+            {!isCreate && (
+              <label className="block space-y-1.5 text-sm font-medium">
+                Vị trí thực tế ghi nhận
+                <select
+                  value={currentLevelId || 'NULL'}
+                  onChange={(e) => setCurrentLevelId(e.target.value)}
+                  className={`${inputClass} appearance-none`}
+                >
+                  <option value="NULL">Không tìm thấy / Bị thiếu</option>
+                  {shelves.map((s) => (
+                    <optgroup key={s.id} label={`Shelf: ${s.name}`}>
+                      {s.levels?.map((lvl) => (
+                        <option key={lvl.id} value={lvl.id}>
+                          {s.name} → Tầng {lvl.levelNumber} ({lvl.name})
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </label>
+            )}
 
-            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">
-              Tình trạng bản sách
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className={`${inputClass} appearance-none`}
-              >
-                <option value="AVAILABLE">Có thể cho mượn (AVAILABLE)</option>
-                <option value="MISPLACED">Sai vị trí (MISPLACED)</option>
-                <option value="MISSING">Bị thiếu / Không tìm thấy (MISSING)</option>
-                <option value="LOST">Thất lạc (LOST)</option>
-                <option value="DAMAGED">Hư hỏng (DAMAGED)</option>
-              </select>
-            </label>
+            {!isCreate && (
+              <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">
+                Tình trạng bản sách
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className={`${inputClass} appearance-none`}
+                >
+                  <option value="AVAILABLE">Có thể cho mượn (AVAILABLE)</option>
+                  <option value="MISPLACED">Sai vị trí (MISPLACED)</option>
+                  <option value="MISSING">Bị thiếu / Không tìm thấy (MISSING)</option>
+                  <option value="LOST">Thất lạc (LOST)</option>
+                  <option value="DAMAGED">Hư hỏng (DAMAGED)</option>
+                </select>
+              </label>
+            )}
           </div>
 
           {errorMessage && (
@@ -665,7 +769,11 @@ function BookItemFormDialog({
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={
+                saving ||
+                (isCreate &&
+                  (shelfLevelsLoading || Boolean(shelfLevelsError) || shelfLevels.length === 0))
+              }
               className="inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
             >
               {saving && <RefreshCw className="h-4 w-4 animate-spin" />}

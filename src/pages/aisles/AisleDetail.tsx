@@ -4,6 +4,7 @@ import {
   AlertCircle,
   ArrowLeft,
   ChevronDown,
+  Eye,
   Loader2,
   Pencil,
   Plus,
@@ -19,8 +20,11 @@ import { aisleApi } from '@/features/aisles/api/aisleApi'
 import type { AisleRecord, AisleWriteRequest } from '@/features/aisles/types/aisle'
 import { floorApi } from '@/features/floors/api/floorApi'
 import type { FloorOptionRecord } from '@/features/floors/types/floor'
+import { shelfApi } from '@/features/shelves/api/shelfApi'
+import type { EndpointOptionRecord, ShelfWriteRequest } from '@/features/shelves/types/shelf'
 import type { AisleStatus } from '@/types/enums'
 import { getErrorMessage } from '@/services/http/error'
+import { ShelfFormDialog } from '@/pages/shelves/ShelfFormDialog'
 
 export type AisleFormData = AisleWriteRequest
 
@@ -43,6 +47,8 @@ function AisleList() {
 
   const [aisles, setAisles] = useState<AisleRecord[]>([])
   const [floors, setFloors] = useState<FloorOptionRecord[]>([])
+  const [isFloorOptionsLoading, setIsFloorOptionsLoading] = useState(true)
+  const [floorOptionsError, setFloorOptionsError] = useState<string | null>(null)
   const [totalCount, setTotalCount] = useState(0)
   const [page, setPage] = useState(1)
   const [pageSize] = useState(20)
@@ -51,14 +57,27 @@ function AisleList() {
   const [isLoading, setIsLoading] = useState(true)
   const [errorNotice, setErrorNotice] = useState<string | null>(null)
   const [actionNotice, setActionNotice] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  // Load floors for dropdown filter
+  const loadFloorOptions = async () => {
+    setIsFloorOptionsLoading(true)
+    setFloorOptionsError(null)
+    try {
+      const data = await floorApi.getFloors({
+        page: 1,
+        pageSize: 20,
+        sortBy: 'floorNumber',
+        sortOrder: 'asc',
+      })
+      setFloors(data.items)
+    } catch (err) {
+      setFloorOptionsError(getErrorMessage(err))
+    } finally {
+      setIsFloorOptionsLoading(false)
+    }
+  }
+
   useEffect(() => {
-    floorApi
-      .getAllOptions()
-      .then((data) => setFloors(data))
-      .catch(() => {})
+    loadFloorOptions()
   }, [])
 
   const loadAisles = async () => {
@@ -105,29 +124,13 @@ function AisleList() {
   const handleCreate = async (formData: AisleFormData) => {
     try {
       setActionNotice(null)
-      await aisleApi.createAisle(formData)
+      await aisleApi.createAisle({ ...formData, status: 'ACTIVE' })
       setCreateOpen(false)
       setActionNotice('Đã tạo dãy sách thành công.')
       setPage(1)
       loadAisles()
     } catch (err) {
       alert(getErrorMessage(err))
-    }
-  }
-
-  const handleDelete = async (e: React.MouseEvent, aisle: AisleRecord) => {
-    e.stopPropagation()
-    if (!window.confirm(`Bạn có chắc muốn xóa dãy sách "${aisle.name}" không?`)) return
-
-    setDeletingId(aisle.id)
-    try {
-      await aisleApi.deleteAisle(aisle.id)
-      setActionNotice(`Đã xóa dãy sách "${aisle.name}" thành công.`)
-      loadAisles()
-    } catch (err) {
-      alert(getErrorMessage(err))
-    } finally {
-      setDeletingId(null)
     }
   }
 
@@ -208,7 +211,7 @@ function AisleList() {
             <option value="ALL">Tất cả các tầng</option>
             {floors.map((floor) => (
               <option key={floor.id} value={floor.id}>
-                {floor.name} (Tầng {floor.floorNumber})
+                Tầng {floor.floorNumber}
               </option>
             ))}
           </SelectFilter>
@@ -320,7 +323,7 @@ function AisleList() {
                             onClick={(e) => e.stopPropagation()}
                             className="text-[#17181c] hover:text-primary hover:underline"
                           >
-                            {item.floor.name} (Tầng {item.floor.floorNumber})
+                            Tầng {item.floor.floorNumber}
                           </Link>
                         ) : (
                           '—'
@@ -338,16 +341,15 @@ function AisleList() {
                       <td className="px-4 py-4 text-right">
                         <button
                           type="button"
-                          onClick={(e) => handleDelete(e, item)}
-                          disabled={deletingId === item.id}
-                          className="p-1 text-[#687386] hover:text-red-600 disabled:opacity-50"
-                          title="Xóa dãy sách"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            navigate(`/aisles/${item.id}`)
+                          }}
+                          className="inline-flex h-8 w-8 items-center justify-center text-[#596174] hover:bg-[#eff5ff] hover:text-primary"
+                          title={`Xem chi tiết ${item.name}`}
+                          aria-label={`Xem chi tiết ${item.name}`}
                         >
-                          {deletingId === item.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-red-500" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
+                          <Eye className="h-4 w-4" />
                         </button>
                       </td>
                     </tr>
@@ -369,6 +371,9 @@ function AisleList() {
         <AisleFormDialog
           title="Thêm dãy sách"
           floors={floors}
+          floorOptionsLoading={isFloorOptionsLoading}
+          floorOptionsError={floorOptionsError}
+          onRetryFloorOptions={loadFloorOptions}
           onClose={() => setCreateOpen(false)}
           onSubmit={handleCreate}
         />
@@ -381,10 +386,16 @@ function AisleDetailView({ id }: { id: string }) {
   const navigate = useNavigate()
   const [aisle, setAisle] = useState<AisleRecord | null>(null)
   const [floors, setFloors] = useState<FloorOptionRecord[]>([])
+  const [isFloorOptionsLoading, setIsFloorOptionsLoading] = useState(true)
+  const [floorOptionsError, setFloorOptionsError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [errorNotice, setErrorNotice] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
+  const [creatingShelf, setCreatingShelf] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [shelfEndpoints, setShelfEndpoints] = useState<EndpointOptionRecord[]>([])
+  const [shelfEndpointsLoading, setShelfEndpointsLoading] = useState(true)
+  const [shelfEndpointsError, setShelfEndpointsError] = useState('')
 
   const loadAisle = async () => {
     setIsLoading(true)
@@ -399,9 +410,40 @@ function AisleDetailView({ id }: { id: string }) {
     }
   }
 
+  const loadFloorOptions = async () => {
+    setIsFloorOptionsLoading(true)
+    setFloorOptionsError(null)
+    try {
+      const data = await floorApi.getFloors({
+        page: 1,
+        pageSize: 20,
+        sortBy: 'floorNumber',
+        sortOrder: 'asc',
+      })
+      setFloors(data.items)
+    } catch (err) {
+      setFloorOptionsError(getErrorMessage(err))
+    } finally {
+      setIsFloorOptionsLoading(false)
+    }
+  }
+
+  const loadShelfEndpoints = async () => {
+    setShelfEndpointsLoading(true)
+    setShelfEndpointsError('')
+    try {
+      setShelfEndpoints(await shelfApi.getEndpoints())
+    } catch (err) {
+      setShelfEndpointsError(getErrorMessage(err))
+    } finally {
+      setShelfEndpointsLoading(false)
+    }
+  }
+
   useEffect(() => {
     loadAisle()
-    floorApi.getAllOptions().then(setFloors).catch(() => {})
+    loadFloorOptions()
+    loadShelfEndpoints()
   }, [id])
 
   const handleUpdate = async (formData: AisleFormData) => {
@@ -413,6 +455,13 @@ function AisleDetailView({ id }: { id: string }) {
     } catch (err) {
       alert(getErrorMessage(err))
     }
+  }
+
+  const handleCreateShelf = async (payload: ShelfWriteRequest) => {
+    if (!aisle) throw new Error('Không tìm thấy dãy sách hiện tại.')
+    await shelfApi.createShelf({ ...payload, aisleId: aisle.id, status: 'ACTIVE' })
+    setCreatingShelf(false)
+    await loadAisle()
   }
 
   const handleDelete = async () => {
@@ -457,9 +506,13 @@ function AisleDetailView({ id }: { id: string }) {
             >
               <RefreshCw className="h-3.5 w-3.5" /> Thử lại
             </button>
-            <Link to="/aisles" className="text-xs font-semibold text-primary hover:underline">
-              ← Quay lại danh sách dãy sách
-            </Link>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="text-xs font-semibold text-primary hover:underline"
+            >
+              ← Quay lại
+            </button>
           </div>
         </div>
       </div>
@@ -471,13 +524,14 @@ function AisleDetailView({ id }: { id: string }) {
 
   return (
     <div className="min-h-full bg-[#f9f7fd] p-5 text-[#17181c] sm:p-8">
-      <Link
-        to="/aisles"
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
         className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" />
-        Danh sách dãy sách
-      </Link>
+        Quay lại
+      </button>
 
       <header className="mt-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -486,7 +540,13 @@ function AisleDetailView({ id }: { id: string }) {
           </div>
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-primary">
-              {floor ? `${floor.name} (Tầng ${floor.floorNumber})` : 'Dãy sách'}
+              {floor ? (
+                <Link to={`/floors/${floor.id}`} className="hover:underline">
+                  Tầng {floor.floorNumber}
+                </Link>
+              ) : (
+                'Dãy sách'
+              )}
             </p>
             <h1 className="text-2xl font-bold tracking-tight">{aisle.name}</h1>
           </div>
@@ -524,7 +584,7 @@ function AisleDetailView({ id }: { id: string }) {
                   to={`/floors/${floor.id}`}
                   className="font-medium text-primary hover:underline"
                 >
-                  {floor.name} (Tầng #{floor.floorNumber})
+                  Tầng {floor.floorNumber}
                 </Link>
               ) : (
                 '—'
@@ -554,13 +614,14 @@ function AisleDetailView({ id }: { id: string }) {
               </p>
             </div>
           </div>
-          <Link
-            to="/shelves"
+          <button
+            type="button"
+            onClick={() => setCreatingShelf(true)}
             className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            Quản lý kệ
-          </Link>
+            Thêm kệ cho dãy {aisle.name}
+          </button>
         </div>
 
         <div className="mt-4 overflow-hidden border border-[#d9dce5] bg-white shadow-sm">
@@ -590,12 +651,18 @@ function AisleDetailView({ id }: { id: string }) {
                         {shelf.name}
                       </td>
                       <td className="px-4 py-4 text-right">
-                        <Link
-                          to={`/shelves/${shelf.id}`}
-                          className="text-xs font-semibold text-primary hover:underline"
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            navigate(`/shelves/${shelf.id}`)
+                          }}
+                          title={`Xem chi tiết ${shelf.name}`}
+                          aria-label={`Xem chi tiết ${shelf.name}`}
+                          className="inline-flex h-8 w-8 items-center justify-center text-[#596174] hover:bg-[#eff5ff] hover:text-primary"
                         >
-                          Xem chi tiết →
-                        </Link>
+                          <Eye className="h-4 w-4" />
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -616,6 +683,9 @@ function AisleDetailView({ id }: { id: string }) {
         <AisleFormDialog
           title="Cập nhật dãy sách"
           floors={floors}
+          floorOptionsLoading={isFloorOptionsLoading}
+          floorOptionsError={floorOptionsError}
+          onRetryFloorOptions={loadFloorOptions}
           initial={{
             floorId: aisle.floorId,
             name: aisle.name,
@@ -626,42 +696,69 @@ function AisleDetailView({ id }: { id: string }) {
           onSubmit={handleUpdate}
         />
       )}
+      {creatingShelf && (
+        <ShelfFormDialog
+          title={`Thêm kệ cho dãy ${aisle.name}`}
+          fixedAisle={aisle}
+          endpoints={shelfEndpoints}
+          optionsLoading={shelfEndpointsLoading}
+          endpointsError={shelfEndpointsError}
+          onRetryOptions={loadShelfEndpoints}
+          onClose={() => setCreatingShelf(false)}
+          onSubmit={handleCreateShelf}
+        />
+      )}
     </div>
   )
 }
 
-function AisleFormDialog({
+export function AisleFormDialog({
   title,
-  floors,
+  floors = [],
+  fixedFloor,
+  floorOptionsLoading = false,
+  floorOptionsError,
+  onRetryFloorOptions,
   initial,
   onClose,
   onSubmit,
 }: {
   title: string
-  floors: FloorOptionRecord[]
+  floors?: FloorOptionRecord[]
+  fixedFloor?: Pick<FloorOptionRecord, 'id' | 'name' | 'floorNumber'>
+  floorOptionsLoading?: boolean
+  floorOptionsError?: string | null
+  onRetryFloorOptions?: () => void
   initial?: AisleFormData
   onClose: () => void
   onSubmit: (data: AisleFormData) => void
 }) {
   const [form, setForm] = useState<AisleFormData>(
     initial || {
-      floorId: floors[0]?.id || '',
+      floorId: fixedFloor?.id || floors[0]?.id || '',
       name: '',
       description: null,
       status: 'ACTIVE',
     },
   )
   const [submitting, setSubmitting] = useState(false)
+  const canSubmit = fixedFloor
+    ? true
+    : initial
+      ? Boolean(form.floorId)
+      : !floorOptionsLoading && floors.length > 0 && Boolean(form.floorId)
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!form.floorId) {
+    if (floorOptionsLoading) return
+    const payload = fixedFloor ? { ...form, floorId: fixedFloor.id } : form
+    if (!payload.floorId) {
       alert('Vui lòng chọn tầng cho dãy sách!')
       return
     }
     setSubmitting(true)
     try {
-      await onSubmit(form)
+      await onSubmit(payload)
     } finally {
       setSubmitting(false)
     }
@@ -680,24 +777,57 @@ function AisleFormDialog({
           </button>
         </header>
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
-          <label className="block text-sm font-medium text-[#3f4654]">
-            Tầng
-            <select
-              required
-              value={form.floorId}
-              onChange={(event) => setForm({ ...form, floorId: event.target.value })}
-              className={input}
-            >
-              <option value="" disabled>
-                -- Chọn tầng --
-              </option>
-              {floors.map((floor) => (
-                <option key={floor.id} value={floor.id}>
-                  {floor.name} (Tầng {floor.floorNumber})
+          {fixedFloor ? (
+            <div className="border border-primary/15 bg-primary/5 px-3 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#687386]">
+                Tầng được gán
+              </p>
+              <p className="mt-1 text-sm font-semibold text-primary">
+                {fixedFloor.name} (Tầng {fixedFloor.floorNumber})
+              </p>
+            </div>
+          ) : (
+            <label className="block text-sm font-medium text-[#3f4654]">
+              Tầng
+              <select
+                required
+                disabled={floorOptionsLoading || floors.length === 0}
+                value={form.floorId}
+                onChange={(event) => setForm({ ...form, floorId: event.target.value })}
+                className={input}
+              >
+                <option value="" disabled>
+                  {floorOptionsLoading
+                    ? 'Đang tải danh sách tầng...'
+                    : floors.length === 0
+                      ? 'Không có tầng khả dụng'
+                      : '-- Chọn tầng --'}
                 </option>
-              ))}
-            </select>
-          </label>
+                {floors.map((floor) => (
+                  <option key={floor.id} value={floor.id}>
+                    {floor.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {!fixedFloor && floorOptionsError && (
+            <div
+              role="alert"
+              className="flex items-center justify-between gap-3 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
+              <span>{floorOptionsError}</span>
+              {onRetryFloorOptions && (
+                <button
+                  type="button"
+                  onClick={onRetryFloorOptions}
+                  className="shrink-0 font-semibold underline"
+                >
+                  Tải lại
+                </button>
+              )}
+            </div>
+          )}
           <label className="block text-sm font-medium text-[#3f4654]">
             Tên dãy sách
             <input
@@ -721,18 +851,20 @@ function AisleFormDialog({
               className={`${input} h-20 py-2`}
             />
           </label>
-          <label className="block text-sm font-medium text-[#3f4654]">
-            Trạng thái
-            <select
-              value={form.status}
-              onChange={(event) => setForm({ ...form, status: event.target.value as AisleStatus })}
-              className={input}
-            >
-              <option value="ACTIVE">Đang hoạt động</option>
-              <option value="INACTIVE">Ngừng hoạt động</option>
-              <option value="MAINTENANCE">Đang bảo trì</option>
-            </select>
-          </label>
+          {initial && (
+            <label className="block text-sm font-medium text-[#3f4654]">
+              Trạng thái
+              <select
+                value={form.status}
+                onChange={(event) => setForm({ ...form, status: event.target.value as AisleStatus })}
+                className={input}
+              >
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="INACTIVE">Ngừng hoạt động</option>
+                <option value="MAINTENANCE">Đang bảo trì</option>
+              </select>
+            </label>
+          )}
           <footer className="flex justify-end gap-2 border-t pt-4">
             <button
               type="button"
@@ -744,11 +876,11 @@ function AisleFormDialog({
             </button>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || floorOptionsLoading || !canSubmit}
               className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              Lưu thay đổi
+              {initial ? 'Lưu thay đổi' : 'Tạo dãy sách'}
             </button>
           </footer>
         </form>

@@ -81,7 +81,10 @@ export default function ShelfDetail() {
       const [shelfData, levelData, aisleList, endpointList] = await Promise.all([
         shelfApi.getShelfById(id, 'aisle,levels,endpoints'),
         shelfApi.getLevelsByShelfId(id, 'asc'),
-        aisleApi.getAllOptions().catch(() => [] as AisleOptionRecord[]),
+        aisleApi
+          .getAisles({ page: 1, pageSize: 100, sortBy: 'name', sortOrder: 'asc' })
+          .then((result) => result.items)
+          .catch(() => [] as AisleOptionRecord[]),
         shelfApi.getEndpoints().catch(() => [] as EndpointOptionRecord[]),
       ])
 
@@ -182,9 +185,13 @@ export default function ShelfDetail() {
   if (error || !shelf) {
     return (
       <div className="min-h-full bg-[#f9f7fd] p-6 text-[#17181c] md:p-8">
-        <Link to="/shelves" className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary">
-          <ArrowLeft className="h-4 w-4" /> Quay lại danh sách kệ
-        </Link>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" /> Quay lại
+        </button>
         <div className="mt-6 max-w-xl border border-[#efc7c4] bg-[#fff1f0] p-5 text-[#a12820]">
           <h2 className="text-base font-semibold">Không tìm thấy kệ</h2>
           <p className="mt-1 text-sm">{error || 'Kệ yêu cầu không tồn tại hoặc đã bị xóa.'}</p>
@@ -202,15 +209,20 @@ export default function ShelfDetail() {
 
   const startEp = endpoints.find((e) => e.id === shelf.startEndpointId)
   const endEp = endpoints.find((e) => e.id === shelf.endEndpointId)
-  const activeLevelsCount = levels.filter((l) => l.status === 'ACTIVE').length
+  const aisleName = shelf.aisle?.name || aisles.find((aisle) => aisle.id === shelf.aisleId)?.name
+  const activeLevelsCount = levels.filter((l) => l.status.toUpperCase() === 'ACTIVE').length
 
   return (
     <div className="min-h-full bg-[#f9f7fd] p-5 text-[#17181c] sm:p-8">
       <div className="mx-auto max-w-[1180px] space-y-6">
         {/* Breadcrumb */}
-        <Link to="/shelves" className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary">
-          <ArrowLeft className="h-4 w-4" /> Danh sách kệ
-        </Link>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-sm text-[#596174] hover:text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" /> Quay lại
+        </button>
 
         {/* Header */}
         <header className="flex flex-wrap items-center justify-between gap-4">
@@ -246,11 +258,11 @@ export default function ShelfDetail() {
         {/* Stats Grid */}
         <section className="grid gap-4 sm:grid-cols-3" aria-label="Thống kê kệ">
           <div className="border border-[#d9dce5] bg-white px-4 py-3">
-            <p className="text-xs font-medium uppercase text-[#687386]">Tổng số tầng</p>
+            <p className="text-xs font-medium uppercase text-[#687386]">Tổng số tầng kệ</p>
             <p className="mt-1 text-2xl font-semibold">{levels.length}</p>
           </div>
           <div className="border border-[#d9dce5] bg-white px-4 py-3">
-            <p className="text-xs font-medium uppercase text-[#687386]">Tầng đang hoạt động</p>
+            <p className="text-xs font-medium uppercase text-[#687386]">Tầng kệ đang hoạt động</p>
             <p className="mt-1 text-2xl font-semibold text-[#087443]">{activeLevelsCount}</p>
           </div>
           <div className="border border-[#d9dce5] bg-white px-4 py-3">
@@ -278,7 +290,7 @@ export default function ShelfDetail() {
                   to={`/aisles/${shelf.aisleId}`}
                   className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
                 >
-                  {shelf.aisle?.name || 'Thông tin dãy sách'}
+                  {aisleName || 'Dãy sách'}
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
               </dd>
@@ -336,10 +348,10 @@ export default function ShelfDetail() {
               <table className="w-full min-w-[700px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-[#d9dce5] bg-[#f5f4f8] text-[11px] font-semibold uppercase text-[#3f4654]">
-                    <th className="px-5 py-3">Tầng số</th>
+                    <th className="px-5 py-3">Tầng kệ số</th>
                     <th className="px-5 py-3">Tên hiển thị</th>
                     <th className="px-5 py-3">Trạng thái</th>
-                    <th className="px-5 py-3">Sách trên tầng</th>
+                    <th className="px-5 py-3">Sách trên tầng kệ</th>
                     <th className="w-28 px-5 py-3 text-right">Thao tác</th>
                   </tr>
                 </thead>
@@ -478,12 +490,13 @@ function ShelfStatusBadge({ status }: { status: string }) {
 }
 
 function ShelfLevelStatusBadge({ status }: { status: ShelfLevelStatus }) {
-  const styles = {
+  const normalizedStatus = status.toUpperCase()
+  const styles: Record<string, string> = {
     ACTIVE: 'bg-[#d9f7e7] text-[#087443]',
     INACTIVE: 'bg-[#eef0f3] text-[#596174]',
     MAINTENANCE: 'bg-[#fff0d8] text-[#a65000]',
   }
-  const labels = {
+  const labels: Record<string, string> = {
     ACTIVE: 'Đang hoạt động',
     INACTIVE: 'Ngừng hoạt động',
     MAINTENANCE: 'Đang bảo trì',
@@ -491,11 +504,11 @@ function ShelfLevelStatusBadge({ status }: { status: ShelfLevelStatus }) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${
-        styles[status] || 'bg-gray-100 text-gray-700'
+        styles[normalizedStatus] || 'bg-gray-100 text-gray-700'
       }`}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {labels[status] || status}
+      {labels[normalizedStatus] || status}
     </span>
   )
 }
@@ -835,10 +848,11 @@ function ShelfLevelBooksDialog({
       setLoading(true)
       setError('')
       try {
-        const res = await httpClient.get<PaginatedData<LevelBookItem>>('/book-items', {
+        const res = await httpClient.get<PaginatedData<LevelBookItem> | LevelBookItem[]>('/books/items', {
           params: { shelfLevelId: level.id },
         })
-        setItems(res.items || [])
+        const bookItems = Array.isArray(res) ? res : res.items || []
+        setItems(bookItems.filter((item) => item.currentShelfLevelId === level.id))
       } catch (err) {
         setError(getErrorMessage(err))
       } finally {
