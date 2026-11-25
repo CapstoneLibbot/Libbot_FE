@@ -3,7 +3,7 @@ import { Activity, ArrowLeft, Check, Circle, Clock3, Play, Radio, Send, XCircle 
 import { Link } from 'react-router'
 import MapViewer from '@/components/map/MapViewer'
 import SdfScene3D from '@/components/map/SdfScene3D'
-import { apiGet, apiPost, type BackendMission, type BackendWorkflow, type MissionExecutionState, type RobotRuntime } from '@/lib/missionApi'
+import { apiGet, apiPost, type BackendJob, type BackendWorkflow, type JobExecutionState, type RobotRuntime } from '@/lib/jobApi'
 import { inventoryApi, type InventoryScanResult } from '@/lib/inventoryApi'
 import LiveOccupancyMap from '@/features/maps/components/LiveOccupancyMap'
 import RealtimeCamera from '@/features/maps/components/RealtimeCamera'
@@ -19,7 +19,7 @@ import {
   type SavedRobotMapDetails,
 } from '@/features/maps/api/runtimeApi'
 
-type StepEvent = MissionExecutionState
+type StepEvent = JobExecutionState
 type StepProgress = 'pending' | 'running' | 'waiting' | 'completed' | 'failed'
 type RobotPose = { x: number; y: number; yaw: number }
 type WaitChoice = { value: string; label: string; detail?: string }
@@ -79,10 +79,10 @@ function numericValue(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
-function LiveMissionDetail({ missionId }: { missionId: string }) {
-  const [mission, setMission] = useState<BackendMission | null>(null)
+function LiveJobDetail({ jobId }: { jobId: string }) {
+  const [job, setJob] = useState<BackendJob | null>(null)
   const [workflow, setWorkflow] = useState<BackendWorkflow | null>(null)
-  const [execution, setExecution] = useState<MissionExecutionState | null>(null)
+  const [execution, setExecution] = useState<JobExecutionState | null>(null)
   const [events, setEvents] = useState<StepEvent[]>([])
   const [runtime, setRuntime] = useState<RobotRuntime | null>(null)
   const [inventoryMap, setInventoryMap] = useState<SavedRobotMapDetails | null>(null)
@@ -114,15 +114,15 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
 
     const refresh = async () => {
       try {
-        const missionResponse = await apiGet<BackendMission>(`/api/missions/${missionId}`)
+        const jobResponse = await apiGet<BackendJob>(`/api/jobs/${jobId}`)
         if (!active) return
-        setMission(missionResponse)
+        setJob(jobResponse)
         const requests = await Promise.allSettled([
-          missionResponse.workflowId
-            ? apiGet<BackendWorkflow>(`/api/workflows/${missionResponse.workflowId}`)
-            : Promise.reject(new Error('Mission has no workflow assigned.')),
-          apiGet<MissionExecutionState>(`/api/missions/${missionId}/execution`),
-          apiGet<StepEvent[]>(`/api/missions/${missionId}/execution/events`),
+          jobResponse.workflowId
+            ? apiGet<BackendWorkflow>(`/api/workflows/${jobResponse.workflowId}`)
+            : Promise.reject(new Error('Job has no workflow assigned.')),
+          apiGet<JobExecutionState>(`/api/jobs/${jobId}/execution`),
+          apiGet<StepEvent[]>(`/api/jobs/${jobId}/execution/events`),
         ])
         if (!active) return
 
@@ -144,7 +144,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
       active = false
       if (nextPoll !== undefined) window.clearTimeout(nextPoll)
     }
-  }, [missionId])
+  }, [jobId])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -205,17 +205,17 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   }, [workflow?.type])
 
   useEffect(() => {
-    if (workflow?.type?.toUpperCase() !== 'BOOKSHELF_INVENTORY' || !mission) {
+    if (workflow?.type?.toUpperCase() !== 'BOOKSHELF_INVENTORY' || !job) {
       setInventoryScans([])
       return
     }
 
     let active = true
     let nextPoll: number | undefined
-    const runtimeId = mission.runtimeId?.toLowerCase() === 'real' ? 'real' : 'sim'
+    const runtimeId = job.runtimeId?.toLowerCase() === 'real' ? 'real' : 'sim'
     const refreshScans = async () => {
       try {
-        const scans = await inventoryApi.getScans(missionId, runtimeId)
+        const scans = await inventoryApi.getScans(jobId, runtimeId)
         if (active) setInventoryScans(scans)
       } catch {
         // Keep the last scan result visible while the robot or backend reconnects.
@@ -228,7 +228,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
       active = false
       if (nextPoll !== undefined) window.clearTimeout(nextPoll)
     }
-  }, [missionId, mission?.runtimeId, workflow?.type])
+  }, [jobId, job?.runtimeId, workflow?.type])
 
   useEffect(() => {
     let active = true
@@ -236,7 +236,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     const refreshRuntime = async () => {
       try {
         const nextRuntime = await apiGet<RobotRuntime>(
-          `/api/robot-runtimes/${encodeURIComponent(mission?.runtimeId || 'sim')}`,
+          `/api/robot-runtimes/${encodeURIComponent(job?.runtimeId || 'sim')}`,
         )
         if (active) setRuntime(nextRuntime)
       } catch {
@@ -249,11 +249,11 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
       active = false
       if (nextPoll !== undefined) window.clearTimeout(nextPoll)
     }
-  }, [mission?.runtimeId])
+  }, [job?.runtimeId])
 
   useEffect(() => {
     const eventType = execution?.expectedEventType?.trim().toUpperCase()
-    if (normalizeStatus(execution?.status) !== 'WAITING' || mission?.runtimeId !== 'sim'
+    if (normalizeStatus(execution?.status) !== 'WAITING' || job?.runtimeId !== 'sim'
       || !eventType || !['BOOK_SELECTED', 'FACILITY_SELECTED'].includes(eventType)) {
       setWaitChoices([])
       setWaitChoicesLoading(false)
@@ -276,10 +276,10 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
       .catch(() => { if (active) setWaitChoices([]) })
       .finally(() => { if (active) setWaitChoicesLoading(false) })
     return () => { active = false }
-  }, [execution?.expectedEventType, execution?.status, mission?.runtimeId])
+  }, [execution?.expectedEventType, execution?.status, job?.runtimeId])
 
   useEffect(() => {
-    if (mission?.runtimeId !== 'sim') {
+    if (job?.runtimeId !== 'sim') {
       setSimulationSpeed(1)
       return
     }
@@ -290,7 +290,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
         if (active) setActionError(requestError instanceof Error ? requestError.message : 'Cannot read Gazebo speed.')
       })
     return () => { active = false }
-  }, [mission?.runtimeId])
+  }, [job?.runtimeId])
 
   const orderedSteps = useMemo(
     () => [...(workflow?.steps ?? [])].sort((first, second) => first.sequence - second.sequence),
@@ -301,15 +301,15 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     || step.id.toLowerCase() === String(execution?.currentStep ?? '').toLowerCase()
     || step.name.toLowerCase() === String(execution?.currentStepName ?? '').toLowerCase(),
   )
-  const status = normalizeStatus(execution?.status ?? mission?.status)
-  const missionIsComplete = status === 'SUCCEEDED' || status === 'COMPLETED'
-  const missionHasFailed = status === 'FAILED' || status === 'CANCELLED'
-  const missionInProgress = status === 'ACCEPTED' || status === 'RUNNING' || status === 'WAITING'
-  const isSimulation = (mission?.runtimeId ?? 'sim').toLowerCase() === 'sim'
+  const status = normalizeStatus(execution?.status ?? job?.status)
+  const jobIsComplete = status === 'SUCCEEDED' || status === 'COMPLETED'
+  const jobHasFailed = status === 'FAILED' || status === 'CANCELLED'
+  const jobInProgress = status === 'ACCEPTED' || status === 'RUNNING' || status === 'WAITING'
+  const isSimulation = (job?.runtimeId ?? 'sim').toLowerCase() === 'sim'
   const liveRobotPose = runtime?.telemetry?.pose ?? null
   const robotPose = liveRobotPose ?? spawnPose
   const canRun = isSimulation
-    ? !missionInProgress
+    ? !jobInProgress
     : ['QUEUED', 'PENDING', 'FAILED', 'CANCELLED'].includes(status)
   const expectedEventType = execution?.expectedEventType?.trim().toUpperCase() ?? ''
   const waitKey = `${execution?.executionId ?? ''}:${execution?.currentStep ?? ''}:${expectedEventType}`
@@ -317,7 +317,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   const isLibraryPatrol = workflow?.type?.toUpperCase() === 'LIBRARY_PATROL'
   const isBookshelfInventory = workflow?.type?.toUpperCase() === 'BOOKSHELF_INVENTORY'
   const poseForMap = isBookshelfInventory ? liveRobotPose : robotPose
-  const isAiScanning = isBookshelfInventory && missionInProgress && currentStep?.type.toUpperCase() === 'SCAN'
+  const isAiScanning = isBookshelfInventory && jobInProgress && currentStep?.type.toUpperCase() === 'SCAN'
   const latestInventoryScan = inventoryScans[inventoryScans.length - 1] ?? null
   const patrolResults = events.map((event) => asRecord(event.result)).filter((result): result is Record<string, unknown> => result !== null)
   const patrolReport = patrolResults
@@ -335,24 +335,24 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     .find((result) => result !== null) ?? null
   const inventoryReportDetails = asRecord(inventoryReport?.details)
 
-  const runMission = async () => {
+  const runJob = async () => {
     if (!isSimulation && !armLeaseId) {
-      setActionError('Arm the physical robot before starting this mission.')
+      setActionError('Arm the physical robot before starting this job.')
       return
     }
     setRunPending(true)
     setActionError(null)
     try {
-      await apiPost(`/api/missions/${missionId}/start`, { runtimeId: mission?.runtimeId ?? 'sim', armLeaseId })
+      await apiPost(`/api/jobs/${jobId}/start`, { runtimeId: job?.runtimeId ?? 'sim', armLeaseId })
     } catch (requestError) {
-      setActionError(requestError instanceof Error ? requestError.message : 'Unable to start the mission.')
+      setActionError(requestError instanceof Error ? requestError.message : 'Unable to start the job.')
     } finally {
       setRunPending(false)
     }
   }
 
   const armPhysicalRobot = async () => {
-    const runtimeId = mission?.runtimeId || 'real'
+    const runtimeId = job?.runtimeId || 'real'
     setArmPending(true)
     setActionError(null)
     try {
@@ -366,7 +366,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   }
 
   const disarmPhysicalRobot = async () => {
-    const runtimeId = mission?.runtimeId || 'real'
+    const runtimeId = job?.runtimeId || 'real'
     setArmPending(true)
     setActionError(null)
     try {
@@ -398,7 +398,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     setEventPending(true)
     setActionError(null)
     try {
-      await apiPost(`/api/missions/${missionId}/execution/events`, {
+      await apiPost(`/api/jobs/${jobId}/execution/events`, {
         eventType: expectedEventType,
         data: { value: selected },
       })
@@ -412,7 +412,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   }
 
   useEffect(() => {
-    if (mission?.runtimeId !== 'sim' || status !== 'WAITING' || !expectedEventType
+    if (job?.runtimeId !== 'sim' || status !== 'WAITING' || !expectedEventType
       || waitAlreadySubmitted || eventPending) return
 
     let automaticValue: string | undefined
@@ -431,7 +431,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
 
     if (automaticValue) void submitWaitEvent(automaticValue)
   }, [
-    mission?.runtimeId,
+    job?.runtimeId,
     status,
     expectedEventType,
     waitAlreadySubmitted,
@@ -442,12 +442,12 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     execution?.expectedBookId,
   ])
 
-  if (!mission && error) {
+  if (!job && error) {
     return (
       <div className="min-h-screen bg-[#0c0d10] p-6 text-white">
         <Link to="/tasks" className="inline-flex items-center gap-2 text-sm text-white/65 hover:text-white"><ArrowLeft className="h-4 w-4" />Back to tasks</Link>
         <section role="alert" className="mx-auto mt-10 max-w-2xl border border-rose-400/30 bg-rose-500/10 p-6">
-          <h1 className="text-lg font-semibold">Mission monitor unavailable</h1>
+          <h1 className="text-lg font-semibold">Job monitor unavailable</h1>
           <p className="mt-2 text-sm text-white/65">{error}. Check that the backend is running and VITE_API_BASE_URL points to it.</p>
         </section>
       </div>
@@ -461,7 +461,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
           <Link to="/tasks" aria-label="Back to tasks" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/55 hover:bg-white/10 hover:text-white"><ArrowLeft className="h-4 w-4" /></Link>
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-white/40">Robot workflow monitor</p>
-            <h1 className="truncate text-sm font-semibold">{mission?.workflowName ?? 'Loading mission…'}</h1>
+            <h1 className="truncate text-sm font-semibold">{job?.workflowName ?? 'Loading job…'}</h1>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -478,16 +478,16 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
           {canRun && (
             <button
               type="button"
-              onClick={() => void runMission()}
+              onClick={() => void runJob()}
               disabled={runPending || (!isSimulation && !armLeaseId)}
               className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-[#07140d] hover:bg-emerald-400 disabled:cursor-wait disabled:opacity-60"
             >
-              <Play className="h-3.5 w-3.5" />{runPending ? 'Starting…' : missionIsComplete || missionHasFailed ? 'Run again' : 'Run'}
+              <Play className="h-3.5 w-3.5" />{runPending ? 'Starting…' : jobIsComplete || jobHasFailed ? 'Run again' : 'Run'}
             </button>
           )}
-          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${missionHasFailed ? 'bg-rose-400/15 text-rose-300' : missionIsComplete ? 'bg-emerald-400/15 text-emerald-300' : 'bg-amber-400/15 text-amber-200'}`}>{displayName(status)}</span>
+          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${jobHasFailed ? 'bg-rose-400/15 text-rose-300' : jobIsComplete ? 'bg-emerald-400/15 text-emerald-300' : 'bg-amber-400/15 text-amber-200'}`}>{displayName(status)}</span>
           <span className={`hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs sm:inline-flex ${runtime?.connected ? 'bg-emerald-400/10 text-emerald-300' : 'bg-white/8 text-white/50'}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${runtime?.connected ? 'bg-emerald-400' : 'bg-white/30'}`} />{runtime?.displayName ?? mission?.runtimeId ?? 'Robot'}{runtime?.stale ? ' · stale' : ''}
+            <span className={`h-1.5 w-1.5 rounded-full ${runtime?.connected ? 'bg-emerald-400' : 'bg-white/30'}`} />{runtime?.displayName ?? job?.runtimeId ?? 'Robot'}{runtime?.stale ? ' · stale' : ''}
           </span>
         </div>
       </header>
@@ -530,7 +530,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                     </button>
                   )}
                 </div>
-                {mission?.runtimeId === 'sim' && (
+                {job?.runtimeId === 'sim' && (
                   <div aria-label="Gazebo simulation speed" className="flex shrink-0 items-center gap-1 rounded-md border border-white/10 bg-black/20 p-1">
                     <span className="px-1 text-[10px] font-medium text-white/40">Speed</span>
                     {[1, 2, 3, 4].map((multiplier) => (
@@ -594,12 +594,12 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
         <aside className="flex max-h-[72vh] min-h-[440px] w-full shrink-0 flex-col border-t border-white/10 bg-[#f7f8fa] text-[#252933] xl:max-h-none xl:min-h-0 xl:w-[430px] xl:border-r xl:border-t-0">
           <div className="shrink-0 border-b border-[#e0e3e9] bg-white px-5 py-4">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-[#79808d]">Execution progress</p>
-            <h2 className="mt-1 break-words text-base font-semibold">{workflow?.name ?? mission?.workflowName ?? 'Workflow'}</h2>
+            <h2 className="mt-1 break-words text-base font-semibold">{workflow?.name ?? job?.workflowName ?? 'Workflow'}</h2>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#687386]">
               <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />Updated {formatTime(execution?.updatedAt)}</span>
               {runtime?.telemetry?.battery !== null && runtime?.telemetry?.battery !== undefined && <span>Battery {Math.round(runtime.telemetry.battery)}%</span>}
             </div>
-            {currentStep && missionInProgress && (
+            {currentStep && jobInProgress && (
               <div className="mt-4 border-l-2 border-amber-500 bg-amber-50 px-3 py-2.5">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-800">Robot is working on</p>
                 <p className="mt-1 text-sm font-semibold text-[#252933]">{currentStep.sequence}. {currentStep.name}</p>
@@ -608,7 +608,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
             {status === 'WAITING' && expectedEventType && (
               <div className="mt-4 border border-cyan-200 bg-cyan-50 px-3 py-3">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-cyan-800">
-                  {mission?.runtimeId === 'sim' ? 'Demo is continuing automatically' : 'Workflow is waiting for your choice'}
+                  {job?.runtimeId === 'sim' ? 'Demo is continuing automatically' : 'Workflow is waiting for your choice'}
                 </p>
                 <p className="mt-1 text-xs text-[#465164]">{displayName(expectedEventType)} · chọn hoặc nhập để workflow tiếp tục.</p>
                 {waitAlreadySubmitted ? (
@@ -664,9 +664,9 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
               <section className="mb-4 border border-[#d9dce5] bg-white p-3.5">
                 <div className="flex items-center justify-between gap-3">
                   <h2 className="text-sm font-semibold text-[#252933]">Bookshelf inventory</h2>
-                  {inventoryReport && mission && (
+                  {inventoryReport && job && (
                     <Link
-                      to={`/inventory-results?missionId=${encodeURIComponent(missionId)}&runtimeId=${encodeURIComponent(mission.runtimeId ?? 'sim')}`}
+                      to={`/inventory-results?jobId=${encodeURIComponent(jobId)}&runtimeId=${encodeURIComponent(job.runtimeId ?? 'sim')}`}
                       className="text-xs font-semibold text-primary hover:underline"
                     >View full report</Link>
                   )}
@@ -686,7 +686,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                 )}
                 <div className="mt-3">
                   <RealtimeCamera
-                    runtimeId={mission?.runtimeId || 'sim'}
+                    runtimeId={job?.runtimeId || 'sim'}
                     connected={Boolean(runtime?.connected && !runtime.stale)}
                     mappingActive={false}
                     scanActive={isAiScanning}
@@ -768,7 +768,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                         : currentStatus === 'STEP_FAILED' || currentStatus === 'FAILED' ? 'failed'
                           : 'running'
                   }
-                  const isCurrent = currentStep?.id === step.id && missionInProgress
+                  const isCurrent = currentStep?.id === step.id && jobInProgress
                   const style = progress === 'running' || progress === 'waiting'
                     ? 'border-amber-300 bg-amber-50 shadow-[0_0_0_2px_rgba(245,158,11,0.11)]'
                     : progress === 'completed'
@@ -798,11 +798,11 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
               </ol>
             ) : (
               <div className="border border-dashed border-[#cfd3dd] bg-white px-4 py-8 text-center text-sm text-[#687386]">
-                {mission ? 'Loading workflow steps…' : 'Connecting to mission…'}
+                {job ? 'Loading workflow steps…' : 'Connecting to job…'}
               </div>
             )}
             {execution?.error && <div className="mt-4 border border-rose-200 bg-rose-50 px-3 py-3 text-xs text-rose-800">{execution.error}</div>}
-            <p className="mt-4 text-center text-[10px] text-[#89909d]">Progress refreshes automatically while the mission runs.</p>
+            <p className="mt-4 text-center text-[10px] text-[#89909d]">Progress refreshes automatically while the job runs.</p>
           </div>
         </aside>
       </div>
@@ -819,4 +819,4 @@ function InventoryMetric({ label, value }: { label: string; value: unknown }) {
   )
 }
 
-export default LiveMissionDetail
+export default LiveJobDetail

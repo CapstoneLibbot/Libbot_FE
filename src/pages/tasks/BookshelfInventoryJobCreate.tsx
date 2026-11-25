@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { ArrowLeft, Check, QrCode } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
-import { apiErrorMessage, createMission, getDispatchWorkflows } from '@/features/dispatch/api'
+import { apiErrorMessage, createJob, getDispatchWorkflows } from '@/features/dispatch/api'
 import type { DispatchWorkflow } from '@/features/dispatch/types'
 import { apiClient, getRobotRuntimes, getSavedMapEndpoints, type SavedMapEndpoint } from '@/features/maps/api/runtimeApi'
 import type { RobotRuntime } from '@/features/maps/types/runtime'
@@ -11,7 +11,7 @@ type MapDetails = { id: string; name: string; floorId: string | null; status: st
 
 const fieldClass = 'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#252933] outline-none focus:border-primary'
 
-function BookshelfInventoryMissionCreate({ onBack }: { onBack: () => void }) {
+function BookshelfInventoryJobCreate({ onBack }: { onBack: () => void }) {
   const navigate = useNavigate()
   const [workflow, setWorkflow] = useState<DispatchWorkflow | null>(null)
   const [runtimes, setRuntimes] = useState<RobotRuntime[]>([])
@@ -141,7 +141,7 @@ function BookshelfInventoryMissionCreate({ onBack }: { onBack: () => void }) {
       if (!latestRuntime?.connected || latestRuntime.stale || latestRuntime.telemetry?.activeMapId !== activeMapId) {
         throw new Error('Runtime is offline, telemetry is stale, or its active map changed. Refresh the page and try again.')
       }
-      const mission = await createMission({
+      const job = await createJob({
         workflowId: workflow.id,
         priority: 'NORMAL',
         runtimeId: runtimeId as 'sim' | 'real',
@@ -154,9 +154,9 @@ function BookshelfInventoryMissionCreate({ onBack }: { onBack: () => void }) {
           target_shelves: selectedIds,
         },
       })
-      navigate(`/tasks/${mission.id}`)
+      navigate(`/tasks/${job.id}`)
     } catch (cause) {
-      setError(apiErrorMessage(cause, 'Unable to create the inventory mission.'))
+      setError(apiErrorMessage(cause, 'Unable to create the inventory job.'))
     } finally {
       setSubmitting(false)
     }
@@ -173,7 +173,7 @@ function BookshelfInventoryMissionCreate({ onBack }: { onBack: () => void }) {
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10"><QrCode className="h-5 w-5 text-primary" /></div>
             <div>
               <h1 className="text-2xl font-bold text-[#17181c]">Create Bookshelf Inventory</h1>
-              <p className="mt-0.5 text-sm text-[#596174]">The robot scans QR codes across both shelf levels in one camera pass.</p>
+              <p className="mt-0.5 text-sm text-[#596174]">Single-endpoint shelves are scanned in place; two-endpoint shelves are swept horizontally.</p>
             </div>
           </div>
         </header>
@@ -195,7 +195,7 @@ function BookshelfInventoryMissionCreate({ onBack }: { onBack: () => void }) {
                 </div>
               </div>
               <label className="space-y-1.5 text-sm font-medium text-[#3f4654] sm:col-span-2">
-                Mission name
+                Job name
                 <input required maxLength={150} value={name} onChange={(event) => setName(event.target.value)} className={fieldClass} />
               </label>
               <label className="space-y-1.5 text-sm font-medium text-[#3f4654] sm:col-span-2">
@@ -232,7 +232,7 @@ function BookshelfInventoryMissionCreate({ onBack }: { onBack: () => void }) {
             <div className="flex flex-wrap justify-between gap-3">
               <Link to="/tasks" className="inline-flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium text-[#596174] hover:bg-[#f8f9fb]">Cancel</Link>
               <button type="submit" disabled={submitting || loading || !!workflowError || !workflow || !map?.floorId || selectedRuntime?.connected !== true || selectedRuntime.stale || selectedIds.length === 0} className="inline-flex h-10 items-center gap-2 bg-primary px-5 text-sm font-semibold text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
-                {submitting ? 'Creating…' : <><Check className="h-4 w-4" />Create mission</>}
+                {submitting ? 'Creating…' : <><Check className="h-4 w-4" />Create job</>}
               </button>
             </div>
           </form>
@@ -242,4 +242,4 @@ function BookshelfInventoryMissionCreate({ onBack }: { onBack: () => void }) {
   )
 }
 
-export default BookshelfInventoryMissionCreate
+export default BookshelfInventoryJobCreate

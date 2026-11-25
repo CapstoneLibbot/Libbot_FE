@@ -10,8 +10,8 @@ import { JobPriority } from '@/types/job'
 import type { JobPriority as JobPriorityValue, JobStepParameters } from '@/types/job'
 import { WorkflowStatus, WorkflowStepType } from '@/types/workflow'
 import type { WorkflowRecord } from '@/types/workflow'
-import LibraryPatrolMissionCreate from './LibraryPatrolMissionCreate'
-import BookshelfInventoryMissionCreate from './BookshelfInventoryMissionCreate'
+import LibraryPatrolJobCreate from './LibraryPatrolJobCreate'
+import BookshelfInventoryJobCreate from './BookshelfInventoryJobCreate'
 
 const inputClassName = 'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#252933] outline-none placeholder:text-[#89909d] focus:border-primary'
 const selectClassName = 'h-10 w-full appearance-none border border-[#d7d9e2] bg-white px-3 pr-9 text-sm text-[#252933] outline-none focus:border-primary'
@@ -313,10 +313,10 @@ function TaskCreateForm({ onCreatePatrol, onCreateInventory }: { onCreatePatrol:
             </div>
             </div>
             <button type="button" onClick={onCreatePatrol} className="inline-flex h-10 items-center gap-2 border border-primary/30 bg-primary/5 px-4 text-sm font-semibold text-primary hover:bg-primary/10">
-              <ShieldCheck className="h-4 w-4" />Create Library Patrol mission
+              <ShieldCheck className="h-4 w-4" />Create Library Patrol job
             </button>
             <button type="button" onClick={onCreateInventory} className="inline-flex h-10 items-center gap-2 border border-primary/30 bg-primary/5 px-4 text-sm font-semibold text-primary hover:bg-primary/10">
-              <Search className="h-4 w-4" />Create Bookshelf Inventory mission
+              <Search className="h-4 w-4" />Create Bookshelf Inventory job
             </button>
           </div>
         </header>
@@ -418,8 +418,8 @@ function TaskCreateForm({ onCreatePatrol, onCreateInventory }: { onCreatePatrol:
 function TaskCreate() {
   const [createPatrol, setCreatePatrol] = useState(false)
   const [createInventory, setCreateInventory] = useState(false)
-  if (createPatrol) return <LibraryPatrolMissionCreate onBack={() => setCreatePatrol(false)} />
-  if (createInventory) return <BookshelfInventoryMissionCreate onBack={() => setCreateInventory(false)} />
+  if (createPatrol) return <LibraryPatrolJobCreate onBack={() => setCreatePatrol(false)} />
+  if (createInventory) return <BookshelfInventoryJobCreate onBack={() => setCreateInventory(false)} />
   return <TaskCreateForm
     onCreatePatrol={() => setCreatePatrol(true)}
     onCreateInventory={() => setCreateInventory(true)}

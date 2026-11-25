@@ -8,16 +8,25 @@ export type DispatchWorkflowStep = {
   configuration?: Record<string, unknown> | null
 }
 
+export type DispatchWorkflowTask = {
+  id: string
+  sequence: number
+  name: string
+  description?: string | null
+  steps: DispatchWorkflowStep[]
+}
+
 export type DispatchWorkflow = {
   id: string
   name: string
   description: string
   type: string
   isActive: boolean
+  tasks: DispatchWorkflowTask[]
   steps: DispatchWorkflowStep[]
 }
 
-export type Mission = {
+export type Job = {
   id: string
   workflowId: string | null
   workflowName: string
@@ -30,8 +39,8 @@ export type Mission = {
   runtimeId?: DispatchRuntimeId | null
 }
 
-export type MissionExecution = {
-  missionId: string
+export type JobExecution = {
+  jobId: string
   executionId?: string
   runtimeId: DispatchRuntimeId
   status: string
@@ -46,7 +55,7 @@ export type MissionExecution = {
 }
 
 export type AutoChargeStartedEvent = {
-  missionId: string
+  jobId: string
   executionId?: string | null
   runtimeId: DispatchRuntimeId
   workflowId?: string | null
@@ -59,14 +68,14 @@ export type AutoChargeStartedEvent = {
 export type LibrarianNotificationEvent = {
   type: string
   runtimeId?: DispatchRuntimeId
-  missionId?: string
+  jobId?: string
   executionId?: string
   batteryPercent?: number
   message: string
   createdAt?: string
 }
 
-export type CreateMissionInput = {
+export type CreateJobInput = {
   workflowId: string
   priority: string
   runtimeId: DispatchRuntimeId

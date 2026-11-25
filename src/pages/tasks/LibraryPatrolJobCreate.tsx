@@ -3,14 +3,14 @@ import { ArrowDown, ArrowLeft, ArrowUp, Check, MapPinned } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { apiClient, getRobotRuntimes, getSavedMapEndpoints, type SavedMapEndpoint } from '@/features/maps/api/runtimeApi'
 import type { RobotRuntime } from '@/features/maps/types/runtime'
-import { apiErrorMessage, createMission, getDispatchWorkflows } from '@/features/dispatch/api'
+import { apiErrorMessage, createJob, getDispatchWorkflows } from '@/features/dispatch/api'
 import type { DispatchWorkflow } from '@/features/dispatch/types'
 
 type MapDetails = { id: string; name: string; floorId: string | null; status: string }
 
 const fieldClass = 'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#252933] outline-none focus:border-primary'
 
-function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
+function LibraryPatrolJobCreate({ onBack }: { onBack: () => void }) {
   const navigate = useNavigate()
   const [workflow, setWorkflow] = useState<DispatchWorkflow | null>(null)
   const [runtimes, setRuntimes] = useState<RobotRuntime[]>([])
@@ -130,7 +130,7 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
       if (!latestRuntime?.connected || latestRuntime.stale || latestMapId !== activeMapId) {
         throw new Error('Runtime is offline, telemetry is stale, or its active map changed. Refresh the page and try again.')
       }
-      const mission = await createMission({
+      const job = await createJob({
         workflowId: workflow.id,
         priority: 'NORMAL',
         runtimeId: runtimeId as 'sim' | 'real',
@@ -143,9 +143,9 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
           target_endpoints: selectedIds,
         },
       })
-      navigate(`/tasks/${mission.id}`)
+      navigate(`/tasks/${job.id}`)
     } catch (cause) {
-      setError(apiErrorMessage(cause, 'Unable to create the patrol mission.'))
+      setError(apiErrorMessage(cause, 'Unable to create the patrol job.'))
     } finally {
       setSubmitting(false)
     }
@@ -176,7 +176,7 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
                   <option value="">Choose runtime</option>
                   {runtimes.map((runtime) => <option key={runtime.id} value={runtime.id}>{runtime.displayName} · {runtime.id.toUpperCase()}</option>)}
                 </select>
-                <span className="block text-xs font-normal text-[#687386]">REAL missions require Arm and a valid lease before Start.</span>
+                <span className="block text-xs font-normal text-[#687386]">REAL jobs require Arm and a valid lease before Start.</span>
               </label>
               <div className="space-y-1.5 text-sm font-medium text-[#3f4654]">
                 Active map
@@ -186,7 +186,7 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
                 <span className="block truncate text-xs font-normal text-[#89909d]">{activeMapId ?? 'The runtime must report its active map.'}</span>
               </div>
               <label className="space-y-1.5 text-sm font-medium text-[#3f4654] sm:col-span-2">
-                Patrol mission name
+                Patrol job name
                 <input required maxLength={150} value={name} onChange={(event) => setName(event.target.value)} className={fieldClass} />
               </label>
               <label className="space-y-1.5 text-sm font-medium text-[#3f4654] sm:col-span-2">
@@ -230,7 +230,7 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
             <div className="flex flex-wrap justify-between gap-3">
               <Link to="/tasks" className="inline-flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium text-[#596174] hover:bg-[#f8f9fb]">Cancel</Link>
               <button type="submit" disabled={submitting || loading || !!workflowError || !workflow || !map || selectedRuntime?.connected !== true || selectedRuntime.stale} className="inline-flex h-10 items-center gap-2 bg-primary px-5 text-sm font-semibold text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
-                {submitting ? 'Creating…' : <><Check className="h-4 w-4" />Create mission</>}
+                {submitting ? 'Creating…' : <><Check className="h-4 w-4" />Create job</>}
               </button>
             </div>
           </form>
@@ -240,4 +240,4 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
   )
 }
 
-export default LibraryPatrolMissionCreate
+export default LibraryPatrolJobCreate

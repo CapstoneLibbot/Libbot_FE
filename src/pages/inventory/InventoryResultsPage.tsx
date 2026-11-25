@@ -6,11 +6,11 @@ import type { InventoryReportResult, InventoryRuntime } from '@/lib/inventoryApi
 
 const inputClassName = 'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#17181c] outline-none placeholder:text-[#89909d] focus:border-primary'
 const selectClassName = `${inputClassName} appearance-none`
-const missionPattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+const jobPattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
 
 function InventoryResultsPage() {
   const [searchParams] = useSearchParams()
-  const [missionId, setMissionId] = useState('')
+  const [jobId, setJobId] = useState('')
   const [runtimeId, setRuntimeId] = useState<InventoryRuntime>('real')
   const [scopeType, setScopeType] = useState<'SHELF' | 'AREA'>('SHELF')
   const [reportType, setReportType] = useState<'INVENTORY' | 'MISPLACED_BOOK_DETECTION'>('INVENTORY')
@@ -19,13 +19,13 @@ function InventoryResultsPage() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    const requestedMissionId = searchParams.get('missionId')
-    if (!requestedMissionId) return
+    const requestedJobId = searchParams.get('jobId')
+    if (!requestedJobId) return
     const requestedRuntime = searchParams.get('runtimeId') === 'sim' ? 'sim' : 'real'
-    setMissionId(requestedMissionId)
+    setJobId(requestedJobId)
     setRuntimeId(requestedRuntime)
     setError('')
-    void inventoryApi.getReport(requestedMissionId, requestedRuntime)
+    void inventoryApi.getReport(requestedJobId, requestedRuntime)
       .then(setReport)
       .catch((requestError) => setError(requestError instanceof Error ? requestError.message : 'Could not load this inventory report.'))
   }, [searchParams])
@@ -37,7 +37,7 @@ function InventoryResultsPage() {
     setReport(null)
     try {
       const result = await inventoryApi.generateReport({
-        missionId: missionId.trim(),
+        jobId: jobId.trim(),
         runtimeId,
         scopeType,
         reportType,
@@ -61,7 +61,7 @@ function InventoryResultsPage() {
         <form onSubmit={(event) => void handleSubmit(event)} className="max-w-3xl space-y-5 border border-[#d9dce5] bg-white p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e4e6eb] pb-4"><h2 className="text-base font-semibold">Generate report</h2><div className="inline-flex border border-[#d7d9e2] bg-[#f5f4f8] p-1" role="group" aria-label="Inventory runtime">{(['real', 'sim'] as const).map((runtime) => <button key={runtime} type="button" aria-pressed={runtimeId === runtime} onClick={() => setRuntimeId(runtime)} className={runtimeId === runtime ? 'h-8 min-w-20 bg-white px-3 text-xs font-semibold text-primary shadow-sm' : 'h-8 min-w-20 px-3 text-xs font-medium text-[#596174] hover:text-[#17181c]'}>{runtime.toUpperCase()}</button>)}</div></div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">Mission ID <span className="text-[#b42318]">*</span><input required pattern={missionPattern} title="Enter a valid mission GUID" value={missionId} onChange={(event) => setMissionId(event.target.value)} placeholder="00000000-0000-0000-0000-000000000000" className={inputClassName} /></label>
+            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">Job ID <span className="text-[#b42318]">*</span><input required pattern={jobPattern} title="Enter a valid job GUID" value={jobId} onChange={(event) => setJobId(event.target.value)} placeholder="00000000-0000-0000-0000-000000000000" className={inputClassName} /></label>
             <label className="block space-y-1.5 text-sm font-medium">Scope<select value={scopeType} onChange={(event) => setScopeType(event.target.value as 'SHELF' | 'AREA')} className={selectClassName}><option value="SHELF">Shelf</option><option value="AREA">Area</option></select></label>
             <label className="block space-y-1.5 text-sm font-medium">Report type<select value={reportType} onChange={(event) => setReportType(event.target.value as 'INVENTORY' | 'MISPLACED_BOOK_DETECTION')} className={selectClassName}><option value="INVENTORY">Inventory</option><option value="MISPLACED_BOOK_DETECTION">Misplaced book detection</option></select></label>
           </div>

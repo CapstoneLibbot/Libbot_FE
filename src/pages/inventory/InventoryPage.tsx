@@ -6,10 +6,10 @@ import { shelfApi } from '@/lib/shelfApi'
 import type { InventoryShelfRecord } from '@/lib/shelfApi'
 
 const inputClassName = 'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#17181c] outline-none placeholder:text-[#89909d] focus:border-primary'
-const missionPattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+const jobPattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
 
 function InventoryPage() {
-  const [missionId, setMissionId] = useState('')
+  const [jobId, setJobId] = useState('')
   const [runtimeId, setRuntimeId] = useState<InventoryRuntime>('real')
   const [shelfName, setShelfName] = useState('')
   const [shelves, setShelves] = useState<InventoryShelfRecord[]>([])
@@ -43,7 +43,7 @@ function InventoryPage() {
     setError('')
     try {
       const result = await inventoryApi.recordScan({
-        missionId: missionId.trim(),
+        jobId: jobId.trim(),
         runtimeId,
         qrCode: qrCode.trim(),
         levelNumber,
@@ -63,7 +63,7 @@ function InventoryPage() {
       <div className="mx-auto max-w-[1180px] space-y-5">
         <header className="flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"><Boxes className="h-5 w-5" /></div>
-          <div><h1 className="text-2xl font-bold">Inventory</h1><p className="mt-0.5 text-sm text-[#596174]">Record QR scans for a running inventory mission</p></div>
+          <div><h1 className="text-2xl font-bold">Inventory</h1><p className="mt-0.5 text-sm text-[#596174]">Record QR scans for a running inventory job</p></div>
         </header>
 
         <form onSubmit={(event) => void handleSubmit(event)} className="max-w-3xl space-y-5 border border-[#d9dce5] bg-white p-5 sm:p-6">
@@ -77,7 +77,7 @@ function InventoryPage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">Mission ID <span className="text-[#b42318]">*</span><input required pattern={missionPattern} title="Enter a valid mission GUID" value={missionId} onChange={(event) => setMissionId(event.target.value)} placeholder="00000000-0000-0000-0000-000000000000" className={inputClassName} /></label>
+            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">Job ID <span className="text-[#b42318]">*</span><input required pattern={jobPattern} title="Enter a valid job GUID" value={jobId} onChange={(event) => setJobId(event.target.value)} placeholder="00000000-0000-0000-0000-000000000000" className={inputClassName} /></label>
             <label className="block space-y-1.5 text-sm font-medium">Shelf {runtimeId === 'real' && <span className="text-[#b42318]">*</span>}<select required={runtimeId === 'real'} disabled={shelfLoading || !!shelfError} value={shelfName} onChange={(event) => setShelfName(event.target.value)} className={`${inputClassName} appearance-none disabled:bg-[#f5f5f7]`}><option value="">{shelfLoading ? 'Loading shelves...' : shelfError ? 'Shelves unavailable' : 'Select shelf'}</option>{shelves.map((shelf) => <option key={shelf.id} value={shelf.name}>{shelf.name}</option>)}</select></label>
             <label className="block space-y-1.5 text-sm font-medium">Shelf level<select value={levelNumber} onChange={(event) => setLevelNumber(Number(event.target.value) as 1 | 2)} className={`${inputClassName} appearance-none`}><option value={1}>Level 1 · lower half</option><option value={2}>Level 2 · upper half</option></select></label>
             <label className="block space-y-1.5 text-sm font-medium">QR code <span className="text-[#b42318]">*</span><div className="relative"><Barcode className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#687386]" /><input required maxLength={100} autoComplete="off" value={qrCode} onChange={(event) => setQrCode(event.target.value)} placeholder="Scan or enter QR code" className={`${inputClassName} pl-9`} /></div></label>

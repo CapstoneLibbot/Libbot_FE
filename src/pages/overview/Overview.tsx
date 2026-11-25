@@ -17,7 +17,7 @@ function Overview() {
     {
       icon: Activity,
       tone: 'bg-[#e6f0ff] text-primary',
-      title: runningJob ? `Robot #${runningJob.robotId} is on a mission` : 'All robots are available',
+      title: runningJob ? `Robot #${runningJob.robotId} is on a job` : 'All robots are available',
       description: runningJob ? `${runningJob.name} · currently guiding a visitor.` : 'No active task needs attention.',
       time: 'Now',
     },
@@ -58,14 +58,14 @@ function Overview() {
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.85fr)]">
           <article className="overflow-hidden border border-[#d9dce5] bg-white">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#e4e6eb] px-5 py-4">
-              <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e6f0ff] text-primary"><Activity className="h-5 w-5" /></div><div><h2 className="font-semibold">Live robot operation</h2><p className="mt-0.5 text-sm text-[#687386]">Current mission and last reported position</p></div></div>
+              <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e6f0ff] text-primary"><Activity className="h-5 w-5" /></div><div><h2 className="font-semibold">Live robot operation</h2><p className="mt-0.5 text-sm text-[#687386]">Current job and last reported position</p></div></div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#d9f7e7] px-2.5 py-1 text-xs font-semibold text-[#087443]"><span className="h-1.5 w-1.5 rounded-full bg-current" />Running</span>
             </div>
             <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_260px]">
-              <div className="space-y-5"><div><p className="text-xs font-semibold uppercase tracking-wide text-[#687386]">Active task</p><h3 className="mt-1 text-lg font-semibold">{runningJob?.name || 'No active mission'}</h3><p className="mt-1 text-sm text-[#596174]">{runningJob?.description || 'The robot is waiting at its home location.'}</p></div>
+              <div className="space-y-5"><div><p className="text-xs font-semibold uppercase tracking-wide text-[#687386]">Active task</p><h3 className="mt-1 text-lg font-semibold">{runningJob?.name || 'No active job'}</h3><p className="mt-1 text-sm text-[#596174]">{runningJob?.description || 'The robot is waiting at its home location.'}</p></div>
                 <div className="grid gap-3 sm:grid-cols-2"><InfoItem icon={MapPin} label="Current location" value={runningJob ? 'Floor 1 · Reading desk area A' : 'Charging station'} /><InfoItem icon={Route} label="Destination" value={runningJob ? 'Endpoint EP-104' : '—'} /></div>
                 <div><div className="flex items-center justify-between text-sm"><span className="font-medium">Route progress</span><span className="font-semibold text-primary">{runningJob ? '42%' : '0%'}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e7e9ee]"><div className="h-full rounded-full bg-primary" style={{ width: runningJob ? '42%' : '0%' }} /></div><p className="mt-2 text-xs text-[#687386]">{runningJob ? '16.9 m travelled of 40.3 m · obstacle detection enabled' : 'No route is currently assigned.'}</p></div>
-                <Link to={runningJob ? `/tasks/${runningJob.id}` : '/tasks'} className="inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90">View mission <ArrowRight className="h-4 w-4" /></Link>
+                <Link to={runningJob ? `/tasks/${runningJob.id}` : '/tasks'} className="inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90">View job <ArrowRight className="h-4 w-4" /></Link>
               </div>
               <div className="relative flex min-h-56 items-center justify-center overflow-hidden bg-[#f2f6fe] p-5"><div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(#d6e2f7 1px, transparent 1px), linear-gradient(90deg, #d6e2f7 1px, transparent 1px)', backgroundSize: '24px 24px' }} /><div className="relative flex h-32 w-32 items-center justify-center rounded-full border border-primary/20 bg-white shadow-sm"><div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-white shadow-lg"><Bot className="h-8 w-8" /></div></div><span className="absolute bottom-5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#3f4654] shadow-sm">EP-104 · Floor 1</span></div>
             </div>

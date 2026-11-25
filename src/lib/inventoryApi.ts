@@ -1,7 +1,7 @@
 export type InventoryRuntime = 'real' | 'sim'
 
 export interface InventoryScanRequest {
-  missionId: string
+  jobId: string
   runtimeId: InventoryRuntime
   qrCode: string
   shelfCode?: string
@@ -23,7 +23,7 @@ export interface InventoryScanResult {
 }
 
 export interface InventoryReportRequest {
-  missionId: string
+  jobId: string
   runtimeId: InventoryRuntime
   scopeType: 'SHELF' | 'AREA'
   reportType: 'INVENTORY' | 'MISPLACED_BOOK_DETECTION'
@@ -33,7 +33,7 @@ export interface InventoryReportResult {
   reportId: string
   reportType: string
   runtimeId: InventoryRuntime
-  missionId?: string
+  jobId?: string
   totalShelves?: number
   totalBooksScanned: number
   totalAvailable?: number
@@ -80,9 +80,9 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 export const inventoryApi = {
   recordScan: (request: InventoryScanRequest) =>
     post<InventoryScanResult>('/api/workflow-data/inventory/scan', request),
-  getScans: async (missionId: string, runtimeId: InventoryRuntime) => {
+  getScans: async (jobId: string, runtimeId: InventoryRuntime) => {
     const response = await fetch(
-      `/api/workflow-data/inventory/scans/${encodeURIComponent(missionId)}?runtimeId=${runtimeId}`,
+      `/api/workflow-data/inventory/scans/${encodeURIComponent(jobId)}?runtimeId=${runtimeId}`,
     )
     if (!response.ok) {
       let message = `Request failed (${response.status})`
@@ -98,8 +98,8 @@ export const inventoryApi = {
   },
   generateReport: (request: InventoryReportRequest) =>
     post<InventoryReportResult>('/api/workflow-data/inventory/reports', request),
-  getReport: async (missionId: string, runtimeId: InventoryRuntime) => {
-    const response = await fetch(`/api/workflow-data/inventory/reports/${encodeURIComponent(missionId)}?runtimeId=${runtimeId}`)
+  getReport: async (jobId: string, runtimeId: InventoryRuntime) => {
+    const response = await fetch(`/api/workflow-data/inventory/reports/${encodeURIComponent(jobId)}?runtimeId=${runtimeId}`)
     if (!response.ok) {
       let message = `Request failed (${response.status})`
       try {

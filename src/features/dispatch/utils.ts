@@ -11,7 +11,7 @@ export function parseInitialContext(value: string): Record<string, unknown> {
   return parsed as Record<string, unknown>
 }
 
-export function isTerminalMissionStatus(status?: string | null): boolean {
+export function isTerminalJobStatus(status?: string | null): boolean {
   return ['SUCCEEDED', 'COMPLETED', 'FAILED', 'CANCELLED'].includes(
     String(status ?? '').toUpperCase(),
   )

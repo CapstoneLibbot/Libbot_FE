@@ -43,6 +43,7 @@ function RobotMapDetail() {
   const [zonesError, setZonesError] = useState<string | null>(null)
   const [endpointGroupFilterId, setEndpointGroupFilterId] = useState('')
   const [zoneTypeFilter, setZoneTypeFilter] = useState('')
+  const [showAllMapResources, setShowAllMapResources] = useState(false)
   const [selectedEndpointId, setSelectedEndpointId] = useState<string | null>(null)
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null)
   const [endpointPlacementMode, setEndpointPlacementMode] = useState(false)
@@ -202,6 +203,8 @@ function RobotMapDetail() {
       member.endpointGroupId.toLowerCase() === endpointGroupFilterId.toLowerCase()),
   )
   const filteredZones = zones.filter((zone) => !zoneTypeFilter || zone.zoneType === zoneTypeFilter)
+  const mapEndpoints = showAllMapResources ? endpoints : filteredEndpoints
+  const mapZones = showAllMapResources ? zones : filteredZones
 
   const endpointGroupsFor = (endpointId: string) => endpointGroupMembers
     .filter((member) => member.endpointId.toLowerCase() === endpointId.toLowerCase())
@@ -250,11 +253,24 @@ function RobotMapDetail() {
 
       <div className="flex min-h-[calc(100vh-4rem)] flex-1 flex-row">
         <section className="flex min-h-[520px] min-w-0 flex-1 flex-col bg-[#0d0d11]">
-          <div className="flex h-12 shrink-0 items-center gap-2 border-b border-[#292930] px-4">
+          <div className="flex min-h-12 shrink-0 flex-wrap items-center gap-2 border-b border-[#292930] px-4 py-2">
             <span className="rounded-md border border-primary bg-primary/10 px-3 py-1.5 text-sm font-medium text-white">
               2D map
             </span>
             <span className="text-xs text-[#92939c]">Occupancy grid</span>
+            <label
+              className="ml-auto inline-flex cursor-pointer select-none items-center gap-2 text-xs font-medium text-[#d1d2d8]"
+              title="Shows every zone and endpoint, regardless of the list filters."
+            >
+              <input
+                type="checkbox"
+                checked={showAllMapResources}
+                onChange={(event) => setShowAllMapResources(event.target.checked)}
+                className="h-4 w-4 rounded border-[#686974] accent-primary"
+                aria-label="Show all zones and endpoints on map"
+              />
+              Show all zones and endpoints
+            </label>
           </div>
           <div className="flex min-h-0 flex-1 items-center justify-center p-3 sm:p-5">
             {loading ? (
@@ -276,10 +292,10 @@ function RobotMapDetail() {
                 <LiveOccupancyMap
                   grid={grid}
                   orientVertically
-                  endpoints={filteredEndpoints}
-                  zones={filteredZones}
-                  showEndpoints={activeTab === 'endpoint'}
-                  showZones={activeTab === 'zone'}
+                  endpoints={mapEndpoints}
+                  zones={mapZones}
+                  showEndpoints={showAllMapResources || activeTab === 'endpoint'}
+                  showZones={showAllMapResources || activeTab === 'zone'}
                   drawZoneMode={drawZoneMode && activeTab === 'zone'}
                   endpointPlacementMode={endpointPlacementMode && activeTab === 'endpoint'}
                   onEndpointPlace={(position) => {

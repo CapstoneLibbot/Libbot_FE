@@ -1,10 +1,10 @@
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5205').replace(/\/$/, '')
 
-export type BackendMission = {
+export type BackendJob = {
   id: string
   workflowId: string | null
   workflowName: string
-  description: string
+  description: string | null
   status: string
   priority: string
   createdAt: string
@@ -23,17 +23,26 @@ export type BackendWorkflowStep = {
   configuration: Record<string, unknown> | null
 }
 
+export type BackendWorkflowTask = {
+  id: string
+  sequence: number
+  name: string
+  description: string | null
+  steps: BackendWorkflowStep[]
+}
+
 export type BackendWorkflow = {
   id: string
   name: string
   description: string
   type: string
   isActive: boolean
+  tasks: BackendWorkflowTask[]
   steps: BackendWorkflowStep[]
 }
 
-export type MissionExecutionState = {
-  missionId?: string
+export type JobExecutionState = {
+  jobId?: string
   executionId?: string | null
   runtimeId?: string | null
   status: string
