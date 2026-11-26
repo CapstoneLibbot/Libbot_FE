@@ -1,10 +1,10 @@
-# LiBot FE
+# LibBot FE
 
 > Tài liệu này ghi lại cấu trúc và hành vi đang có trong mã nguồn hiện tại. Đây là frontend prototype: dữ liệu nghiệp vụ chủ yếu là mock data, chưa kết nối backend và chưa có lưu trữ bền vững. Khi triển khai tiếp, hãy xem code là nguồn sự thật nếu tài liệu và hành vi thực tế khác nhau.
 
 ## 1. Tổng quan
 
-LiBot FE là giao diện quản lý robot thư viện, được xây dựng bằng React và TypeScript. Ứng dụng hiện có khung điều hướng chung, màn danh sách bản đồ, màn chi tiết bản đồ tương tác, và các màn danh sách/chi tiết dãy sách, kệ. Những mục nghiệp vụ khác đã có route nhưng hiện chỉ hiển thị trang placeholder.
+LibBot FE là giao diện quản lý robot thư viện, được xây dựng bằng React và TypeScript. Ứng dụng hiện có khung điều hướng chung, màn danh sách bản đồ, màn chi tiết bản đồ tương tác, và các màn danh sách/chi tiết dãy sách, kệ. Những mục nghiệp vụ khác đã có route nhưng hiện chỉ hiển thị trang placeholder.
 
 Các luồng dữ liệu hiện có:
 

@@ -42,6 +42,11 @@ export const bookApi = {
     return httpClient.get<BookCategoryRecord[]>(BOOK_ENDPOINTS.CATEGORIES)
   },
 
+  /** Xem chi tiết một thể loại sách */
+  getCategoryById: (id: string): Promise<BookCategoryRecord> => {
+    return httpClient.get<BookCategoryRecord>(BOOK_ENDPOINTS.CATEGORY_DETAIL(id))
+  },
+
   /** Tạo danh mục sách mới */
   createCategory: (payload: BookCategoryWriteRequest): Promise<BookCategoryRecord> => {
     return httpClient.post<BookCategoryRecord>(BOOK_ENDPOINTS.CATEGORIES, payload)

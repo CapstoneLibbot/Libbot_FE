@@ -1,14 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import {
   ArrowLeft,
   BookOpen,
-  Calendar,
-  CheckCircle2,
+  Eye,
   ExternalLink,
-  Layers,
   LibraryBig,
-  MapPin,
   Navigation,
   Pencil,
   Plus,
@@ -19,6 +16,9 @@ import {
 import { shelfApi } from '@/features/shelves/api/shelfApi'
 import { aisleApi } from '@/features/aisles/api/aisleApi'
 import { httpClient } from '@/services/http/client'
+import { bookApi } from '@/features/books/api/bookApi'
+import { bookItemApi } from '@/features/book-items/api/bookItemApi'
+import { groupBookItemsByShelfLevel } from '@/features/book-items/utils/shelfLevelItems'
 import type {
   EndpointOptionRecord,
   ShelfLevelRecord,
@@ -41,12 +41,55 @@ interface LevelBookItem {
   currentShelfLevelId: string | null
 }
 
-const itemStatusLabels: Record<string, string> = {
-  AVAILABLE: 'Có sẵn',
-  MISPLACED: 'Sai vị trí',
-  MISSING: 'Bị thiếu',
-  LOST: 'Thất lạc',
-  DAMAGED: 'Bị hư hỏng',
+type BookItemStatusGroup = 'available' | 'misplaced' | 'missing' | 'other'
+const EMPTY_LEVEL_BOOK_ITEMS: LevelBookItem[] = []
+
+function getBookItemStatusGroup(status: string): BookItemStatusGroup {
+  switch (status.trim().toUpperCase()) {
+    case 'AVAILABLE':
+      return 'available'
+    case 'MISPLACED':
+      return 'misplaced'
+    case 'MISSING':
+      return 'missing'
+    default:
+      return 'other'
+  }
+}
+
+function getBookItemStatusLabel(status: string): string {
+  const normalizedStatus = status.trim().toUpperCase()
+  const labels: Record<string, string> = {
+    AVAILABLE: 'Có sẵn',
+    MISPLACED: 'Sai vị trí',
+    MISSING: 'Không tìm thấy',
+    DAMAGED: 'Hư hỏng',
+    BORROWED: 'Đang mượn',
+  }
+  return labels[normalizedStatus] || status
+}
+
+function formatLastInventoryAtUtc(value: string | null): string {
+  if (!value) return 'Chưa kiểm kê'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString('vi-VN')
+}
+
+async function getAllBookItems(): Promise<LevelBookItem[]> {
+  const pageSize = 100
+  const firstPage = await httpClient.get<PaginatedData<LevelBookItem> | LevelBookItem[]>('/books/items', {
+    params: { page: 1, pageSize },
+  })
+  if (Array.isArray(firstPage)) return firstPage
+
+  const items = [...(firstPage.items || [])]
+  for (let page = 2; page <= firstPage.totalPages; page += 1) {
+    const response = await httpClient.get<PaginatedData<LevelBookItem> | LevelBookItem[]>('/books/items', {
+      params: { page, pageSize },
+    })
+    items.push(...(Array.isArray(response) ? response : response.items || []))
+  }
+  return items
 }
 
 export default function ShelfDetail() {
@@ -55,8 +98,13 @@ export default function ShelfDetail() {
 
   const [shelf, setShelf] = useState<ShelfRecord | null>(null)
   const [levels, setLevels] = useState<ShelfLevelRecord[]>([])
+  const [allShelfLevels, setAllShelfLevels] = useState<ShelfLevelRecord[]>([])
+  const [allShelves, setAllShelves] = useState<ShelfRecord[]>([])
   const [aisles, setAisles] = useState<AisleOptionRecord[]>([])
   const [endpoints, setEndpoints] = useState<EndpointOptionRecord[]>([])
+  const [levelBookItems, setLevelBookItems] = useState<Record<string, LevelBookItem[]>>({})
+  const [levelBookLoading, setLevelBookLoading] = useState<Record<string, boolean>>({})
+  const [levelBookErrors, setLevelBookErrors] = useState<Record<string, string>>({})
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -78,7 +126,7 @@ export default function ShelfDetail() {
     setLoading(true)
     setError('')
     try {
-      const [shelfData, levelData, aisleList, endpointList] = await Promise.all([
+      const [shelfData, levelData, aisleList, endpointList, shelfList, allLevelData] = await Promise.all([
         shelfApi.getShelfById(id, 'aisle,levels,endpoints'),
         shelfApi.getLevelsByShelfId(id, 'asc'),
         aisleApi
@@ -86,12 +134,20 @@ export default function ShelfDetail() {
           .then((result) => result.items)
           .catch(() => [] as AisleOptionRecord[]),
         shelfApi.getEndpoints().catch(() => [] as EndpointOptionRecord[]),
+        shelfApi.getShelves({ page: 1, pageSize: 100, expand: 'aisle' })
+          .then((result) => result.items)
+          .catch(() => [] as ShelfRecord[]),
+        shelfApi.getShelfLevels({ page: 1, pageSize: 100, sortBy: 'levelNumber', sortOrder: 'asc' })
+          .then((result) => result.items)
+          .catch(() => [] as ShelfLevelRecord[]),
       ])
 
       setShelf(shelfData)
       setLevels(levelData.items || [])
       setAisles(aisleList)
       setEndpoints(endpointList)
+      setAllShelves(shelfList)
+      setAllShelfLevels(allLevelData)
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
@@ -102,6 +158,79 @@ export default function ShelfDetail() {
   useEffect(() => {
     void loadData()
   }, [loadData])
+
+  useEffect(() => {
+    let active = true
+    const levelIds = levels.map((level) => level.id)
+    setLevelBookItems({})
+    setLevelBookErrors({})
+    setLevelBookLoading(Object.fromEntries(levelIds.map((levelId) => [levelId, true])))
+
+    if (!levelIds.length) {
+      return () => {
+        active = false
+      }
+    }
+
+    void getAllBookItems()
+      .then((items) => {
+        if (!active) return
+        setLevelBookItems(groupBookItemsByShelfLevel(items, levelIds))
+      })
+      .catch((err) => {
+        if (!active) return
+        const message = getErrorMessage(err)
+        setLevelBookErrors(Object.fromEntries(levelIds.map((levelId) => [levelId, message])))
+      })
+      .finally(() => {
+        if (active) setLevelBookLoading({})
+      })
+
+    return () => {
+      active = false
+    }
+  }, [levels])
+
+  async function reloadBooksOnLevel(levelId: string) {
+    setLevelBookLoading((current) => ({ ...current, [levelId]: true }))
+    setLevelBookErrors((current) => ({ ...current, [levelId]: '' }))
+    try {
+      const allItems = await getAllBookItems()
+      const items = groupBookItemsByShelfLevel(allItems, [levelId])[levelId]
+      setLevelBookItems((current) => ({ ...current, [levelId]: items }))
+      setLevelBookErrors((current) => {
+        const next = { ...current }
+        delete next[levelId]
+        return next
+      })
+    } catch (err) {
+      setLevelBookErrors((current) => ({ ...current, [levelId]: getErrorMessage(err) }))
+    } finally {
+      setLevelBookLoading((current) => ({ ...current, [levelId]: false }))
+    }
+  }
+
+  function handleBookItemUpdated(updatedItem: LevelBookItem) {
+    setLevelBookItems((current) => {
+      const next = Object.fromEntries(
+        Object.entries(current).map(([levelId, items]) => [
+          levelId,
+          items.filter((item) => item.id !== updatedItem.id),
+        ]),
+      ) as Record<string, LevelBookItem[]>
+
+      const matchingLevelIds = new Set(
+        [updatedItem.currentShelfLevelId, updatedItem.expectedShelfLevelId].filter(
+          (levelId): levelId is string => levelId !== null,
+        ),
+      )
+      matchingLevelIds.forEach((levelId) => {
+        if (next[levelId]) next[levelId].push(updatedItem)
+      })
+
+      return next
+    })
+  }
 
   async function handleUpdateShelf(payload: ShelfWriteRequest) {
     if (!shelf) return
@@ -370,14 +499,27 @@ export default function ShelfDetail() {
                           <ShelfLevelStatusBadge status={level.status} />
                         </td>
                         <td className="px-5 py-4">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedLevelForBooks(level)}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-                          >
-                            <Layers className="h-3.5 w-3.5" />
-                            Xem sách trên tầng
-                          </button>
+                          {levelBookLoading[level.id] ? (
+                            <span role="status" className="text-xs text-[#687386]">
+                              Đang tải...
+                            </span>
+                          ) : levelBookErrors[level.id] ? (
+                            <div className="flex items-center gap-2 text-xs text-[#a12820]">
+                              <span>Lỗi tải</span>
+                              <button
+                                type="button"
+                                onClick={() => void reloadBooksOnLevel(level.id)}
+                                className="font-semibold underline"
+                              >
+                                Thử lại
+                              </button>
+                            </div>
+                          ) : (
+                            <LevelBookStats
+                              items={levelBookItems[level.id] ?? []}
+                              onView={() => setSelectedLevelForBooks(level)}
+                            />
+                          )}
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex justify-end gap-1">
@@ -458,6 +600,13 @@ export default function ShelfDetail() {
       {selectedLevelForBooks && (
         <ShelfLevelBooksDialog
           level={selectedLevelForBooks}
+          items={levelBookItems[selectedLevelForBooks.id] ?? EMPTY_LEVEL_BOOK_ITEMS}
+          loading={Boolean(levelBookLoading[selectedLevelForBooks.id])}
+          error={levelBookErrors[selectedLevelForBooks.id] || ''}
+          onRetry={() => void reloadBooksOnLevel(selectedLevelForBooks.id)}
+          shelfLevels={allShelfLevels}
+          shelves={allShelves}
+          onBookItemUpdated={handleBookItemUpdated}
           onClose={() => setSelectedLevelForBooks(null)}
         />
       )}
@@ -832,58 +981,207 @@ function ShelfLevelFormDialog({
   )
 }
 
+function LevelBookStats({
+  items,
+  onView,
+}: {
+  items: LevelBookItem[]
+  onView: () => void
+}) {
+  const counts = items.reduce(
+    (result, item) => {
+      result[getBookItemStatusGroup(item.status)] += 1
+      return result
+    },
+    { available: 0, misplaced: 0, missing: 0, other: 0 },
+  )
+  const total = items.length
+  const alertCount = counts.misplaced + counts.missing
+  const segments: { key: BookItemStatusGroup; count: number; color: string; label: string }[] = [
+    { key: 'available', count: counts.available, color: 'bg-[#16a34a]', label: 'Có sẵn' },
+    { key: 'misplaced', count: counts.misplaced, color: 'bg-[#eab308]', label: 'Sai vị trí' },
+    { key: 'missing', count: counts.missing, color: 'bg-[#dc2626]', label: 'Không tìm thấy' },
+    { key: 'other', count: counts.other, color: 'bg-[#94a3b8]', label: 'Khác' },
+  ]
+
+  return (
+    <div className="flex min-w-[210px] items-center gap-3">
+      <div className="relative min-w-0 flex-1">
+        <div
+          role="img"
+          aria-label={`${total} bản sách: ${counts.available} có sẵn, ${counts.misplaced} sai vị trí, ${counts.missing} không tìm thấy${counts.other ? `, ${counts.other} trạng thái khác` : ''}`}
+          className="flex h-2.5 w-full overflow-hidden rounded-full bg-[#e8ebf0]"
+        >
+          {segments.map((segment) => (
+            <span
+              key={segment.key}
+              title={`${segment.label}: ${segment.count}`}
+              className={`h-full ${segment.color}`}
+              style={{ width: total ? `${(segment.count / total) * 100}%` : '0%' }}
+            />
+          ))}
+        </div>
+        <p className="mt-1 text-[11px] text-[#687386]">
+          {total} bản · <span className="text-[#087443]">{counts.available} có sẵn</span>
+          {' · '}<span className="text-[#a16207]">{counts.misplaced} sai vị trí</span>
+          {' · '}<span className="text-[#b42318]">{counts.missing} không tìm thấy</span>
+          {counts.other > 0 && ` · ${counts.other} khác`}
+        </p>
+        {alertCount > 0 && (
+          <span
+            role="status"
+            aria-label={`${alertCount} bookitem cần chú ý: ${counts.misplaced} sai vị trí, ${counts.missing} không tìm thấy`}
+            title={`${alertCount} bookitem cần chú ý`}
+            className="absolute -right-1 -top-3 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#dc2626] px-1 text-[10px] font-bold leading-none text-white shadow"
+          >
+            {alertCount}
+          </span>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onView}
+        title="Xem chi tiết sách trên tầng"
+        aria-label="Xem chi tiết sách trên tầng"
+        className="flex h-8 w-8 shrink-0 items-center justify-center text-[#596174] hover:bg-[#eff5ff] hover:text-primary"
+      >
+        <Eye className="h-4 w-4" />
+      </button>
+    </div>
+  )
+}
+
 function ShelfLevelBooksDialog({
   level,
+  items,
+  loading,
+  error,
+  onRetry,
+  shelfLevels,
+  shelves,
+  onBookItemUpdated,
   onClose,
 }: {
   level: ShelfLevelRecord
+  items: LevelBookItem[]
+  loading: boolean
+  error: string
+  onRetry: () => void
+  shelfLevels: ShelfLevelRecord[]
+  shelves: ShelfRecord[]
+  onBookItemUpdated: (item: LevelBookItem) => void
   onClose: () => void
 }) {
-  const [items, setItems] = useState<LevelBookItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const navigate = useNavigate()
+  const [bookTitles, setBookTitles] = useState<Record<string, string>>({})
+  const [booksLoading, setBooksLoading] = useState(false)
+  const [booksError, setBooksError] = useState('')
+  const [relocatingItemId, setRelocatingItemId] = useState('')
+  const [actionError, setActionError] = useState('')
+  const [actionSuccess, setActionSuccess] = useState('')
+
+  const levelLookup = useMemo(
+    () => new Map(shelfLevels.map((shelfLevel) => [shelfLevel.id, shelfLevel])),
+    [shelfLevels],
+  )
+  const shelfNames = useMemo(
+    () => new Map(shelves.map((shelf) => [shelf.id, shelf.name])),
+    [shelves],
+  )
 
   useEffect(() => {
-    async function loadBooks() {
-      setLoading(true)
-      setError('')
-      try {
-        const res = await httpClient.get<PaginatedData<LevelBookItem> | LevelBookItem[]>('/books/items', {
-          params: { shelfLevelId: level.id },
-        })
-        const bookItems = Array.isArray(res) ? res : res.items || []
-        setItems(bookItems.filter((item) => item.currentShelfLevelId === level.id))
-      } catch (err) {
-        setError(getErrorMessage(err))
-      } finally {
-        setLoading(false)
+    let active = true
+    const bookIds = [...new Set(items.map((item) => item.bookId).filter(Boolean))]
+    setBookTitles({})
+    setBooksError('')
+
+    if (loading || error || !bookIds.length) {
+      setBooksLoading(false)
+      return () => {
+        active = false
       }
     }
-    void loadBooks()
-  }, [level.id])
+
+    setBooksLoading(true)
+    void Promise.allSettled(bookIds.map((bookId) => bookApi.getBookById(bookId))).then((results) => {
+      if (!active) return
+      const titles: Record<string, string> = {}
+      const failedBookIds: string[] = []
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          titles[bookIds[index]] = result.value.title
+        } else {
+          failedBookIds.push(bookIds[index])
+        }
+      })
+      setBookTitles(titles)
+      if (failedBookIds.length) {
+        setBooksError(`Không tải được thông tin tên của ${failedBookIds.length} sách.`)
+      }
+      setBooksLoading(false)
+    })
+
+    return () => {
+      active = false
+    }
+  }, [error, items, loading])
+
+  const getLocationName = (shelfLevelId: string | null) => {
+    if (!shelfLevelId) return 'Chưa xác định'
+    const shelfLevel = levelLookup.get(shelfLevelId)
+    if (!shelfLevel) return 'Không xác định'
+    const shelfName = shelfNames.get(shelfLevel.shelfId)
+    const levelName = `Tầng ${shelfLevel.levelNumber}${shelfLevel.name ? ` (${shelfLevel.name})` : ''}`
+    return shelfName ? `${shelfName} · ${levelName}` : levelName
+  }
+
+  async function handleRelocateBookItem(item: LevelBookItem) {
+    if (!item.expectedShelfLevelId) {
+      setActionError('Bản sách này chưa có vị trí mặc định để sửa.')
+      return
+    }
+
+    setRelocatingItemId(item.id)
+    setActionError('')
+    setActionSuccess('')
+    try {
+      const updatedItem = await bookItemApi.updateBookItem(item.id, {
+        bookId: item.bookId,
+        barcode: item.barcode,
+        expectedShelfLevelId: item.expectedShelfLevelId,
+        currentShelfLevelId: item.expectedShelfLevelId,
+        lastInventoryAtUtc: item.lastInventoryAtUtc,
+        status: 'AVAILABLE',
+      })
+      onBookItemUpdated(updatedItem)
+      setActionSuccess('Đã sửa vị trí của sách về đúng vị trí mặc định')
+    } catch (err) {
+      setActionError(getErrorMessage(err))
+    } finally {
+      setRelocatingItemId('')
+    }
+  }
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-[#151922]/45 p-4"
       role="presentation"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose()
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose()
       }}
     >
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="shelf-level-books-title"
-        className="flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden border border-[#d9dce5] bg-white shadow-xl"
+        className="flex max-h-[85vh] w-full max-w-6xl flex-col overflow-hidden border border-[#d9dce5] bg-white shadow-xl"
       >
         <header className="flex items-start justify-between gap-4 border-b border-[#e4e6eb] px-5 py-4">
           <div>
             <h2 id="shelf-level-books-title" className="text-lg font-semibold">
               Tầng {level.levelNumber}: {level.name || `Tầng ${level.levelNumber}`}
             </h2>
-            <p className="text-xs text-[#687386]">
-              Các bản sách vật lý hiện được đặt trên tầng kệ này
-            </p>
+            <p className="text-xs text-[#687386]">Danh sách sách và vị trí trên tầng kệ</p>
           </div>
           <button
             type="button"
@@ -902,8 +1200,11 @@ function ShelfLevelBooksDialog({
               <span className="ml-2 text-sm text-[#687386]">Đang tải sách trên tầng kệ...</span>
             </div>
           ) : error ? (
-            <div className="border border-[#efc7c4] bg-[#fff1f0] p-4 text-sm text-[#a12820]">
-              {error}
+            <div role="alert" className="flex items-center justify-between gap-3 border border-[#efc7c4] bg-[#fff1f0] p-4 text-sm text-[#a12820]">
+              <span>{error}</span>
+              <button type="button" onClick={onRetry} className="shrink-0 font-semibold underline">
+                Thử lại
+              </button>
             </div>
           ) : items.length === 0 ? (
             <div className="py-12 text-center text-[#687386]">
@@ -911,54 +1212,119 @@ function ShelfLevelBooksDialog({
               <p className="mt-2 text-sm font-medium">Hiện chưa có bản sách nào được gán cho tầng kệ này.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto border border-[#d9dce5]">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-[#f5f4f8] text-[11px] font-semibold uppercase text-[#3f4654]">
-                  <tr className="border-b border-[#d9dce5]">
-                    <th className="px-4 py-3">Mã vạch</th>
-                    <th className="px-4 py-3">Trạng thái</th>
-                    <th className="px-4 py-3">Kiểm kê gần nhất</th>
-                    <th className="px-4 py-3">Vị trí</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#ececf1]">
-                  {items.map((item) => {
-                    const isMatched = item.expectedShelfLevelId === item.currentShelfLevelId
-                    return (
-                      <tr key={item.id} className="hover:bg-[#faf9fc]">
-                        <td className="px-4 py-3 font-mono text-xs font-semibold">{item.barcode}</td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex rounded-full bg-[#f0eff5] px-2 py-0.5 text-xs font-medium text-[#484f60]">
-                            {itemStatusLabels[item.status.toUpperCase()] || item.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-xs text-[#596174]">
-                          {item.lastInventoryAtUtc ? (
-                            <span className="inline-flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(item.lastInventoryAtUtc).toLocaleDateString()}
-                            </span>
-                          ) : (
-                            'Chưa kiểm kê'
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-xs">
-                          {isMatched ? (
-                            <span className="inline-flex items-center gap-1 text-[#087443]">
-                              <CheckCircle2 className="h-3.5 w-3.5" /> Đúng vị trí
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-[#a65000]">
-                              <MapPin className="h-3.5 w-3.5" /> Sai vị trí
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <>
+              {booksLoading && (
+                <p role="status" className="mb-3 text-xs text-[#687386]">
+                  Đang tải tên sách...
+                </p>
+              )}
+              {booksError && (
+                <p role="alert" className="mb-3 text-xs text-[#a12820]">
+                  {booksError}
+                </p>
+              )}
+              {actionError && (
+                <p role="alert" className="mb-3 border border-[#efc7c4] bg-[#fff1f0] px-3 py-2 text-xs text-[#a12820]">
+                  {actionError}
+                </p>
+              )}
+              {actionSuccess && (
+                <p role="status" className="mb-3 border border-[#b8e3cc] bg-[#effaf3] px-3 py-2 text-xs text-[#087443]">
+                  {actionSuccess}
+                </p>
+              )}
+              <div className="overflow-x-auto border border-[#d9dce5]">
+                <table className="w-full min-w-[1050px] text-left text-sm">
+                  <thead className="bg-[#f5f4f8] text-[11px] font-semibold uppercase text-[#3f4654]">
+                    <tr className="border-b border-[#d9dce5]">
+                      <th className="px-4 py-3">Tên sách</th>
+                      <th className="px-4 py-3">Mã QR bản thể</th>
+                      <th className="px-4 py-3">Vị trí mặc định</th>
+                      <th className="px-4 py-3">Vị trí hiện tại</th>
+                      <th className="px-4 py-3">Kiểm kê gần nhất</th>
+                      <th className="px-4 py-3">Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#ececf1]">
+                    {items.map((item) => {
+                      const statusGroup = getBookItemStatusGroup(item.status)
+                      const statusClass = {
+                        available: 'bg-[#d9f7e7] text-[#087443]',
+                        misplaced: 'bg-[#fff0d8] text-[#a65000]',
+                        missing: 'bg-[#fff0f0] text-[#b42318]',
+                        other: 'bg-[#eef0f3] text-[#596174]',
+                      }[statusGroup]
+                      return (
+                        <tr
+                          key={item.id}
+                          role="link"
+                          tabIndex={0}
+                          aria-label={`Xem chi tiết bản sách ${item.barcode}`}
+                          onClick={() => navigate(`/book-items/${item.id}`)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault()
+                              navigate(`/book-items/${item.id}`)
+                            }
+                          }}
+                          className="cursor-pointer hover:bg-[#faf9fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        >
+                          <td className="px-4 py-3 font-medium">
+                            <Link
+                              to={`/book/${item.bookId}`}
+                              onClick={(event) => event.stopPropagation()}
+                              className="text-primary hover:underline"
+                            >
+                              {bookTitles[item.bookId] || (booksLoading ? 'Đang tải...' : 'Không rõ tên sách')}
+                            </Link>
+                          </td>
+                          <td className="px-4 py-3 font-mono text-xs">{item.barcode}</td>
+                          <td className="px-4 py-3 text-xs text-[#596174]">
+                            {getLocationName(item.expectedShelfLevelId)}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-[#596174]">
+                            {getLocationName(item.currentShelfLevelId)}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-[#596174]">
+                            {formatLastInventoryAtUtc(item.lastInventoryAtUtc)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusClass}`}>
+                                {getBookItemStatusLabel(item.status)}
+                              </span>
+                              {statusGroup === 'misplaced' && (
+                                <button
+                                  type="button"
+                                  disabled={relocatingItemId === item.id || !item.expectedShelfLevelId}
+                                  onClick={(event) => {
+                                    event.stopPropagation()
+                                    void handleRelocateBookItem(item)
+                                  }}
+                                  aria-label={`Sửa vị trí mặc định cho mã ${item.barcode}`}
+                                  title={
+                                    item.expectedShelfLevelId
+                                      ? 'Sửa về vị trí mặc định'
+                                      : 'Chưa có vị trí mặc định'
+                                  }
+                                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#cbd5e1] text-[#315f9e] hover:bg-[#eff5ff] disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                  {relocatingItemId === item.id ? (
+                                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                                  ) : (
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </section>

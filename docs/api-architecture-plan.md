@@ -2,7 +2,7 @@
 
 > **Dự án:** Libbot_FE  
 > **Công nghệ:** React 19, TypeScript, Vite, Axios, SignalR  
-> **Backend tương thích:** LiBot .NET Web API (`BaseResponse<T>`, `BookListResponse`)  
+> **Backend tương thích:** LibBot .NET Web API (`BaseResponse<T>`, `BookListResponse`)
 > **Trạng thái tài liệu:** Đã duyệt kiến trúc - Chuẩn bị triển khai  
 
 ---
@@ -51,7 +51,7 @@ flowchart TD
     end
 
     subgraph Backend_Layer["Hệ Thống Backend (.NET API)"]
-        DotNetApi["LiBot .NET API (/api)"]
+        DotNetApi["LibBot .NET API (/api)"]
         SignalRHub["SignalR Hub (/robotHub)"]
     end
 
@@ -115,7 +115,7 @@ src/
 ## 4. Đặc Tả Dữ Liệu Backend & TypeScript Types
 
 ### 4.1. Hợp đồng dữ liệu từ Backend (`src/types/api.ts`)
-Backend LiBot (`LiBot_BE`) sử dụng `BaseResponse<T>` làm chuẩn đóng gói cho toàn bộ API:
+Backend LibBot (`LiBot_BE`) sử dụng `BaseResponse<T>` làm chuẩn đóng gói cho toàn bộ API:
 
 ```typescript
 // src/types/api.ts

@@ -18,8 +18,12 @@ import {
 
 import { aisleApi } from '@/features/aisles/api/aisleApi'
 import type { AisleRecord, AisleWriteRequest } from '@/features/aisles/types/aisle'
+import InfrastructureStatusBadge, {
+  normalizeInfrastructureStatus,
+} from '@/components/common/InfrastructureStatusBadge'
 import { floorApi } from '@/features/floors/api/floorApi'
 import type { FloorOptionRecord } from '@/features/floors/types/floor'
+import { localizeFloorName } from '@/features/floors/utils/floorDisplay'
 import { shelfApi } from '@/features/shelves/api/shelfApi'
 import type { EndpointOptionRecord, ShelfWriteRequest } from '@/features/shelves/types/shelf'
 import type { AisleStatus } from '@/types/enums'
@@ -147,7 +151,7 @@ function AisleList() {
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Dãy sách</h1>
               <p className="mt-0.5 text-sm text-[#596174]">
-                Quản lý các dãy sách trong thư viện và vị trí trên từng tầng.
+                Quản lý các dãy sách trong thư viện và vị trí trên từng lầu.
               </p>
             </div>
           </div>
@@ -206,12 +210,12 @@ function AisleList() {
               setFloorId(val)
               setPage(1)
             }}
-            ariaLabel="Lọc theo tầng"
+            ariaLabel="Lọc theo lầu"
           >
-            <option value="ALL">Tất cả các tầng</option>
+            <option value="ALL">Tất cả các lầu</option>
             {floors.map((floor) => (
               <option key={floor.id} value={floor.id}>
-                Tầng {floor.floorNumber}
+                Lầu {floor.floorNumber}
               </option>
             ))}
           </SelectFilter>
@@ -226,8 +230,8 @@ function AisleList() {
           >
             <option value="ALL">Tất cả trạng thái</option>
             <option value="ACTIVE">Đang hoạt động</option>
-            <option value="INACTIVE">Ngừng hoạt động</option>
             <option value="MAINTENANCE">Đang bảo trì</option>
+            <option value="INACTIVE">Ngừng hoạt động</option>
           </SelectFilter>
 
           <button
@@ -272,22 +276,19 @@ function AisleList() {
 
         <div className="overflow-hidden border border-[#d9dce5] bg-white shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[650px] text-left text-sm">
+            <table className="w-full min-w-[600px] text-left text-sm">
               <thead>
                 <tr className="border-b border-[#d9dce5] bg-[#f5f4f8]">
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
                     Tên dãy sách
                   </th>
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Tầng
+                    Lầu
                   </th>
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
                     Số kệ
                   </th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
-                    Mô tả
-                  </th>
-                  <th className="w-[140px] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
+                  <th className="w-[180px] whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
                     Trạng thái
                   </th>
                   <th className="w-[90px] px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
@@ -298,7 +299,7 @@ function AisleList() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-14 text-center">
+                    <td colSpan={5} className="px-6 py-14 text-center">
                       <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
                       <p className="mt-3 font-medium text-[#3f4654]">Đang tải danh sách dãy sách...</p>
                     </td>
@@ -323,7 +324,7 @@ function AisleList() {
                             onClick={(e) => e.stopPropagation()}
                             className="text-[#17181c] hover:text-primary hover:underline"
                           >
-                            Tầng {item.floor.floorNumber}
+                            Lầu {item.floor.floorNumber}
                           </Link>
                         ) : (
                           '—'
@@ -332,11 +333,8 @@ function AisleList() {
                       <td className="px-4 py-4 text-[#596174]">
                         {item.shelves ? `${item.shelves.length} kệ` : '—'}
                       </td>
-                      <td className="px-4 py-4 text-[#596174]">
-                        {item.description || '—'}
-                      </td>
                       <td className="px-4 py-4">
-                        <StatusBadge status={item.status} />
+                        <InfrastructureStatusBadge status={item.status} />
                       </td>
                       <td className="px-4 py-4 text-right">
                         <button
@@ -356,7 +354,7 @@ function AisleList() {
                   ))
                 ) : (
                   <EmptyTable
-                    colSpan={6}
+                    colSpan={5}
                     title="Không tìm thấy dãy sách"
                     description="Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm."
                   />
@@ -542,7 +540,7 @@ function AisleDetailView({ id }: { id: string }) {
             <p className="text-xs font-bold uppercase tracking-wider text-primary">
               {floor ? (
                 <Link to={`/floors/${floor.id}`} className="hover:underline">
-                  Tầng {floor.floorNumber}
+                  Lầu {floor.floorNumber}
                 </Link>
               ) : (
                 'Dãy sách'
@@ -577,14 +575,14 @@ function AisleDetailView({ id }: { id: string }) {
         <dl className="divide-y divide-[#d9dce5]">
           <DetailRow label="ID (GUID)" value={aisle.id} mono />
           <div className="grid grid-cols-[150px_1fr] gap-4 px-4 py-4 text-sm sm:grid-cols-[180px_1fr]">
-            <dt className="text-[#687386]">Tầng</dt>
+            <dt className="text-[#687386]">Lầu</dt>
             <dd>
               {floor ? (
                 <Link
                   to={`/floors/${floor.id}`}
                   className="font-medium text-primary hover:underline"
                 >
-                  Tầng {floor.floorNumber}
+                  Lầu {floor.floorNumber}
                 </Link>
               ) : (
                 '—'
@@ -596,7 +594,7 @@ function AisleDetailView({ id }: { id: string }) {
           <div className="grid grid-cols-[150px_1fr] gap-4 px-4 py-4 text-sm sm:grid-cols-[180px_1fr]">
             <dt className="text-[#687386]">Trạng thái</dt>
             <dd>
-              <StatusBadge status={aisle.status} />
+              <InfrastructureStatusBadge status={aisle.status} />
             </dd>
           </div>
         </dl>
@@ -734,12 +732,17 @@ export function AisleFormDialog({
   onSubmit: (data: AisleFormData) => void
 }) {
   const [form, setForm] = useState<AisleFormData>(
-    initial || {
-      floorId: fixedFloor?.id || floors[0]?.id || '',
-      name: '',
-      description: null,
-      status: 'ACTIVE',
-    },
+    initial
+      ? {
+          ...initial,
+          status: normalizeInfrastructureStatus(initial.status) ?? 'ACTIVE',
+        }
+      : {
+          floorId: fixedFloor?.id || floors[0]?.id || '',
+          name: '',
+          description: null,
+          status: 'ACTIVE',
+        },
   )
   const [submitting, setSubmitting] = useState(false)
   const canSubmit = fixedFloor
@@ -753,7 +756,7 @@ export function AisleFormDialog({
     if (floorOptionsLoading) return
     const payload = fixedFloor ? { ...form, floorId: fixedFloor.id } : form
     if (!payload.floorId) {
-      alert('Vui lòng chọn tầng cho dãy sách!')
+      alert('Vui lòng chọn lầu cho dãy sách!')
       return
     }
     setSubmitting(true)
@@ -780,15 +783,15 @@ export function AisleFormDialog({
           {fixedFloor ? (
             <div className="border border-primary/15 bg-primary/5 px-3 py-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-[#687386]">
-                Tầng được gán
+                Lầu được gán
               </p>
               <p className="mt-1 text-sm font-semibold text-primary">
-                {fixedFloor.name} (Tầng {fixedFloor.floorNumber})
+                {localizeFloorName(fixedFloor.name)} (Lầu {fixedFloor.floorNumber})
               </p>
             </div>
           ) : (
             <label className="block text-sm font-medium text-[#3f4654]">
-              Tầng
+              Lầu
               <select
                 required
                 disabled={floorOptionsLoading || floors.length === 0}
@@ -798,14 +801,14 @@ export function AisleFormDialog({
               >
                 <option value="" disabled>
                   {floorOptionsLoading
-                    ? 'Đang tải danh sách tầng...'
+                    ? 'Đang tải danh sách lầu...'
                     : floors.length === 0
-                      ? 'Không có tầng khả dụng'
-                      : '-- Chọn tầng --'}
+                      ? 'Không có lầu khả dụng'
+                      : '-- Chọn lầu --'}
                 </option>
                 {floors.map((floor) => (
                   <option key={floor.id} value={floor.id}>
-                    {floor.name}
+                    {localizeFloorName(floor.name)}
                   </option>
                 ))}
               </select>
@@ -855,13 +858,13 @@ export function AisleFormDialog({
             <label className="block text-sm font-medium text-[#3f4654]">
               Trạng thái
               <select
-                value={form.status}
+                value={normalizeInfrastructureStatus(form.status) ?? 'ACTIVE'}
                 onChange={(event) => setForm({ ...form, status: event.target.value as AisleStatus })}
                 className={input}
               >
                 <option value="ACTIVE">Đang hoạt động</option>
-                <option value="INACTIVE">Ngừng hoạt động</option>
                 <option value="MAINTENANCE">Đang bảo trì</option>
+                <option value="INACTIVE">Ngừng hoạt động</option>
               </select>
             </label>
           )}
@@ -949,31 +952,6 @@ function EmptyTable({
         <p className="mt-1 text-sm text-[#7b8190]">{description}</p>
       </td>
     </tr>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    ACTIVE: 'bg-[#d9f7e7] text-[#087443]',
-    INACTIVE: 'bg-[#eef0f3] text-[#596174]',
-    MAINTENANCE: 'bg-[#fff0d8] text-[#a65000]',
-  }
-
-  const labels: Record<string, string> = {
-    ACTIVE: 'Đang hoạt động',
-    INACTIVE: 'Ngừng hoạt động',
-    MAINTENANCE: 'Đang bảo trì',
-  }
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${
-        styles[status] || styles.INACTIVE
-      }`}
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {labels[status] || status}
-    </span>
   )
 }
 

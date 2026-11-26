@@ -168,7 +168,7 @@ export default function InventoryResultsPage() {
               </div>
               <div className="border border-[#d9dce5] bg-white px-4 py-4">
                 <p className="flex items-center gap-2 text-xs font-medium uppercase text-[#687386]">
-                  <Boxes className="h-4 w-4" /> Sách bị thiếu
+                  <Boxes className="h-4 w-4" /> Sách không tìm thấy
                 </p>
                 <p className="mt-2 text-2xl font-semibold">{report.totalMissing}</p>
               </div>

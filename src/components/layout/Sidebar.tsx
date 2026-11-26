@@ -1,19 +1,17 @@
 import { NavLink } from 'react-router'
 import {
   Activity,
-  AlertTriangle,
   ArrowLeftRight,
   BookOpen,
-  Boxes,
   ClipboardList,
   FileBarChart,
-  History,
   LayoutDashboard,
   Map,
   Layers3,
   Route,
   Send,
   Settings,
+  Tags,
   Warehouse,
 } from 'lucide-react'
 
@@ -44,7 +42,7 @@ const menuItems = [
     path: '/maps',
   },
   {
-    label: 'Tầng',
+    label: 'Lầu',
     icon: Layers3,
     path: '/floors',
   },
@@ -64,29 +62,14 @@ const menuItems = [
     path: '/book',
   },
   {
+    label: 'Thể loại sách',
+    icon: Tags,
+    path: '/book-categories',
+  },
+  {
     label: 'Giao dịch sách',
     icon: ArrowLeftRight,
     path: '/book-transactions',
-  },
-  {
-    label: 'Kiểm kê',
-    icon: Boxes,
-    path: '/inventory',
-  },
-  {
-    label: 'Kết quả kiểm kê',
-    icon: FileBarChart,
-    path: '/inventory-results',
-  },
-  {
-    label: 'Cảnh báo',
-    icon: AlertTriangle,
-    path: '/alerts',
-  },
-  {
-    label: 'Lịch sử',
-    icon: History,
-    path: '/history',
   },
   {
     label: 'Báo cáo',
@@ -104,16 +87,14 @@ function Sidebar() {
   return (
     <aside className="flex h-full w-[280px] shrink-0 flex-col border-r border-[#d9dce5] bg-[#f7f7fc]">
       {/* Brand */}
-      <div className="flex h-[70px] items-center border-b border-[#d9dce5] px-6">
-        <div>
-          <h1 className="text-[21px] font-bold tracking-tight text-primary">
-            LiBot
-          </h1>
-
-          <p className="mt-0.5 text-[12px] text-[#687386]">
-            Quản lý robot thư viện
-          </p>
-        </div>
+      <div className="flex h-[150px] shrink-0 items-center justify-center border-b border-[#d9dce5] px-5 py-1">
+        <h1 className="flex w-full justify-center">
+          <img
+            src="/libbot-logo.png"
+            alt="LibBot - Smart Library Management System"
+            className="max-h-[140px] w-full max-w-[220px] object-contain"
+          />
+        </h1>
       </div>
 
       {/* Navigation */}

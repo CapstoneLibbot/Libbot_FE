@@ -93,7 +93,7 @@ function CreateMap() {
   const [speed, setSpeed] = useState(0.1)
   const [maps, setMaps] = useState<SavedMap[]>([])
   const [selectedMap, setSelectedMap] = useState('')
-  const [mapName, setMapName] = useState('Bản đồ LiBot')
+  const [mapName, setMapName] = useState('Bản đồ LibBot')
   const [notice, setNotice] = useState('')
   const [noticeTone, setNoticeTone] = useState<'info' | 'success' | 'error'>('info')
   const [busy, setBusy] = useState(false)

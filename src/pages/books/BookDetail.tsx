@@ -1,19 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
 import {
   AlertCircle,
   ArrowLeft,
   BookOpen,
   Calendar,
   Camera,
-  CheckCircle2,
-  HelpCircle,
+  Eye,
   Layers,
   Loader2,
-  MapPin,
   Pencil,
   Plus,
   RefreshCw,
-  Trash2,
   X,
 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router'
@@ -45,10 +43,12 @@ export default function BookDetail() {
   const [errorNotice, setErrorNotice] = useState<string | null>(null)
 
   const [bookEditorOpen, setBookEditorOpen] = useState(false)
+  const [imageEditorOpen, setImageEditorOpen] = useState(false)
+  const [imageSaving, setImageSaving] = useState(false)
+  const [imageFormError, setImageFormError] = useState('')
   const [itemEditor, setItemEditor] = useState<BookItemRecord | 'CREATE' | null>(null)
   const [itemSaving, setItemSaving] = useState(false)
   const [itemFormError, setItemFormError] = useState('')
-  const [deletingItemId, setDeletingItemId] = useState('')
 
   const loadCategories = useCallback(async () => {
     setCategoriesLoading(true)
@@ -154,6 +154,30 @@ export default function BookDetail() {
     }
   }
 
+  const handleUpdateBookImage = async (image: string) => {
+    if (!book) return
+    setImageSaving(true)
+    setImageFormError('')
+    try {
+      const updated = await bookApi.updateBook(book.id, {
+        title: book.title,
+        author: book.author || '',
+        isbn: book.isbn || '',
+        categoryId: book.categoryId,
+        publisher: book.publisher,
+        publicationYear: book.publicationYear,
+        image,
+        description: book.description,
+      })
+      setBook((current) => (current ? { ...current, ...updated, image: updated.image || image } : updated))
+      setImageEditorOpen(false)
+    } catch (err) {
+      setImageFormError(getErrorMessage(err, 'Không thể cập nhật ảnh bìa'))
+    } finally {
+      setImageSaving(false)
+    }
+  }
+
   const handleSaveItem = async (payload: BookItemWriteRequest) => {
     if (!book) return
     setItemSaving(true)
@@ -178,22 +202,6 @@ export default function BookDetail() {
       setItemFormError(getErrorMessage(err, 'Không thể lưu bản sách'))
     } finally {
       setItemSaving(false)
-    }
-  }
-
-  const handleDeleteItem = async (item: BookItemRecord) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa bản sách có mã vạch "${item.barcode}" không?`)) return
-    setDeletingItemId(item.id)
-    try {
-      await bookItemApi.deleteBookItem(item.id)
-      setItems((prev) => prev.filter((i) => i.id !== item.id))
-      setBook((prev) =>
-        prev ? { ...prev, totalCopies: Math.max(0, (prev.totalCopies ?? items.length) - 1) } : prev,
-      )
-    } catch (err) {
-      alert(getErrorMessage(err, 'Không thể xóa bản sách'))
-    } finally {
-      setDeletingItemId('')
     }
   }
 
@@ -317,10 +325,18 @@ export default function BookDetail() {
                 className="max-h-[360px] w-full object-contain"
               />
             ) : (
-              <div className="text-center text-[#89909f]">
+              <button
+                type="button"
+                onClick={() => {
+                  setImageFormError('')
+                  setImageEditorOpen(true)
+                }}
+                aria-label="Thêm ảnh bìa cho sách"
+                className="flex min-h-[300px] w-full flex-col items-center justify-center text-[#89909f] transition hover:bg-[#faf9fc] hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              >
                 <Camera className="mx-auto h-12 w-12" />
-                <p className="mt-3 text-sm font-medium">Chưa có ảnh bìa</p>
-              </div>
+                <p className="mt-3 text-sm font-medium">Thêm ảnh bìa</p>
+              </button>
             )}
           </div>
         </section>
@@ -352,19 +368,18 @@ export default function BookDetail() {
             <SummaryCard label="Tổng số bản" value={totalCopies} tone="text-[#17181c]" />
             <SummaryCard label="Đúng vị trí" value={correctCount} tone="text-[#087443]" />
             <SummaryCard label="Sai vị trí" value={misplacedCount} tone="text-[#a65000]" />
-            <SummaryCard label="Bị thiếu / Không tìm thấy" value={missingCount} tone="text-[#b42318]" />
+            <SummaryCard label="Không tìm thấy" value={missingCount} tone="text-[#b42318]" />
           </div>
 
           {/* Table */}
           <div className="overflow-hidden border border-[#d9dce5] bg-white">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px] text-left text-sm">
+              <table className="w-full min-w-[800px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-[#d9dce5] bg-[#f5f4f8] text-[11px] font-semibold uppercase text-[#3f4654]">
                     <th className="px-4 py-3">Mã vạch</th>
                     <th className="px-4 py-3">Tầng kệ mặc định</th>
                     <th className="px-4 py-3">Vị trí thực tế</th>
-                    <th className="px-4 py-3">Trạng thái vị trí</th>
                     <th className="px-4 py-3">Tình trạng bản sách</th>
                     <th className="px-4 py-3">Kiểm kê gần nhất</th>
                     <th className="w-24 px-4 py-3 text-right">Thao tác</th>
@@ -377,17 +392,12 @@ export default function BookDetail() {
                         key={item.id}
                         item={item}
                         levelLookup={levelLookup}
-                        isDeleting={deletingItemId === item.id}
-                        onEdit={() => {
-                          setItemFormError('')
-                          setItemEditor(item)
-                        }}
-                        onDelete={() => void handleDeleteItem(item)}
+                        onOpen={() => navigate(`/book-items/${item.id}`)}
                       />
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="px-6 py-14 text-center text-[#687386]">
+                      <td colSpan={6} className="px-6 py-14 text-center text-[#687386]">
                         <BookOpen className="mx-auto h-8 w-8 text-[#89909f]" />
                         <p className="mt-2 font-medium">Chưa có bản sách nào</p>
                         <p className="text-xs text-[#7b8190]">
@@ -426,6 +436,16 @@ export default function BookDetail() {
         />
       )}
 
+      {imageEditorOpen && (
+        <BookImageDialog
+          title={book.title}
+          saving={imageSaving}
+          errorMessage={imageFormError}
+          onClose={() => setImageEditorOpen(false)}
+          onSubmit={handleUpdateBookImage}
+        />
+      )}
+
       {/* Book Item Create / Edit Dialog */}
       {itemEditor !== null && (
         <BookItemFormDialog
@@ -449,23 +469,29 @@ export default function BookDetail() {
 function ItemTableRow({
   item,
   levelLookup,
-  isDeleting,
-  onEdit,
-  onDelete,
+  onOpen,
 }: {
   item: BookItemRecord
   levelLookup: Map<string, { shelfName: string; levelName: string; levelNumber: number }>
-  isDeleting: boolean
-  onEdit: () => void
-  onDelete: () => void
+  onOpen: () => void
 }) {
   const expected = item.expectedShelfLevelId ? levelLookup.get(item.expectedShelfLevelId) : null
   const current = item.currentShelfLevelId ? levelLookup.get(item.currentShelfLevelId) : null
 
-  const isMatched = item.expectedShelfLevelId && item.expectedShelfLevelId === item.currentShelfLevelId
-
   return (
-    <tr className="border-b border-[#ececf1] last:border-b-0 hover:bg-[#faf9fc]">
+    <tr
+      role="link"
+      tabIndex={0}
+      aria-label={`Xem chi tiết bản sách ${item.barcode}`}
+      onClick={onOpen}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onOpen()
+        }
+      }}
+      className="cursor-pointer border-b border-[#ececf1] last:border-b-0 hover:bg-[#faf9fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+    >
       <td className="px-4 py-3.5 font-mono text-xs font-semibold text-primary">
         {item.barcode}
       </td>
@@ -486,24 +512,7 @@ function ItemTableRow({
             <span className="block text-[#687386]">{current.levelName}</span>
           </div>
         ) : (
-          <span className="inline-flex items-center gap-1 text-[#b42318]">
-            <HelpCircle className="h-3 w-3" /> Không tìm thấy
-          </span>
-        )}
-      </td>
-      <td className="px-4 py-3.5">
-        {isMatched ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#d9f7e7] px-2.5 py-0.5 text-[11px] font-medium text-[#087443]">
-            <CheckCircle2 className="h-3 w-3" /> Đúng vị trí
-          </span>
-        ) : item.currentShelfLevelId ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0d8] px-2.5 py-0.5 text-[11px] font-medium text-[#a65000]">
-            <MapPin className="h-3 w-3" /> Sai tầng
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0f0] px-2.5 py-0.5 text-[11px] font-medium text-[#b42318]">
-            Bị thiếu
-          </span>
+          <span className="text-[#89909d]">Chưa xác định</span>
         )}
       </td>
       <td className="px-4 py-3.5">
@@ -523,20 +532,15 @@ function ItemTableRow({
         <div className="flex justify-end gap-1">
           <button
             type="button"
-            onClick={onEdit}
-            title="Sửa bản sách"
+            onClick={(event) => {
+              event.stopPropagation()
+              onOpen()
+            }}
+            title="Xem chi tiết bản sách"
+            aria-label={`Xem chi tiết bản sách ${item.barcode}`}
             className="flex h-8 w-8 items-center justify-center text-[#596174] hover:bg-[#eff5ff] hover:text-primary"
           >
-            <Pencil className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            disabled={isDeleting}
-            title="Xóa bản sách"
-            className="flex h-8 w-8 items-center justify-center text-[#8d4a46] hover:bg-[#fff1f0] hover:text-[#b42318] disabled:opacity-50"
-          >
-            <Trash2 className="h-4 w-4" />
+            <Eye className="h-4 w-4" />
           </button>
         </div>
       </td>
@@ -550,15 +554,15 @@ function BookItemStatusBadge({ status }: { status: string }) {
     AVAILABLE: 'bg-[#d9f7e7] text-[#087443]',
     MISPLACED: 'bg-[#fff0d8] text-[#a65000]',
     MISSING: 'bg-[#fff0f0] text-[#b42318]',
-    LOST: 'bg-[#f4f3f6] text-[#717684]',
     DAMAGED: 'bg-[#ffebee] text-[#c62828]',
+    BORROWED: 'bg-[#e8efff] text-[#315f9e]',
   }
   const labels: Record<string, string> = {
     AVAILABLE: 'Có sẵn',
     MISPLACED: 'Sai vị trí',
-    MISSING: 'Bị thiếu',
-    LOST: 'Thất lạc',
+    MISSING: 'Không tìm thấy',
     DAMAGED: 'Bị hư hỏng',
+    BORROWED: 'Đang mượn',
   }
 
   return (
@@ -603,7 +607,9 @@ function BookItemFormDialog({
   const [barcode, setBarcode] = useState(item?.barcode ?? '')
   const [expectedLevelId, setExpectedLevelId] = useState<string>(item?.expectedShelfLevelId ?? '')
   const [currentLevelId, setCurrentLevelId] = useState<string>(item?.currentShelfLevelId ?? '')
-  const [status, setStatus] = useState<BookItemStatus | string>(item?.status ?? 'AVAILABLE')
+  const [status, setStatus] = useState<BookItemStatus | string>(
+    item?.status?.toUpperCase() ?? 'AVAILABLE',
+  )
   const isCreate = !item
 
   const inputClass =
@@ -719,7 +725,7 @@ function BookItemFormDialog({
                   onChange={(e) => setCurrentLevelId(e.target.value)}
                   className={`${inputClass} appearance-none`}
                 >
-                  <option value="NULL">Không tìm thấy / Bị thiếu</option>
+                  <option value="NULL">Không tìm thấy</option>
                   {shelves.map((s) => (
                     <optgroup key={s.id} label={`Shelf: ${s.name}`}>
                       {s.levels?.map((lvl) => (
@@ -743,9 +749,9 @@ function BookItemFormDialog({
                 >
                   <option value="AVAILABLE">Có thể cho mượn (AVAILABLE)</option>
                   <option value="MISPLACED">Sai vị trí (MISPLACED)</option>
-                  <option value="MISSING">Bị thiếu / Không tìm thấy (MISSING)</option>
-                  <option value="LOST">Thất lạc (LOST)</option>
+                  <option value="MISSING">Không tìm thấy (MISSING)</option>
                   <option value="DAMAGED">Hư hỏng (DAMAGED)</option>
+                  <option value="BORROWED">Đang mượn (BORROWED)</option>
                 </select>
               </label>
             )}
@@ -808,6 +814,169 @@ function SummaryCard({
     <div className="border border-[#d9dce5] bg-white px-4 py-3">
       <p className="text-xs uppercase text-[#687386]">{label}</p>
       <p className={`mt-1 text-2xl font-semibold ${tone}`}>{value}</p>
+    </div>
+  )
+}
+
+const MAX_BOOK_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+
+function BookImageDialog({
+  title,
+  saving,
+  errorMessage,
+  onClose,
+  onSubmit,
+}: {
+  title: string
+  saving: boolean
+  errorMessage: string
+  onClose: () => void
+  onSubmit: (image: string) => Promise<void>
+}) {
+  const [image, setImage] = useState('')
+  const [imageError, setImageError] = useState('')
+  const [previewError, setPreviewError] = useState(false)
+  const [isReadingImage, setIsReadingImage] = useState(false)
+
+  function handleImageFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0]
+    event.currentTarget.value = ''
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setImageError('Vui lòng chọn tệp hình ảnh.')
+      return
+    }
+
+    if (file.size > MAX_BOOK_IMAGE_SIZE_BYTES) {
+      setImageError('Ảnh không được vượt quá 5 MB.')
+      return
+    }
+
+    setImageError('')
+    setIsReadingImage(true)
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') {
+        setImageError('Không thể đọc tệp ảnh này.')
+        setIsReadingImage(false)
+        return
+      }
+
+      setImage(reader.result)
+      setPreviewError(false)
+      setIsReadingImage(false)
+    }
+    reader.onerror = () => {
+      setImageError('Không thể đọc tệp ảnh này.')
+      setIsReadingImage(false)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault()
+    if (!image.trim()) {
+      setImageError('Vui lòng chọn tệp ảnh.')
+      return
+    }
+    void onSubmit(image.trim())
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#151922]/45 p-4"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !saving && !isReadingImage) onClose()
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="book-image-dialog-title"
+        className="w-full max-w-lg border border-[#d9dce5] bg-white shadow-xl"
+      >
+        <header className="flex items-start justify-between border-b border-[#e4e6eb] px-5 py-4">
+          <div>
+            <h2 id="book-image-dialog-title" className="text-lg font-semibold">
+              Thêm ảnh bìa
+            </h2>
+            <p className="text-xs text-[#687386]">{title}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving || isReadingImage}
+            aria-label="Đóng"
+            className="flex h-8 w-8 items-center justify-center text-[#687386] hover:bg-[#f1f2f5] disabled:opacity-50"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </header>
+
+        <form onSubmit={handleSubmit} className="space-y-4 p-5">
+          <label className="block text-sm font-medium">
+            Tải ảnh từ thiết bị (tối đa 5 MB)
+            <input
+              type="file"
+              accept="image/*"
+              disabled={isReadingImage}
+              onChange={handleImageFile}
+              className="mt-1.5 block w-full text-sm text-[#596174] file:mr-3 file:border-0 file:bg-[#f1eff5] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#3f4654] hover:file:bg-[#e8e6ee] disabled:opacity-50"
+            />
+          </label>
+
+          {isReadingImage && (
+            <p role="status" className="text-xs text-[#687386]">
+              Đang đọc ảnh...
+            </p>
+          )}
+          {imageError && (
+            <p role="alert" className="text-xs text-[#a12820]">
+              {imageError}
+            </p>
+          )}
+          {errorMessage && (
+            <p role="alert" className="border border-[#efc7c4] bg-[#fff1f0] px-3 py-2 text-sm text-[#a12820]">
+              {errorMessage}
+            </p>
+          )}
+
+          {image && !previewError && (
+            <img
+              src={image}
+              alt={`Xem trước ảnh bìa ${title}`}
+              onError={() => setPreviewError(true)}
+              className="max-h-48 max-w-full border border-[#d9dce5] bg-white object-contain p-2"
+            />
+          )}
+          {image && previewError && (
+            <p role="status" className="text-xs text-[#a12820]">
+              Không thể xem trước tệp ảnh đã chọn. Vui lòng chọn tệp khác.
+            </p>
+          )}
+
+          <footer className="flex justify-end gap-2 border-t border-[#e4e6eb] pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving || isReadingImage}
+              className="h-10 border border-[#d7d9e2] px-4 text-sm font-medium hover:bg-[#f5f5f7] disabled:opacity-50"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={saving || isReadingImage || !image.trim()}
+              className="inline-flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
+            >
+              {saving && <RefreshCw className="h-4 w-4 animate-spin" />}
+              {saving ? 'Đang lưu...' : 'Cập nhật ảnh'}
+            </button>
+          </footer>
+        </form>
+      </section>
     </div>
   )
 }

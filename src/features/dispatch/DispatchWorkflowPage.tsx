@@ -396,7 +396,7 @@ export default function DispatchWorkflowPage() {
       <div className="mx-auto grid h-full min-h-0 min-w-[1160px] max-w-[1800px] grid-cols-[250px_minmax(540px,1fr)_340px] grid-rows-[auto_auto_minmax(0,1fr)] gap-3">
         <header className="col-span-3 flex items-center justify-between gap-4 rounded-xl border border-[#294852] bg-gradient-to-br from-[#102129] to-[#142f39] px-5 py-3">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#23c2df]">Trung tâm điều khiển LiBot</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#23c2df]">Trung tâm điều khiển LibBot</p>
             <div className="flex items-baseline gap-3"><h1 className="text-xl font-bold text-white">Dispatch Workflow</h1><p className="hidden text-xs text-[#91a8b0] 2xl:block">Khởi chạy và theo dõi quy trình của hệ thống tại một nơi.</p></div>
           </div>
           <div className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold ${online ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'}`}>

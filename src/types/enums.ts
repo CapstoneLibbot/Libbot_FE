@@ -5,8 +5,15 @@
 
 export type InfrastructureStatus = 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE'
 
-export type FloorStatus = InfrastructureStatus
-export type AisleStatus = InfrastructureStatus
+export type FloorStatus =
+  | InfrastructureStatus
+  | 'Active'
+  | 'Maintenance'
+  | 'Inactive'
+  | 1
+  | 2
+  | 3
+export type AisleStatus = FloorStatus
 export type ShelfStatus = InfrastructureStatus
 export type ShelfLevelStatus = InfrastructureStatus
 
@@ -14,8 +21,8 @@ export type BookItemStatus =
   | 'AVAILABLE'
   | 'MISPLACED'
   | 'MISSING'
-  | 'LOST'
   | 'DAMAGED'
+  | 'BORROWED'
 
 export type MapStatus = 'Active' | 'Archived'
 

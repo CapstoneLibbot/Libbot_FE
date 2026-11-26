@@ -94,7 +94,7 @@ export default function IssueDraftEditor({ issue, onUpdate }: IssueDraftEditorPr
       return
     }
 
-    if (issueType === 'BORROW_LOAN' && matchedCatalog.status !== 'AVAILABLE') {
+    if (issueType === 'BORROW_LOAN' && matchedCatalog.status.trim().toUpperCase() !== 'AVAILABLE') {
       setValidationError(
         `Warning: Item "${code}" has current status "${matchedCatalog.status}". Only AVAILABLE items can be loaned.`
       )

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, BookOpen, ChevronDown, Eye, Loader2, Plus, Search, X } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
@@ -199,14 +199,13 @@ function BookList() {
 
         <div className="overflow-hidden border border-[#d9dce5] bg-white">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[780px] text-left text-sm">
+            <table className="w-full min-w-[700px] text-left text-sm">
               <thead>
                 <tr className="border-b border-[#d9dce5] bg-[#f5f4f8]">
                   <Header>ISBN</Header>
                   <Header>Tên sách</Header>
                   <Header>Tác giả</Header>
                   <Header>Thể loại</Header>
-                  <Header>Bản sao (Có sẵn / Tổng số)</Header>
                   <th className="w-28 px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-[#3f4654]">
                     Thao tác
                   </th>
@@ -239,10 +238,6 @@ function BookList() {
                           ? categoryNames.get(book.categoryId) || 'Chưa phân loại'
                           : 'Chưa phân loại'}
                       </td>
-                      <td className="px-4 py-4 text-xs">
-                        <span className="font-semibold text-[#087443]">{book.availableCopies ?? 0}</span>
-                        <span className="text-[#687386]"> / {book.totalCopies ?? 0} bản sao</span>
-                      </td>
                       <td className="px-4 py-4 text-right">
                         <button
                           type="button"
@@ -261,7 +256,7 @@ function BookList() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="px-6 py-14 text-center">
+                    <td colSpan={5} className="px-6 py-14 text-center">
                       <BookOpen className="mx-auto h-8 w-8 text-[#89909f]" />
                       <p className="mt-3 font-medium text-[#3f4654]">Không tìm thấy sách</p>
                       <p className="mt-1 text-sm text-[#7b8190]">
@@ -498,38 +493,15 @@ export function BookFormDialog({
               )}
             </label>
             {stringField('publisher', 'Nhà xuất bản')}
-            <label className="text-sm font-medium">
-              Năm xuất bản
-              <input
-                min={1}
-                type="number"
-                value={form.publication_year || ''}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    publication_year: event.target.value ? Number(event.target.value) : null,
-                  })
-                }
-                className={`${input} mt-1.5`}
-              />
-            </label>
+            <YearPicker
+              value={form.publication_year}
+              onChange={(year) =>
+                setForm((current) => ({ ...current, publication_year: year }))
+              }
+            />
             <div className="space-y-2 sm:col-span-2">
               <label className="block text-sm font-medium">
-                Đường dẫn ảnh
-                <input
-                  type="text"
-                  value={form.image_url || ''}
-                  onChange={(event) => {
-                    setForm({ ...form, image_url: event.target.value || null })
-                    setImagePreviewError(false)
-                    setImageError('')
-                  }}
-                  placeholder="Dán URL ảnh vào đây"
-                  className={`${input} mt-1.5`}
-                />
-              </label>
-              <label className="block text-sm font-medium">
-                Hoặc chọn ảnh từ thiết bị (tối đa 5 MB)
+                Tải ảnh từ thiết bị (tối đa 5 MB)
                 <input
                   type="file"
                   accept="image/*"
@@ -587,3 +559,137 @@ export function BookFormDialog({
 }
 
 export default BookList
+
+const YEAR_PICKER_ROW_HEIGHT = 36
+
+function YearPicker({
+  value,
+  onChange,
+}: {
+  value: number | null
+  onChange: (year: number | null) => void
+}) {
+  const currentYear = new Date().getFullYear()
+  const maxYear = currentYear + 10
+  const years = useMemo(
+    () => Array.from({ length: maxYear }, (_, index) => maxYear - index),
+    [maxYear],
+  )
+  const [isOpen, setIsOpen] = useState(false)
+  const [selectedYear, setSelectedYear] = useState(value ?? currentYear)
+  const wheelRef = useRef<HTMLDivElement>(null)
+  const scrollTargetRef = useRef<number | null>(null)
+
+  function openWheel() {
+    setIsOpen(true)
+    window.requestAnimationFrame(() => {
+      const wheel = wheelRef.current
+      if (!wheel) return
+
+      const yearToCenter = value ?? currentYear
+      const yearIndex = years.indexOf(yearToCenter)
+      if (yearIndex < 0) return
+
+      const scrollTop = yearIndex * YEAR_PICKER_ROW_HEIGHT
+      scrollTargetRef.current = scrollTop
+      wheel.scrollTop = scrollTop
+    })
+  }
+
+  function handleScroll() {
+    const wheel = wheelRef.current
+    if (!wheel) return
+
+    if (scrollTargetRef.current !== null) {
+      const target = scrollTargetRef.current
+      scrollTargetRef.current = null
+      if (Math.abs(wheel.scrollTop - target) < 1) return
+    }
+
+    const yearIndex = Math.min(
+      years.length - 1,
+      Math.max(0, Math.round(wheel.scrollTop / YEAR_PICKER_ROW_HEIGHT)),
+    )
+    const year = years[yearIndex]
+    if (year !== selectedYear) {
+      setSelectedYear(year)
+      if (year !== value) onChange(year)
+    }
+  }
+
+  return (
+    <div
+      className="relative text-sm font-medium"
+      onBlur={(event) => {
+        const nextTarget = event.relatedTarget
+        if (!(nextTarget instanceof HTMLElement) || !event.currentTarget.contains(nextTarget)) {
+          setIsOpen(false)
+        }
+      }}
+    >
+      <label htmlFor="publication-year" className="block">
+        Năm xuất bản
+      </label>
+      <div className="mt-1.5">
+        <input
+          id="publication-year"
+          min={1}
+          step={1}
+          type="number"
+          value={value ?? ''}
+          onFocus={openWheel}
+          onClick={() => {
+            if (!isOpen) openWheel()
+          }}
+          onChange={(event) => {
+            const year = event.target.value ? Number(event.target.value) : null
+            onChange(year)
+            if (year !== null) setSelectedYear(year)
+          }}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          className="h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm font-normal outline-none focus:border-primary"
+        />
+      </div>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-full z-30 mt-1 border border-[#d7d9e2] bg-white shadow-lg">
+          <div
+            ref={wheelRef}
+            role="listbox"
+            aria-label="Danh sách năm xuất bản"
+            tabIndex={0}
+            onScroll={handleScroll}
+            className="relative h-[180px] snap-y snap-mandatory overflow-y-auto py-[72px] text-center outline-none"
+          >
+            {years.map((year) => (
+              <button
+                key={year}
+                type="button"
+                role="option"
+                aria-selected={selectedYear === year}
+                tabIndex={-1}
+                onClick={() => {
+                  setSelectedYear(year)
+                  onChange(year)
+                  setIsOpen(false)
+                }}
+                className={`block h-9 w-full snap-center text-sm font-normal transition-colors ${
+                  selectedYear === year
+                    ? 'text-primary'
+                    : 'text-[#89909f] hover:bg-[#f5f5f7] hover:text-[#17181c]'
+                }`}
+              >
+                {year}
+              </button>
+            ))}
+            <div className="pointer-events-none absolute inset-x-0 top-[72px] h-9 border-y border-[#d9dce5] bg-[#f7f7f9]/60" />
+          </div>
+          <p className="border-t border-[#ececf1] px-3 py-1.5 text-center text-[11px] font-normal text-[#687386]">
+            Cuộn để chọn năm
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}

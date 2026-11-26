@@ -70,7 +70,7 @@ function LiveMissionList() {
           ))}
         </div>
       ) : (
-        <p className="px-5 py-4 text-xs text-[#77808e]">{reachable ? 'Chưa có nhiệm vụ nào được ghi nhận.' : 'Hãy đặt VITE_API_BASE_URL trỏ đến backend LiBot để xem nhiệm vụ trực tiếp.'}</p>
+        <p className="px-5 py-4 text-xs text-[#77808e]">{reachable ? 'Chưa có nhiệm vụ nào được ghi nhận.' : 'Hãy đặt VITE_API_BASE_URL trỏ đến backend LibBot để xem nhiệm vụ trực tiếp.'}</p>
       )}
     </section>
   )

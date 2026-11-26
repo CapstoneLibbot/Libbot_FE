@@ -16,8 +16,10 @@ import { Link, useNavigate, useParams } from 'react-router'
 
 import { aisleApi } from '@/features/aisles/api/aisleApi'
 import type { AisleWriteRequest } from '@/features/aisles/types/aisle'
+import InfrastructureStatusBadge from '@/components/common/InfrastructureStatusBadge'
 import { floorApi } from '@/features/floors/api/floorApi'
 import type { FloorRecord } from '@/features/floors/types/floor'
+import { localizeFloorName } from '@/features/floors/utils/floorDisplay'
 import { AisleFormDialog } from '@/pages/aisles/AisleDetail'
 import { FloorFormDialog, StatusBadge, type FloorFormData } from './FloorList'
 import { getErrorMessage } from '@/services/http/error'
@@ -76,7 +78,7 @@ function FloorDetail() {
 
   const handleDelete = async () => {
     if (!id || !floor) return
-    if (!window.confirm(`Are you sure you want to delete floor "${floor.name}"?`)) return
+    if (!window.confirm(`Bạn có chắc muốn xóa lầu "${floorName}" không?`)) return
 
     setDeleting(true)
     try {
@@ -92,7 +94,7 @@ function FloorDetail() {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-3 text-sm text-[#596174]">Đang tải thông tin tầng...</p>
+        <p className="mt-3 text-sm text-[#596174]">Đang tải thông tin lầu...</p>
       </div>
     )
   }
@@ -103,10 +105,10 @@ function FloorDetail() {
         <div className="max-w-md rounded-md border border-[#fecaca] bg-white p-6 shadow-sm">
           <div className="flex items-center gap-2 text-red-600">
             <AlertCircle className="h-5 w-5" />
-            <h1 className="text-lg font-semibold">Không tìm thấy tầng</h1>
+            <h1 className="text-lg font-semibold">Không tìm thấy lầu</h1>
           </div>
           <p className="mt-2 text-sm text-[#596174]">
-            {errorNotice || 'Tầng yêu cầu không tồn tại hoặc đã bị xóa.'}
+            {errorNotice || 'Lầu yêu cầu không tồn tại hoặc đã bị xóa.'}
           </p>
           <div className="mt-4 flex items-center gap-3">
             <button
@@ -131,6 +133,7 @@ function FloorDetail() {
 
   const aisles = floor.aisles || []
   const maps = floor.maps || []
+  const floorName = localizeFloorName(floor.name)
 
   return (
     <div className="min-h-full bg-[#f9f7fd] p-5 text-[#17181c] sm:p-8">
@@ -150,9 +153,9 @@ function FloorDetail() {
           </div>
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-primary">
-              Tầng #{floor.floorNumber}
+              Lầu #{floor.floorNumber}
             </p>
-            <h1 className="text-2xl font-bold tracking-tight">{floor.name}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{floorName}</h1>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -162,7 +165,7 @@ function FloorDetail() {
             className="flex h-10 items-center gap-2 border border-[#d7d9e2] bg-white px-4 text-sm font-medium hover:bg-[#f1eff5]"
           >
             <Pencil className="h-4 w-4" />
-            Sửa tầng
+            Sửa lầu
           </button>
           <button
             type="button"
@@ -171,7 +174,7 @@ function FloorDetail() {
             className="flex h-10 items-center gap-2 border border-red-200 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
           >
             {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-            Xóa tầng
+            Xóa lầu
           </button>
         </div>
       </header>
@@ -180,13 +183,13 @@ function FloorDetail() {
       <section className="mt-8 max-w-3xl overflow-hidden border border-[#d9dce5] bg-white shadow-sm">
         <dl className="divide-y divide-[#d9dce5]">
           <DetailRow label="ID (GUID)" value={floor.id} mono />
-          <DetailRow label="Số tầng" value={`Tầng ${floor.floorNumber}`} />
-          <DetailRow label="Tên tầng" value={floor.name} />
+          <DetailRow label="Số lầu" value={`Lầu ${floor.floorNumber}`} />
+          <DetailRow label="Tên lầu" value={floorName} />
           <DetailRow label="Mô tả" value={floor.description || '—'} />
           <div className="grid grid-cols-[140px_1fr] gap-4 px-4 py-4 text-sm sm:grid-cols-[180px_1fr]">
             <dt className="text-[#687386]">Trạng thái</dt>
             <dd>
-              <StatusBadge status={floor.status} />
+              <InfrastructureStatusBadge status={floor.status} />
             </dd>
           </div>
         </dl>
@@ -200,7 +203,7 @@ function FloorDetail() {
             <div>
               <h2 className="text-lg font-semibold">Dãy sách</h2>
               <p className="mt-0.5 text-sm text-[#687386]">
-                Có {aisles.length} dãy sách trên tầng này.
+                Có {aisles.length} dãy sách trên lầu này.
               </p>
             </div>
           </div>
@@ -210,7 +213,7 @@ function FloorDetail() {
             className="flex h-10 items-center gap-2 bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            Thêm dãy sách cho tầng {floor.name}
+            Thêm dãy sách cho lầu {floorName}
           </button>
         </div>
 
@@ -262,7 +265,7 @@ function FloorDetail() {
                       <Route className="mx-auto h-8 w-8 text-[#89909f]" />
                       <p className="mt-3 font-medium text-[#3f4654]">Không tìm thấy dãy sách</p>
                       <p className="mt-1 text-sm text-[#7b8190]">
-                        Tầng này chưa có dãy sách nào.
+                        Lầu này chưa có dãy sách nào.
                       </p>
                     </td>
                   </tr>
@@ -281,7 +284,7 @@ function FloorDetail() {
             <div>
               <h2 className="text-lg font-semibold">Bản đồ số</h2>
               <p className="mt-0.5 text-sm text-[#687386]">
-                Có {maps.length} bản đồ số được gán cho tầng này.
+                Có {maps.length} bản đồ số được gán cho lầu này.
               </p>
             </div>
           </div>
@@ -312,7 +315,7 @@ function FloorDetail() {
 
       {editing && (
         <FloorFormDialog
-          title="Cập nhật tầng"
+          title="Cập nhật lầu"
           initial={{
             name: floor.name,
             floorNumber: floor.floorNumber,
@@ -325,7 +328,7 @@ function FloorDetail() {
       )}
       {creatingAisle && (
         <AisleFormDialog
-          title={`Thêm dãy sách cho tầng ${floor.name}`}
+          title={`Thêm dãy sách cho lầu ${floorName}`}
           fixedFloor={floor}
           onClose={() => setCreatingAisle(false)}
           onSubmit={handleCreateAisle}

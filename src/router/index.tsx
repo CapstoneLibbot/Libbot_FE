@@ -20,6 +20,9 @@ import ShelfDetail from '../pages/shelves/ShelfDetail'
 import ShelfList from '../pages/shelves/ShelfList'
 import BookList from '../pages/books/BookList'
 import BookDetail from '../pages/books/BookDetail'
+import CategoryList from '../pages/categories/CategoryList'
+import CategoryDetail from '../pages/categories/CategoryDetail'
+import BookItemDetail from '../pages/book-items/BookItemDetail'
 import InventoryPage from '../pages/inventory/InventoryPage'
 import InventoryResultsPage from '../pages/inventory/InventoryResultsPage'
 import TaskCreate from '../pages/tasks/TaskCreate'
@@ -172,8 +175,23 @@ function AppRouter() {
           />
 
           <Route
+            path="/book-categories"
+            element={<CategoryList />}
+          />
+
+          <Route
+            path="/book-categories/:id"
+            element={<CategoryDetail />}
+          />
+
+          <Route
             path="/book/:id"
             element={<BookDetail />}
+          />
+
+          <Route
+            path="/book-items/:id"
+            element={<BookItemDetail />}
           />
 
           {/* Book Transactions Routes */}

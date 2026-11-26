@@ -75,7 +75,7 @@ export default function IssueCreate() {
     }
 
     // Validation: for Borrow Loan, item status should ideally be AVAILABLE
-    if (issueType === 'BORROW_LOAN' && matchedCatalog.status !== 'AVAILABLE') {
+    if (issueType === 'BORROW_LOAN' && matchedCatalog.status.trim().toUpperCase() !== 'AVAILABLE') {
       setValidationError(
         `Warning: Item "${code}" has current status "${matchedCatalog.status}". Only AVAILABLE items can be loaned.`
       )

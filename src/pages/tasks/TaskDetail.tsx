@@ -278,7 +278,7 @@ function TaskDetail() {
                     <div><dt className="text-[#79808d]">Sách đã quét</dt><dd className="mt-1 text-base font-semibold text-[#252933]">{inventoryReport.totalBookScanned}</dd></div>
                     <div><dt className="text-[#79808d]">Có sẵn</dt><dd className="mt-1 text-base font-semibold text-[#237a45]">{inventoryReport.totalAvailable}</dd></div>
                     <div><dt className="text-[#79808d]">Sai vị trí</dt><dd className="mt-1 text-base font-semibold text-[#b45309]">{inventoryReport.totalMisplaced}</dd></div>
-                    <div><dt className="text-[#79808d]">Bị thiếu</dt><dd className="mt-1 text-base font-semibold text-[#b42318]">{inventoryReport.totalMissing}</dd></div>
+                    <div><dt className="text-[#79808d]">Không tìm thấy</dt><dd className="mt-1 text-base font-semibold text-[#b42318]">{inventoryReport.totalMissing}</dd></div>
                     <div><dt className="text-[#79808d]">Ngày tạo</dt><dd className="mt-1 font-medium text-[#404754]">{new Date(inventoryReport.createdAt).toLocaleString('vi-VN')}</dd></div>
                   </dl>
                 ) : (
@@ -332,7 +332,7 @@ function TaskDetail() {
                       <p className="mt-1 text-[11px] text-[#79808d]">Book ID {item.bookId} · {item.classification}</p>
                     </div>
                     <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${item.issueType === 'MISPLACED' ? 'bg-[#fff4df] text-[#946200]' : 'bg-[#fff0ee] text-[#b42318]'}`}>
-                      {item.issueType === 'MISPLACED' ? 'Sai vị trí' : 'Bị thiếu'}
+                      {item.issueType === 'MISPLACED' ? 'Sai vị trí' : 'Không tìm thấy'}
                     </span>
                   </div>
 
