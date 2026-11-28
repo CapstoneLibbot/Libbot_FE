@@ -2,10 +2,10 @@ import axios from 'axios'
 
 import { apiClient } from '../maps/api/runtimeApi'
 import type {
-  CreateMissionInput,
+  CreateJobInput,
   DispatchWorkflow,
-  Mission,
-  MissionExecution,
+  Job,
+  JobExecution,
 } from './types'
 
 export function apiErrorMessage(error: unknown, fallback: string): string {
@@ -22,35 +22,35 @@ export async function getDispatchWorkflows(): Promise<DispatchWorkflow[]> {
   return (await apiClient.get<DispatchWorkflow[]>('/workflows')).data
 }
 
-export async function createMission(input: CreateMissionInput): Promise<Mission> {
-  return (await apiClient.post<Mission>('/missions', input)).data
+export async function createJob(input: CreateJobInput): Promise<Job> {
+  return (await apiClient.post<Job>('/jobs', input)).data
 }
 
-export async function startMission(
-  missionId: string,
-  runtimeId: CreateMissionInput['runtimeId'],
+export async function startJob(
+  jobId: string,
+  runtimeId: CreateJobInput['runtimeId'],
   armLeaseId?: string | null,
 ): Promise<void> {
-  await apiClient.post(`/missions/${encodeURIComponent(missionId)}/start`, {
+  await apiClient.post(`/jobs/${encodeURIComponent(jobId)}/start`, {
     runtimeId,
     armLeaseId,
   })
 }
 
-export async function getMissionExecution(missionId: string): Promise<MissionExecution> {
-  return (await apiClient.get<MissionExecution>(`/missions/${encodeURIComponent(missionId)}/execution`)).data
+export async function getJobExecution(jobId: string): Promise<JobExecution> {
+  return (await apiClient.get<JobExecution>(`/jobs/${encodeURIComponent(jobId)}/execution`)).data
 }
 
-export async function cancelMission(missionId: string): Promise<void> {
-  await apiClient.post(`/missions/${encodeURIComponent(missionId)}/cancel`)
+export async function cancelJob(jobId: string): Promise<void> {
+  await apiClient.post(`/jobs/${encodeURIComponent(jobId)}/cancel`)
 }
 
-export async function submitMissionEvent(
-  missionId: string,
+export async function submitJobEvent(
+  jobId: string,
   eventType: string,
   data: unknown,
 ): Promise<void> {
-  await apiClient.post(`/missions/${encodeURIComponent(missionId)}/execution/events`, {
+  await apiClient.post(`/jobs/${encodeURIComponent(jobId)}/execution/events`, {
     eventType,
     data,
   })

@@ -10,13 +10,14 @@ import { JobPriority } from '@/types/job'
 import type { JobPriority as JobPriorityValue, JobStepParameters } from '@/types/job'
 import { WorkflowStatus, WorkflowStepType } from '@/types/workflow'
 import type { WorkflowRecord } from '@/types/workflow'
-import LibraryPatrolMissionCreate from './LibraryPatrolMissionCreate'
+import LibraryPatrolJobCreate from './LibraryPatrolJobCreate'
+import BookshelfInventoryJobCreate from './BookshelfInventoryJobCreate'
 
 const inputClassName = 'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#252933] outline-none placeholder:text-[#89909d] focus:border-primary'
 const selectClassName = 'h-10 w-full appearance-none border border-[#d7d9e2] bg-white px-3 pr-9 text-sm text-[#252933] outline-none focus:border-primary'
 const textareaClassName = 'min-h-24 w-full resize-y border border-[#d7d9e2] bg-white px-3 py-2 text-sm text-[#252933] outline-none placeholder:text-[#89909d] focus:border-primary'
 
-function TaskCreateForm({ onCreatePatrol }: { onCreatePatrol: () => void }) {
+function TaskCreateForm({ onCreatePatrol, onCreateInventory }: { onCreatePatrol: () => void; onCreateInventory: () => void }) {
   const navigate = useNavigate()
   const workflows = useMemo(() => getWorkflows().filter((workflow) => workflow.status === WorkflowStatus.Active), [])
   const robots = useMemo(() => [...new Set(getJobs().map((job) => job.robotId).filter((id): id is number => id !== null))], [])
@@ -252,9 +253,14 @@ function TaskCreateForm({ onCreatePatrol }: { onCreatePatrol: () => void }) {
               <p className="mt-0.5 text-sm text-[#596174]">Tạo nhiệm vụ cho robot từ quy trình và mục tiêu tương ứng.</p>
             </div>
             </div>
-            <button type="button" onClick={onCreatePatrol} className="inline-flex h-10 items-center gap-2 border border-primary/30 bg-primary/5 px-4 text-sm font-semibold text-primary hover:bg-primary/10">
-              <ShieldCheck className="h-4 w-4" />Tạo nhiệm vụ tuần tra thư viện
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={onCreatePatrol} className="inline-flex h-10 items-center gap-2 border border-primary/30 bg-primary/5 px-4 text-sm font-semibold text-primary hover:bg-primary/10">
+                <ShieldCheck className="h-4 w-4" />Tạo nhiệm vụ tuần tra thư viện
+              </button>
+              <button type="button" onClick={onCreateInventory} className="inline-flex h-10 items-center gap-2 border border-primary/30 bg-primary/5 px-4 text-sm font-semibold text-primary hover:bg-primary/10">
+                <Search className="h-4 w-4" />Tạo nhiệm vụ kiểm kê kệ
+              </button>
+            </div>
           </div>
         </header>
 
@@ -354,9 +360,13 @@ function TaskCreateForm({ onCreatePatrol }: { onCreatePatrol: () => void }) {
 
 function TaskCreate() {
   const [createPatrol, setCreatePatrol] = useState(false)
-  return createPatrol
-    ? <LibraryPatrolMissionCreate onBack={() => setCreatePatrol(false)} />
-    : <TaskCreateForm onCreatePatrol={() => setCreatePatrol(true)} />
+  const [createInventory, setCreateInventory] = useState(false)
+  if (createPatrol) return <LibraryPatrolJobCreate onBack={() => setCreatePatrol(false)} />
+  if (createInventory) return <BookshelfInventoryJobCreate onBack={() => setCreateInventory(false)} />
+  return <TaskCreateForm
+    onCreatePatrol={() => setCreatePatrol(true)}
+    onCreateInventory={() => setCreateInventory(true)}
+  />
 }
 
 export default TaskCreate

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { isTerminalMissionStatus, parseInitialContext } from './utils'
+import { isTerminalJobStatus, parseInitialContext } from './utils'
 
 describe('parseInitialContext', () => {
   it('accepts JSON objects', () => {
@@ -14,10 +14,10 @@ describe('parseInitialContext', () => {
   })
 })
 
-describe('isTerminalMissionStatus', () => {
+describe('isTerminalJobStatus', () => {
   it('recognizes terminal states case-insensitively', () => {
-    expect(isTerminalMissionStatus('completed')).toBe(true)
-    expect(isTerminalMissionStatus('CANCELLED')).toBe(true)
-    expect(isTerminalMissionStatus('RUNNING')).toBe(false)
+    expect(isTerminalJobStatus('completed')).toBe(true)
+    expect(isTerminalJobStatus('CANCELLED')).toBe(true)
+    expect(isTerminalJobStatus('RUNNING')).toBe(false)
   })
 })

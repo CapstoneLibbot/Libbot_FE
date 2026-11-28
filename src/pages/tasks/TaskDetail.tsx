@@ -2,7 +2,7 @@ import { Activity, ArrowLeft, CalendarClock, CheckCircle2, Star, X } from 'lucid
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import MapViewer, { type MapEndpoint, type MapRoutePoint } from '@/components/map/MapViewer'
-import LiveMissionDetail from '@/components/tasks/LiveMissionDetail'
+import LiveJobDetail from '@/components/tasks/LiveJobDetail'
 import { getFeedback, getInventoryReport, getJobById, getJobEvents } from '@/lib/jobData'
 import { initialAisles } from '@/lib/mapData'
 import { initialEndpoints, initialZones, sampleMap } from '@/pages/maps/MapDetail'
@@ -61,7 +61,7 @@ function TaskDetail() {
   const workflow = job ? getWorkflows().find((item) => item.id === job.workflowId) : undefined
 
   if (id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
-    return <LiveMissionDetail missionId={id} />
+    return <LiveJobDetail jobId={id} />
   }
 
   if (!job) {

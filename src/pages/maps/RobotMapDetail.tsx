@@ -43,6 +43,7 @@ function RobotMapDetail() {
   const [zonesError, setZonesError] = useState<string | null>(null)
   const [endpointGroupFilterId, setEndpointGroupFilterId] = useState('')
   const [zoneTypeFilter, setZoneTypeFilter] = useState('')
+  const [showAllMapResources, setShowAllMapResources] = useState(false)
   const [selectedEndpointId, setSelectedEndpointId] = useState<string | null>(null)
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null)
   const [endpointPlacementMode, setEndpointPlacementMode] = useState(false)
@@ -56,7 +57,7 @@ function RobotMapDetail() {
 
   const loadMap = useCallback(async () => {
     if (!id) {
-      setError('Thiếu mã bản đồ.')
+      setError('Map ID is missing.')
       setLoading(false)
       return
     }
@@ -66,7 +67,7 @@ function RobotMapDetail() {
     try {
       setSavedMap(await getSavedRobotMapDetails(id))
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Không thể tải bản đồ robot này.')
+      setError(cause instanceof Error ? cause.message : 'Could not load this robot map.')
     } finally {
       setLoading(false)
     }
@@ -91,9 +92,9 @@ function RobotMapDetail() {
     ])
 
     if (endpointResult.status === 'fulfilled') setEndpoints(endpointResult.value)
-    else setEndpointsError(endpointResult.reason instanceof Error ? endpointResult.reason.message : 'Không thể tải điểm điều hướng.')
+    else setEndpointsError(endpointResult.reason instanceof Error ? endpointResult.reason.message : 'Could not load endpoints.')
     if (zoneResult.status === 'fulfilled') setZones(zoneResult.value)
-    else setZonesError(zoneResult.reason instanceof Error ? zoneResult.reason.message : 'Không thể tải khu vực.')
+    else setZonesError(zoneResult.reason instanceof Error ? zoneResult.reason.message : 'Could not load zones.')
     if (groupResult.status === 'fulfilled') setEndpointGroups(groupResult.value)
     if (memberResult.status === 'fulfilled') setEndpointGroupMembers(memberResult.value)
     setEndpointsLoading(false)
@@ -113,7 +114,7 @@ function RobotMapDetail() {
       setEndpointDraft(null)
       await refreshMapResources()
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : 'Không thể tạo điểm điều hướng.')
+      setActionError(cause instanceof Error ? cause.message : 'Could not create endpoint.')
     } finally {
       setSavingResource(false)
     }
@@ -128,14 +129,14 @@ function RobotMapDetail() {
       setEndpointEditTarget(null)
       await refreshMapResources()
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : 'Không thể cập nhật điểm điều hướng.')
+      setActionError(cause instanceof Error ? cause.message : 'Could not update endpoint.')
     } finally {
       setSavingResource(false)
     }
   }
 
   const handleDeleteEndpoint = async (endpoint: SavedMapEndpoint) => {
-    if (!window.confirm(`Xóa điểm điều hướng "${endpoint.name}"?`)) return
+    if (!window.confirm(`Remove endpoint "${endpoint.name}"?`)) return
     setSavingResource(true)
     setActionError(null)
     try {
@@ -143,7 +144,7 @@ function RobotMapDetail() {
       if (selectedEndpointId === endpoint.id) setSelectedEndpointId(null)
       await refreshMapResources()
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : 'Không thể xóa điểm điều hướng.')
+      setActionError(cause instanceof Error ? cause.message : 'Could not remove endpoint.')
     } finally {
       setSavingResource(false)
     }
@@ -158,7 +159,7 @@ function RobotMapDetail() {
       setZoneDraft(null)
       await refreshMapResources()
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : 'Không thể tạo khu vực.')
+      setActionError(cause instanceof Error ? cause.message : 'Could not create zone.')
     } finally {
       setSavingResource(false)
     }
@@ -173,14 +174,14 @@ function RobotMapDetail() {
       setZoneEditTarget(null)
       await refreshMapResources()
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : 'Không thể cập nhật khu vực.')
+      setActionError(cause instanceof Error ? cause.message : 'Could not update zone.')
     } finally {
       setSavingResource(false)
     }
   }
 
   const handleDeleteZone = async (zone: SavedMapZone) => {
-    if (!window.confirm(`Xóa khu vực ${zoneDisplayName(zone.zoneType)}?`)) return
+    if (!window.confirm(`Remove zone ${zone.zoneType.replaceAll('_', ' ')}?`)) return
     setSavingResource(true)
     setActionError(null)
     try {
@@ -188,7 +189,7 @@ function RobotMapDetail() {
       if (selectedZoneId === zone.id) setSelectedZoneId(null)
       await refreshMapResources()
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : 'Không thể xóa khu vực.')
+      setActionError(cause instanceof Error ? cause.message : 'Could not remove zone.')
     } finally {
       setSavingResource(false)
     }
@@ -202,6 +203,8 @@ function RobotMapDetail() {
       member.endpointGroupId.toLowerCase() === endpointGroupFilterId.toLowerCase()),
   )
   const filteredZones = zones.filter((zone) => !zoneTypeFilter || zone.zoneType === zoneTypeFilter)
+  const mapEndpoints = showAllMapResources ? endpoints : filteredEndpoints
+  const mapZones = showAllMapResources ? zones : filteredZones
 
   const endpointGroupsFor = (endpointId: string) => endpointGroupMembers
     .filter((member) => member.endpointId.toLowerCase() === endpointId.toLowerCase())
@@ -214,9 +217,8 @@ function RobotMapDetail() {
         <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate(-1)}
-            aria-label="Quay lại"
-            title="Quay lại"
+            onClick={() => navigate('/maps')}
+            aria-label="Back to maps"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-[#c4c5cc] transition hover:bg-white/10 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -225,16 +227,16 @@ function RobotMapDetail() {
             <MapIcon className="h-5 w-5 text-primary" />
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-base font-semibold">{map?.name ?? 'Bản đồ robot'}</h1>
+            <h1 className="truncate text-base font-semibold">{map?.name ?? 'Robot map'}</h1>
             <p className="truncate text-xs text-[#9a9ba5]">
-              {map ? `Bản đồ ${map.id} · Phiên bản ${map.version}` : 'Chi tiết lưới chiếm dụng'}
+              {map ? `Map ${map.id} · Version ${map.version}` : 'Occupancy grid detail'}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           {map && (
             <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300">
-              Đã lưu
+              Saved
             </span>
           )}
           <button
@@ -244,32 +246,45 @@ function RobotMapDetail() {
             className="flex h-9 items-center gap-2 rounded-md border border-[#35353e] px-3 text-sm text-[#dedee3] transition hover:bg-white/10 disabled:opacity-50"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Làm mới
+            Refresh
           </button>
         </div>
       </header>
 
       <div className="flex min-h-[calc(100vh-4rem)] flex-1 flex-row">
         <section className="flex min-h-[520px] min-w-0 flex-1 flex-col bg-[#0d0d11]">
-          <div className="flex h-12 shrink-0 items-center gap-2 border-b border-[#292930] px-4">
+          <div className="flex min-h-12 shrink-0 flex-wrap items-center gap-2 border-b border-[#292930] px-4 py-2">
             <span className="rounded-md border border-primary bg-primary/10 px-3 py-1.5 text-sm font-medium text-white">
               Bản đồ 2D
             </span>
             <span className="text-xs text-[#92939c]">Lưới chiếm dụng</span>
+            <label
+              className="ml-auto inline-flex cursor-pointer select-none items-center gap-2 text-xs font-medium text-[#d1d2d8]"
+              title="Hiển thị mọi vùng và điểm điều hướng, không phụ thuộc bộ lọc danh sách."
+            >
+              <input
+                type="checkbox"
+                checked={showAllMapResources}
+                onChange={(event) => setShowAllMapResources(event.target.checked)}
+                className="h-4 w-4 rounded border-[#686974] accent-primary"
+                aria-label="Hiển thị tất cả vùng và điểm điều hướng trên bản đồ"
+              />
+              Hiển thị tất cả vùng và điểm điều hướng
+            </label>
           </div>
           <div className="flex min-h-0 flex-1 items-center justify-center p-3 sm:p-5">
             {loading ? (
-              <div className="text-sm text-[#a4a5ad]">Đang tải dữ liệu bản đồ...</div>
+              <div className="text-sm text-[#a4a5ad]">Loading map data...</div>
             ) : error ? (
               <div className="max-w-md text-center">
-                <p className="font-medium text-rose-400">Không thể tải bản đồ</p>
+                <p className="font-medium text-rose-400">Could not load map</p>
                 <p className="mt-1 text-sm text-[#a4a5ad]">{error}</p>
                 <button
                   type="button"
                   onClick={() => void loadMap()}
                   className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
                 >
-                  Thử lại
+                  Try again
                 </button>
               </div>
             ) : grid ? (
@@ -277,10 +292,10 @@ function RobotMapDetail() {
                 <LiveOccupancyMap
                   grid={grid}
                   orientVertically
-                  endpoints={filteredEndpoints}
-                  zones={filteredZones}
-                  showEndpoints={activeTab === 'endpoint'}
-                  showZones={activeTab === 'zone'}
+                  endpoints={mapEndpoints}
+                  zones={mapZones}
+                  showEndpoints={showAllMapResources || activeTab === 'endpoint'}
+                  showZones={showAllMapResources || activeTab === 'zone'}
                   drawZoneMode={drawZoneMode && activeTab === 'zone'}
                   endpointPlacementMode={endpointPlacementMode && activeTab === 'endpoint'}
                   onEndpointPlace={(position) => {
@@ -305,26 +320,26 @@ function RobotMapDetail() {
 
         <aside className="flex max-h-[calc(100vh-4rem)] min-h-[420px] w-[320px] shrink-0 flex-col border-l border-[#dedee3] bg-white sm:w-[340px] xl:w-[360px]">
           <div className="flex h-12 shrink-0 border-b border-[#e2e3e8] px-2">
-            <TabButton active={activeTab === 'detail'} onClick={() => { setActiveTab('detail'); setDrawZoneMode(false); setEndpointPlacementMode(false) }}>Chi tiết</TabButton>
-            <TabButton active={activeTab === 'endpoint'} onClick={() => { setActiveTab('endpoint'); setDrawZoneMode(false) }}>Điểm điều hướng</TabButton>
-            <TabButton active={activeTab === 'zone'} onClick={() => { setActiveTab('zone'); setDrawZoneMode(false); setEndpointPlacementMode(false) }}>Khu vực</TabButton>
+            <TabButton active={activeTab === 'detail'} onClick={() => { setActiveTab('detail'); setDrawZoneMode(false); setEndpointPlacementMode(false) }}>Detail</TabButton>
+            <TabButton active={activeTab === 'endpoint'} onClick={() => { setActiveTab('endpoint'); setDrawZoneMode(false) }}>Endpoint</TabButton>
+            <TabButton active={activeTab === 'zone'} onClick={() => { setActiveTab('zone'); setDrawZoneMode(false); setEndpointPlacementMode(false) }}>Zone</TabButton>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto">
             {activeTab === 'detail' && map && grid && (
               <div className="px-4 py-4 sm:px-5">
-                <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-[#747b88]">Bản đồ</p>
+                <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-[#747b88]">Map</p>
                 <h2 className="break-words text-sm font-semibold text-[#20232a]">{map.name}</h2>
                 <div className="mt-4 divide-y divide-[#e5e6ea] border-t border-[#e5e6ea]">
                   <DetailField label="ID" value={map.id} mono />
-                  <DetailField label="Tên" value={map.name} />
-                  <DetailField label="Phiên bản" value={`v${map.version}`} />
-                  <DetailField label="Chiều rộng" value={`${map.width} px`} />
-                  <DetailField label="Chiều cao" value={`${map.height} px`} />
-                  <DetailField label="Độ phân giải" value={`${grid.resolution.toFixed(3)} m/px`} />
-                  <DetailField label="Gốc tọa độ" value={`${grid.originX.toFixed(3)}, ${grid.originY.toFixed(3)}`} />
-                  <DetailField label="Góc quay gốc" value={`${grid.originYaw.toFixed(3)} rad`} />
-                  <DetailField label="Cập nhật lúc" value={new Date(grid.timestamp).toLocaleString('vi-VN')} />
+                  <DetailField label="Name" value={map.name} />
+                  <DetailField label="Version" value={`v${map.version}`} />
+                  <DetailField label="Width" value={`${map.width} px`} />
+                  <DetailField label="Height" value={`${map.height} px`} />
+                  <DetailField label="Resolution" value={`${grid.resolution.toFixed(3)} m/px`} />
+                  <DetailField label="Origin" value={`${grid.originX.toFixed(3)}, ${grid.originY.toFixed(3)}`} />
+                  <DetailField label="Origin yaw" value={`${grid.originYaw.toFixed(3)} rad`} />
+                  <DetailField label="Updated" value={new Date(grid.timestamp).toLocaleString()} />
                 </div>
               </div>
             )}
@@ -334,8 +349,8 @@ function RobotMapDetail() {
                 {actionError && <p className="m-3 rounded-md bg-rose-50 p-2.5 text-sm text-rose-700">{actionError}</p>}
                 <div className="flex items-center justify-between border-b border-[#e2e3e8] p-4">
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-[#747b88]">Điểm điều hướng</p>
-                    <p className="mt-1 text-xs text-[#747b88]">{endpoints.length} điểm điều hướng</p>
+                    <p className="text-xs font-medium uppercase tracking-wide text-[#747b88]">Endpoints</p>
+                    <p className="mt-1 text-xs text-[#747b88]">{endpoints.length} endpoints</p>
                   </div>
                   <button
                     type="button"
@@ -347,32 +362,32 @@ function RobotMapDetail() {
                     disabled={endpointPlacementMode}
                     className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
                   >
-                    <Plus className="h-4 w-4" /> {endpointPlacementMode ? 'Kéo trên bản đồ' : 'Tạo mới'}
+                    <Plus className="h-4 w-4" /> {endpointPlacementMode ? 'Drag on map' : 'Create'}
                   </button>
                 </div>
                 {endpointPlacementMode && (
                   <p className="border-b border-[#e2e3e8] bg-emerald-50 px-4 py-3 text-xs text-emerald-800">
-                    Kéo từ vị trí điểm điều hướng theo hướng robot cần quay mặt.
+                    Drag from the endpoint position toward the direction the robot should face.
                   </p>
                 )}
                 <label className="block border-b border-[#e2e3e8] px-4 py-3 text-xs text-[#596174]">
-                  Lọc theo nhóm điểm điều hướng
+                  Filter by endpoint group
                   <select
                     value={endpointGroupFilterId}
                     onChange={(event) => setEndpointGroupFilterId(event.target.value)}
                     className="mt-1.5 h-9 w-full rounded-md border border-[#dfe1e7] bg-white px-3 text-sm text-[#303640] outline-none focus:border-primary"
                   >
-                    <option value="">Tất cả nhóm</option>
+                    <option value="">All groups</option>
                     {endpointGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
                   </select>
                 </label>
                 {endpointsLoading ? (
-                  <p className="py-8 text-center text-sm text-[#747b88]">Đang tải điểm điều hướng...</p>
+                  <p className="py-8 text-center text-sm text-[#747b88]">Loading endpoints...</p>
                 ) : endpointsError ? (
                   <p className="m-4 rounded-md bg-rose-50 p-3 text-sm text-rose-700">{endpointsError}</p>
                 ) : filteredEndpoints.length === 0 ? (
                   <p className="px-4 py-8 text-center text-sm text-[#747b88]">
-                    {endpoints.length === 0 ? 'Chưa có điểm điều hướng nào trên bản đồ này.' : 'Không có điểm điều hướng nào thuộc nhóm này.'}
+                    {endpoints.length === 0 ? 'No endpoints are assigned to this map.' : 'No endpoints in this group.'}
                   </p>
                 ) : (
                   <div className="divide-y divide-[#e2e3e8]">
@@ -391,9 +406,9 @@ function RobotMapDetail() {
                             <MapPin className="h-4 w-4 shrink-0 text-emerald-500" />
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium text-[#424650]">{endpoint.name}</p>
-                              <p className="truncate text-xs text-[#69717e]">{endpointTypeDisplayName(endpoint.endpointType)} · X {endpoint.positionX.toFixed(2)}, Y {endpoint.positionY.toFixed(2)}</p>
+                              <p className="truncate text-xs text-[#69717e]">{endpoint.endpointType} · X {endpoint.positionX.toFixed(2)}, Y {endpoint.positionY.toFixed(2)}</p>
                               <p className="mt-1 truncate text-[11px] text-[#747b88]">
-                                {groups.length > 0 ? groups.map((group) => group.name).join(', ') : 'Điểm điều hướng chưa phân nhóm'}
+                                {groups.length > 0 ? groups.map((group) => group.name).join(', ') : 'Ungrouped endpoint'}
                               </p>
                             </div>
                             <StatusBadge active={endpoint.isActive} />
@@ -401,8 +416,8 @@ function RobotMapDetail() {
                           <div className="flex shrink-0 items-center gap-1">
                             <button
                               type="button"
-                              title="Sửa điểm điều hướng"
-                              aria-label={`Sửa điểm điều hướng ${endpoint.name}`}
+                              title="Edit endpoint"
+                              aria-label={`Edit endpoint ${endpoint.name}`}
                               onClick={() => { setActionError(null); setEndpointEditTarget(endpoint) }}
                               disabled={savingResource}
                               className="rounded p-2 text-[#69717e] hover:bg-white hover:text-primary disabled:opacity-40"
@@ -411,8 +426,8 @@ function RobotMapDetail() {
                             </button>
                             <button
                               type="button"
-                              title="Xóa điểm điều hướng"
-                              aria-label={`Xóa điểm điều hướng ${endpoint.name}`}
+                              title="Remove endpoint"
+                              aria-label={`Remove endpoint ${endpoint.name}`}
                               onClick={() => void handleDeleteEndpoint(endpoint)}
                               disabled={savingResource}
                               className="rounded p-2 text-[#69717e] hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
@@ -433,8 +448,8 @@ function RobotMapDetail() {
                 {actionError && <p className="m-3 rounded-md bg-rose-50 p-2.5 text-sm text-rose-700">{actionError}</p>}
                 <div className="flex items-center justify-between gap-3 border-b border-[#e2e3e8] p-4">
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-[#747b88]">Khu vực</p>
-                    <p className="mt-1 text-xs text-[#747b88]">{zones.length} khu vực</p>
+                    <p className="text-xs font-medium uppercase tracking-wide text-[#747b88]">Zones</p>
+                    <p className="mt-1 text-xs text-[#747b88]">{zones.length} zones</p>
                   </div>
                   <button
                     type="button"
@@ -445,27 +460,27 @@ function RobotMapDetail() {
                     }}
                     className={`inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition ${drawZoneMode ? 'bg-primary text-primary-foreground' : 'bg-[#f1f2f5] text-[#515866] hover:bg-[#e7e8ed]'}`}
                   >
-                    <SquareDashed className="h-4 w-4" /> {drawZoneMode ? 'Đang vẽ...' : 'Vẽ khu vực'}
+                    <SquareDashed className="h-4 w-4" /> {drawZoneMode ? 'Drawing...' : 'Draw Zone'}
                   </button>
                 </div>
                 <label className="block border-b border-[#e2e3e8] px-4 py-3 text-xs text-[#596174]">
-                  Lọc theo loại khu vực
+                  Filter by zone type
                   <select
                     value={zoneTypeFilter}
                     onChange={(event) => setZoneTypeFilter(event.target.value)}
                     className="mt-1.5 h-9 w-full rounded-md border border-[#dfe1e7] bg-white px-3 text-sm text-[#303640] outline-none focus:border-primary"
                   >
-                    <option value="">Tất cả loại</option>
+                    <option value="">All types</option>
                     {zoneTypes.map((type) => <option key={type} value={type}>{zoneDisplayName(type)}</option>)}
                   </select>
                 </label>
                 {zonesLoading ? (
-                  <p className="py-8 text-center text-sm text-[#747b88]">Đang tải khu vực...</p>
+                  <p className="py-8 text-center text-sm text-[#747b88]">Loading zones...</p>
                 ) : zonesError ? (
                   <p className="m-4 rounded-md bg-rose-50 p-3 text-sm text-rose-700">{zonesError}</p>
                 ) : filteredZones.length === 0 ? (
                   <p className="px-4 py-8 text-center text-sm text-[#747b88]">
-                    {zones.length === 0 ? 'Chưa có khu vực nào trên bản đồ này.' : 'Không có khu vực nào khớp với loại đã chọn.'}
+                    {zones.length === 0 ? 'No zones are assigned to this map.' : 'No zones match this type.'}
                   </p>
                 ) : (
                   <div className="divide-y divide-[#e2e3e8]">
@@ -488,13 +503,13 @@ function RobotMapDetail() {
                                 {zone.zoneType === 'SPEED_LIMIT' ? `${zoneDisplayName(zone.zoneType)} · ${zone.maxSpeed.toFixed(2)} m/s` : zoneDisplayName(zone.zoneType)}
                               </p>
                             </div>
-                            <span className="text-right text-[10px] text-[#69717e]">{zoneDisplayName(zone.zoneType)}</span>
+                            <span className="text-right text-[10px] text-[#69717e]">{zone.zoneType.replace('_', ' ')}</span>
                           </button>
                           <div className="flex shrink-0 items-center gap-1">
                             <button
                               type="button"
-                              title="Sửa khu vực"
-                              aria-label={`Sửa khu vực ${zoneDisplayName(zone.zoneType)}`}
+                              title="Edit zone"
+                              aria-label={`Edit zone ${zone.zoneType}`}
                               onClick={() => { setActionError(null); setZoneEditTarget(zone) }}
                               disabled={savingResource}
                               className="rounded p-2 text-[#69717e] hover:bg-white hover:text-primary disabled:opacity-40"
@@ -503,8 +518,8 @@ function RobotMapDetail() {
                             </button>
                             <button
                               type="button"
-                              title="Xóa khu vực"
-                              aria-label={`Xóa khu vực ${zoneDisplayName(zone.zoneType)}`}
+                              title="Remove zone"
+                              aria-label={`Remove zone ${zone.zoneType}`}
                               onClick={() => void handleDeleteZone(zone)}
                               disabled={savingResource}
                               className="rounded p-2 text-[#69717e] hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
@@ -600,27 +615,18 @@ function StatusBadge({ active }: { active: boolean }) {
   return (
     <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium ${active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-      {active ? 'Đang hoạt động' : 'Ngừng hoạt động'}
+      {active ? 'Active' : 'Inactive'}
     </span>
   )
 }
 
 const zoneTypes = ['KEEP_OUT', 'SPEED_LIMIT', 'NO_STOP'] as const
 
-function endpointTypeDisplayName(endpointType: string) {
-  switch (endpointType) {
-    case 'WAYPOINT': return 'Điểm mốc'
-    case 'CHARGER': return 'Trạm sạc'
-    case 'PARK': return 'Điểm đỗ'
-    default: return endpointType
-  }
-}
-
 function zoneDisplayName(zoneType: string) {
   switch (zoneType) {
-    case 'KEEP_OUT': return 'Khu vực cấm'
-    case 'SPEED_LIMIT': return 'Khu vực giới hạn tốc độ'
-    case 'NO_STOP': return 'Khu vực cấm dừng'
+    case 'KEEP_OUT': return 'Keep-out Zone'
+    case 'SPEED_LIMIT': return 'Speed Zone'
+    case 'NO_STOP': return 'No-stop Zone'
     default: return zoneType
   }
 }
@@ -692,14 +698,14 @@ function DialogFrame({
       <form onSubmit={onSubmit} className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-semibold text-[#20232a]">{title}</h2>
-          <button type="button" onClick={onClose} disabled={saving} className="text-sm text-[#747b88] hover:text-[#20232a]">Đóng</button>
+          <button type="button" onClick={onClose} disabled={saving} className="text-sm text-[#747b88] hover:text-[#20232a]">Close</button>
         </div>
         <div className="space-y-3">{children}</div>
         {error && <p className="mt-3 rounded-md bg-rose-50 p-2.5 text-sm text-rose-700">{error}</p>}
         <div className="mt-5 flex justify-end gap-2">
-          <button type="button" onClick={onClose} disabled={saving} className="rounded-md border border-[#dfe1e7] px-3 py-2 text-sm text-[#515866] disabled:opacity-50">Hủy</button>
+          <button type="button" onClick={onClose} disabled={saving} className="rounded-md border border-[#dfe1e7] px-3 py-2 text-sm text-[#515866] disabled:opacity-50">Cancel</button>
           <button type="submit" disabled={saving} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">
-            {saving ? 'Đang lưu...' : 'Lưu'}
+            {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </form>
@@ -735,7 +741,7 @@ function CreateEndpointDialog({
 }) {
   return (
     <DialogFrame
-      title={endpoint ? 'Sửa điểm điều hướng' : 'Tạo điểm điều hướng'}
+      title={endpoint ? 'Edit endpoint' : 'Create endpoint'}
       error={error}
       saving={saving}
       onClose={onClose}
@@ -751,18 +757,18 @@ function CreateEndpointDialog({
         })
       }}
     >
-      <FormField label="Tên"><input name="name" required autoFocus className={inputClass} placeholder="EP-101" defaultValue={endpoint?.name ?? ''} /></FormField>
-      <FormField label="Loại điểm điều hướng">
+      <FormField label="Name"><input name="name" required autoFocus className={inputClass} placeholder="EP-101" defaultValue={endpoint?.name ?? ''} /></FormField>
+      <FormField label="Endpoint type">
         <select name="endpointType" className={inputClass} defaultValue={endpoint?.endpointType ?? 'WAYPOINT'}>
-          <option value="WAYPOINT">Điểm mốc</option>
-          <option value="CHARGER">Trạm sạc</option>
-          <option value="PARK">Điểm đỗ</option>
+          <option value="WAYPOINT">Waypoint</option>
+          <option value="CHARGER">Charger</option>
+          <option value="PARK">Park</option>
         </select>
       </FormField>
       <div className="grid grid-cols-3 gap-2">
-        <FormField label="Vị trí X"><input name="positionX" type="number" step="any" required className={inputClass} defaultValue={(endpoint?.positionX ?? position?.positionX ?? 0).toFixed(3)} /></FormField>
-        <FormField label="Vị trí Y"><input name="positionY" type="number" step="any" required className={inputClass} defaultValue={(endpoint?.positionY ?? position?.positionY ?? 0).toFixed(3)} /></FormField>
-        <FormField label="Hướng">
+        <FormField label="Position X"><input name="positionX" type="number" step="any" required className={inputClass} defaultValue={(endpoint?.positionX ?? position?.positionX ?? 0).toFixed(3)} /></FormField>
+        <FormField label="Position Y"><input name="positionY" type="number" step="any" required className={inputClass} defaultValue={(endpoint?.positionY ?? position?.positionY ?? 0).toFixed(3)} /></FormField>
+        <FormField label="Direction">
           <input
             name="theta"
             type="number"
@@ -771,13 +777,13 @@ function CreateEndpointDialog({
             readOnly={!endpoint}
             className={`${inputClass} ${endpoint ? '' : 'cursor-not-allowed bg-[#f5f6f8] text-[#687386]'}`}
             defaultValue={String(endpoint?.theta ?? position?.theta ?? 0)}
-            title={endpoint ? 'Hướng tính theo radian' : 'Hướng được chọn trên bản đồ, tính theo radian'}
+            title={endpoint ? 'Direction in radians' : 'Direction selected on the map, in radians'}
           />
         </FormField>
       </div>
       {!endpoint && (
         <p className="text-xs text-[#687386]">
-          Hướng được tính từ mũi tên đã vẽ trên bản đồ ({(((position?.theta ?? 0) * 180) / Math.PI).toFixed(1)}°).
+          Direction was calculated from the arrow drawn on the map ({(((position?.theta ?? 0) * 180) / Math.PI).toFixed(1)}°).
         </p>
       )}
     </DialogFrame>
@@ -808,7 +814,7 @@ function CreateZoneDialog({
   )
   return (
     <DialogFrame
-      title={zone ? 'Sửa khu vực' : 'Tạo khu vực'}
+      title={zone ? 'Edit zone' : 'Create zone'}
       error={error}
       saving={saving}
       onClose={onClose}
@@ -840,18 +846,18 @@ function CreateZoneDialog({
         })
       }}
     >
-      <FormField label="Tên khu vực"><input name="name" required autoFocus className={inputClass} placeholder="Khu vực đọc sách" defaultValue={zone?.name ?? ''} /></FormField>
-      <FormField label="Loại khu vực">
+      <FormField label="Zone name"><input name="name" required autoFocus className={inputClass} placeholder="Reading area" defaultValue={zone?.name ?? ''} /></FormField>
+      <FormField label="Zone type">
         <select value={zoneType} onChange={(event) => setZoneType(event.target.value as ZoneCreateInput['zoneType'])} className={inputClass}>
           {zoneTypes.map((type) => <option key={type} value={type}>{zoneDisplayName(type)}</option>)}
         </select>
       </FormField>
-      {zoneType === 'SPEED_LIMIT' && <FormField label="Tốc độ tối đa (m/s)"><input name="maxSpeed" type="number" min="0.01" step="any" required className={inputClass} defaultValue={String(zone?.maxSpeed || 0.5)} /></FormField>}
+      {zoneType === 'SPEED_LIMIT' && <FormField label="Maximum speed (m/s)"><input name="maxSpeed" type="number" min="0.01" step="any" required className={inputClass} defaultValue={String(zone?.maxSpeed || 0.5)} /></FormField>}
       <div className="grid grid-cols-2 gap-2">
-        <FormField label="X nhỏ nhất"><input name="minX" type="number" step="any" required className={inputClass} defaultValue={String(zone?.minX ?? bounds.minX)} /></FormField>
-        <FormField label="Y nhỏ nhất"><input name="minY" type="number" step="any" required className={inputClass} defaultValue={String(zone?.minY ?? bounds.minY)} /></FormField>
-        <FormField label="X lớn nhất"><input name="maxX" type="number" step="any" required className={inputClass} defaultValue={String(zone?.maxX ?? bounds.maxX)} /></FormField>
-        <FormField label="Y lớn nhất"><input name="maxY" type="number" step="any" required className={inputClass} defaultValue={String(zone?.maxY ?? bounds.maxY)} /></FormField>
+        <FormField label="Min X"><input name="minX" type="number" step="any" required className={inputClass} defaultValue={String(zone?.minX ?? bounds.minX)} /></FormField>
+        <FormField label="Min Y"><input name="minY" type="number" step="any" required className={inputClass} defaultValue={String(zone?.minY ?? bounds.minY)} /></FormField>
+        <FormField label="Max X"><input name="maxX" type="number" step="any" required className={inputClass} defaultValue={String(zone?.maxX ?? bounds.maxX)} /></FormField>
+        <FormField label="Max Y"><input name="maxY" type="number" step="any" required className={inputClass} defaultValue={String(zone?.maxY ?? bounds.maxY)} /></FormField>
       </div>
     </DialogFrame>
   )

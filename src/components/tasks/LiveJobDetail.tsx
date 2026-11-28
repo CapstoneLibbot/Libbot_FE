@@ -1,24 +1,46 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, ArrowLeft, Check, Circle, Clock3, Play, Radio, Send, XCircle } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import MapViewer from '@/components/map/MapViewer'
 import SdfScene3D from '@/components/map/SdfScene3D'
-import { apiGet, apiPost, type BackendMission, type BackendWorkflow, type MissionExecutionState, type RobotRuntime } from '@/lib/missionApi'
-import { armRuntime, disarmRuntime } from '@/features/maps/api/runtimeApi'
+import { apiGet, apiPost, type BackendJob, type BackendWorkflow, type JobExecutionState, type RobotRuntime } from '@/lib/jobApi'
+import { inventoryApi, type InventoryScanResult } from '@/lib/inventoryApi'
+import LiveOccupancyMap from '@/features/maps/components/LiveOccupancyMap'
+import RealtimeCamera from '@/features/maps/components/RealtimeCamera'
+import {
+  armRuntime,
+  disarmRuntime,
+  getSavedMapEndpoints,
+  getSavedMaps,
+  getSavedMapZones,
+  getSavedRobotMapDetails,
+  type SavedMapEndpoint,
+  type SavedMapZone,
+  type SavedRobotMapDetails,
+} from '@/features/maps/api/runtimeApi'
 
-type StepEvent = MissionExecutionState
+type StepEvent = JobExecutionState
 type StepProgress = 'pending' | 'running' | 'waiting' | 'completed' | 'failed'
 type RobotPose = { x: number; y: number; yaw: number }
 type WaitChoice = { value: string; label: string; detail?: string }
 type SimulationBookTarget = { shelfId: string; label: string; x: number; y: number; yaw: number }
 type SimulationSceneMetadata = {
   robotSpawn?: RobotPose
-  rooms?: { label: string; x: number; y: number }[]
+  areas?: { label: string; x: number; y: number }[]
   simulationBookTarget?: SimulationBookTarget
 }
 
 function normalizeStatus(value?: string | null) {
   return (value ?? 'UNKNOWN').trim().toUpperCase()
+}
+
+function inventoryScanLabel(scan: InventoryScanResult) {
+  const scanStatus = scan.status?.trim().toUpperCase()
+  if (scanStatus === 'AMBIGUOUS') return 'Mã trùng trên nhiều tầng'
+  if (scanStatus === 'MISPLACED' || scan.misplaced) return 'Sai kệ'
+  if (scanStatus === 'SCANNED') return 'Đang xác minh'
+  if (scanStatus === 'UNKNOWN' || !scan.known) return 'Không có trong CSDL'
+  return 'Đã nhận diện'
 }
 
 function stepIdentifier(step: BackendWorkflow['steps'][number]) {
@@ -27,34 +49,11 @@ function stepIdentifier(step: BackendWorkflow['steps'][number]) {
 }
 
 function displayName(value: string) {
-  const labels: Record<string, string> = {
-    ACCEPTED: 'Đã tiếp nhận',
-    QUEUED: 'Đang xếp hàng',
-    RUNNING: 'Đang chạy',
-    WAITING: 'Đang chờ',
-    COMPLETED: 'Hoàn thành',
-    FAILED: 'Thất bại',
-    CANCELLED: 'Đã hủy',
-    STEP_STARTED: 'Bắt đầu bước',
-    STEP_COMPLETED: 'Hoàn tất bước',
-    STEP_FAILED: 'Bước thất bại',
-    BOOK_SELECTED: 'Đã chọn sách',
-    VIEW_LOCATION: 'Xem vị trí',
-    CHARGER_CONNECTED: 'Đã kết nối bộ sạc',
-    MOVE: 'Di chuyển',
-    SCAN: 'Quét',
-    PROCESS_DATA: 'Xử lý dữ liệu',
-    EVALUATE: 'Đánh giá',
-    DISPLAY: 'Hiển thị',
-    WAIT: 'Chờ',
-    NOTIFY: 'Thông báo',
-  }
-  if (labels[value.toUpperCase()]) return labels[value.toUpperCase()]
   return value.toLowerCase().replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase())
 }
 
 function formatTime(value?: string | null) {
-  return value ? new Date(value).toLocaleTimeString('vi-VN') : 'Đang chờ robot'
+  return value ? new Date(value).toLocaleTimeString() : 'Waiting for robot'
 }
 
 function progressForStep(stepIds: string[], events: StepEvent[]): StepProgress {
@@ -80,13 +79,19 @@ function numericValue(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
-function LiveMissionDetail({ missionId }: { missionId: string }) {
+function LiveJobDetail({ jobId }: { jobId: string }) {
   const navigate = useNavigate()
-  const [mission, setMission] = useState<BackendMission | null>(null)
+  const [job, setJob] = useState<BackendJob | null>(null)
   const [workflow, setWorkflow] = useState<BackendWorkflow | null>(null)
-  const [execution, setExecution] = useState<MissionExecutionState | null>(null)
+  const [execution, setExecution] = useState<JobExecutionState | null>(null)
   const [events, setEvents] = useState<StepEvent[]>([])
   const [runtime, setRuntime] = useState<RobotRuntime | null>(null)
+  const [inventoryMap, setInventoryMap] = useState<SavedRobotMapDetails | null>(null)
+  const [inventoryMapEndpoints, setInventoryMapEndpoints] = useState<SavedMapEndpoint[]>([])
+  const [inventoryMapZones, setInventoryMapZones] = useState<SavedMapZone[]>([])
+  const [inventoryMapLoading, setInventoryMapLoading] = useState(false)
+  const [inventoryMapError, setInventoryMapError] = useState<string | null>(null)
+  const [inventoryScans, setInventoryScans] = useState<InventoryScanResult[]>([])
   const [spawnPose, setSpawnPose] = useState<RobotPose | null>(null)
   const [simulationBookTarget, setSimulationBookTarget] = useState<SimulationBookTarget | null>(null)
   const [roomLabels, setRoomLabels] = useState<{ label: string; x: number; y: number }[]>([])
@@ -110,26 +115,26 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
 
     const refresh = async () => {
       try {
-        const missionResponse = await apiGet<BackendMission>(`/api/missions/${missionId}`)
+        const jobResponse = await apiGet<BackendJob>(`/api/jobs/${jobId}`)
         if (!active) return
-        setMission(missionResponse)
+        setJob(jobResponse)
         const requests = await Promise.allSettled([
-          missionResponse.workflowId
-            ? apiGet<BackendWorkflow>(`/api/workflows/${missionResponse.workflowId}`)
-            : Promise.reject(new Error('Mission has no workflow assigned.')),
-          apiGet<MissionExecutionState>(`/api/missions/${missionId}/execution`),
-          apiGet<StepEvent[]>(`/api/missions/${missionId}/execution/events`),
+          jobResponse.workflowId
+            ? apiGet<BackendWorkflow>(`/api/workflows/${jobResponse.workflowId}`)
+            : Promise.reject(new Error('Nhiệm vụ chưa được gán quy trình.')),
+          apiGet<JobExecutionState>(`/api/jobs/${jobId}/execution`),
+          apiGet<StepEvent[]>(`/api/jobs/${jobId}/execution/events`),
         ])
         if (!active) return
 
         if (requests[0].status === 'fulfilled') setWorkflow(requests[0].value)
-        else setError(requests[0].reason instanceof Error ? requests[0].reason.message : 'Unable to load workflow steps.')
+        else setError(requests[0].reason instanceof Error ? requests[0].reason.message : 'Không thể tải các bước quy trình.')
         if (requests[1].status === 'fulfilled') setExecution(requests[1].value)
         if (requests[2].status === 'fulfilled') setEvents(requests[2].value)
         if (requests[0].status === 'fulfilled'
           && (requests[1].status === 'fulfilled' || requests[2].status === 'fulfilled')) setError(null)
       } catch (requestError) {
-        if (active) setError(requestError instanceof Error ? requestError.message : 'Cannot reach the backend.')
+        if (active) setError(requestError instanceof Error ? requestError.message : 'Không thể kết nối backend.')
       }
 
       if (active) nextPoll = window.setTimeout(refresh, 1200)
@@ -140,7 +145,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
       active = false
       if (nextPoll !== undefined) window.clearTimeout(nextPoll)
     }
-  }, [missionId])
+  }, [jobId])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -151,7 +156,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
       })
       .then((scene) => {
         setSpawnPose(scene.robotSpawn ?? null)
-        setRoomLabels(scene.rooms ?? [])
+        setRoomLabels(scene.areas ?? [])
         setSimulationBookTarget(scene.simulationBookTarget ?? null)
       })
       .catch((requestError: unknown) => {
@@ -162,12 +167,77 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   }, [])
 
   useEffect(() => {
+    if (workflow?.type?.toUpperCase() !== 'BOOKSHELF_INVENTORY') {
+      setInventoryMap(null)
+      setInventoryMapEndpoints([])
+      setInventoryMapZones([])
+      return
+    }
+
+    let active = true
+    setInventoryMapLoading(true)
+    setInventoryMapError(null)
+    const loadLibraryMap = async () => {
+      try {
+        const maps = await getSavedMaps()
+        const selectedMap = maps.find((map) => map.name.trim().toLowerCase() === 'libotmapv4')
+        if (!selectedMap) throw new Error('Không tìm thấy map LiBotmapV4 trong database.')
+
+        const [details, endpoints, zones] = await Promise.all([
+          getSavedRobotMapDetails(selectedMap.id),
+          getSavedMapEndpoints(selectedMap.id),
+          getSavedMapZones(selectedMap.id),
+        ])
+        if (!active) return
+        setInventoryMap(details)
+        setInventoryMapEndpoints(endpoints.filter((endpoint) => endpoint.isActive))
+        setInventoryMapZones(zones.filter((zone) => zone.isActive))
+      } catch (requestError) {
+        if (!active) return
+        setInventoryMap(null)
+        setInventoryMapError(requestError instanceof Error ? requestError.message : 'Không tải được map LiBotmapV4.')
+      } finally {
+        if (active) setInventoryMapLoading(false)
+      }
+    }
+
+    void loadLibraryMap()
+    return () => { active = false }
+  }, [workflow?.type])
+
+  useEffect(() => {
+    if (workflow?.type?.toUpperCase() !== 'BOOKSHELF_INVENTORY' || !job) {
+      setInventoryScans([])
+      return
+    }
+
+    let active = true
+    let nextPoll: number | undefined
+    const runtimeId = job.runtimeId?.toLowerCase() === 'real' ? 'real' : 'sim'
+    const refreshScans = async () => {
+      try {
+        const scans = await inventoryApi.getScans(jobId, runtimeId)
+        if (active) setInventoryScans(scans)
+      } catch {
+        // Keep the last scan result visible while the robot or backend reconnects.
+      }
+      if (active) nextPoll = window.setTimeout(refreshScans, 1200)
+    }
+
+    void refreshScans()
+    return () => {
+      active = false
+      if (nextPoll !== undefined) window.clearTimeout(nextPoll)
+    }
+  }, [jobId, job?.runtimeId, workflow?.type])
+
+  useEffect(() => {
     let active = true
     let nextPoll: number | undefined
     const refreshRuntime = async () => {
       try {
         const nextRuntime = await apiGet<RobotRuntime>(
-          `/api/robot-runtimes/${encodeURIComponent(mission?.runtimeId || 'sim')}`,
+          `/api/robot-runtimes/${encodeURIComponent(job?.runtimeId || 'sim')}`,
         )
         if (active) setRuntime(nextRuntime)
       } catch {
@@ -180,12 +250,12 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
       active = false
       if (nextPoll !== undefined) window.clearTimeout(nextPoll)
     }
-  }, [mission?.runtimeId])
+  }, [job?.runtimeId])
 
   useEffect(() => {
     const eventType = execution?.expectedEventType?.trim().toUpperCase()
-    if (normalizeStatus(execution?.status) !== 'WAITING' || mission?.runtimeId !== 'sim'
-      || eventType !== 'BOOK_SELECTED') {
+    if (normalizeStatus(execution?.status) !== 'WAITING' || job?.runtimeId !== 'sim'
+      || !eventType || !['BOOK_SELECTED', 'FACILITY_SELECTED'].includes(eventType)) {
       setWaitChoices([])
       setWaitChoicesLoading(false)
       return
@@ -193,25 +263,24 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
 
     let active = true
     setWaitChoicesLoading(true)
-    apiGet<{ books?: { bookId: string; title: string; author?: string }[] }>(
-      '/api/workflow-data/simulation/books/search',
-    )
+    const path = eventType === 'BOOK_SELECTED'
+      ? '/api/workflow-data/simulation/books/search'
+      : '/api/workflow-data/simulation/facilities/search'
+    apiGet<{ books?: { bookId: string; title: string; author?: string }[]; facilities?: { facilityId: string; name: string; type?: string }[] }>(path)
       .then((result) => {
         if (!active) return
-        const choices = (result.books ?? []).map((book) => ({
-          value: book.bookId,
-          label: book.title,
-          detail: book.author,
-        }))
+        const choices = eventType === 'BOOK_SELECTED'
+          ? (result.books ?? []).map((book) => ({ value: book.bookId, label: book.title, detail: book.author }))
+          : (result.facilities ?? []).map((facility) => ({ value: facility.facilityId, label: facility.name, detail: facility.type }))
         setWaitChoices(choices)
       })
       .catch(() => { if (active) setWaitChoices([]) })
       .finally(() => { if (active) setWaitChoicesLoading(false) })
     return () => { active = false }
-  }, [execution?.expectedEventType, execution?.status, mission?.runtimeId])
+  }, [execution?.expectedEventType, execution?.status, job?.runtimeId])
 
   useEffect(() => {
-    if (mission?.runtimeId !== 'sim') {
+    if (job?.runtimeId !== 'sim') {
       setSimulationSpeed(1)
       return
     }
@@ -219,10 +288,10 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     apiGet<{ multiplier: number }>('/api/robot-runtimes/sim/simulation-speed')
       .then((result) => { if (active) setSimulationSpeed(result.multiplier) })
       .catch((requestError: unknown) => {
-        if (active) setActionError(requestError instanceof Error ? requestError.message : 'Cannot read Gazebo speed.')
+        if (active) setActionError(requestError instanceof Error ? requestError.message : 'Không thể đọc tốc độ mô phỏng Gazebo.')
       })
     return () => { active = false }
-  }, [mission?.runtimeId])
+  }, [job?.runtimeId])
 
   const orderedSteps = useMemo(
     () => [...(workflow?.steps ?? [])].sort((first, second) => first.sequence - second.sequence),
@@ -233,20 +302,24 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     || step.id.toLowerCase() === String(execution?.currentStep ?? '').toLowerCase()
     || step.name.toLowerCase() === String(execution?.currentStepName ?? '').toLowerCase(),
   )
-  const status = normalizeStatus(execution?.status ?? mission?.status)
-  const missionIsComplete = status === 'SUCCEEDED' || status === 'COMPLETED'
-  const missionHasFailed = status === 'FAILED' || status === 'CANCELLED'
-  const missionInProgress = status === 'ACCEPTED' || status === 'RUNNING' || status === 'WAITING'
-  const isSimulation = (mission?.runtimeId ?? 'sim').toLowerCase() === 'sim'
+  const status = normalizeStatus(execution?.status ?? job?.status)
+  const jobIsComplete = status === 'SUCCEEDED' || status === 'COMPLETED'
+  const jobHasFailed = status === 'FAILED' || status === 'CANCELLED'
+  const jobInProgress = status === 'ACCEPTED' || status === 'RUNNING' || status === 'WAITING'
+  const isSimulation = (job?.runtimeId ?? 'sim').toLowerCase() === 'sim'
   const liveRobotPose = runtime?.telemetry?.pose ?? null
   const robotPose = liveRobotPose ?? spawnPose
   const canRun = isSimulation
-    ? !missionInProgress
+    ? !jobInProgress
     : ['QUEUED', 'PENDING', 'FAILED', 'CANCELLED'].includes(status)
   const expectedEventType = execution?.expectedEventType?.trim().toUpperCase() ?? ''
   const waitKey = `${execution?.executionId ?? ''}:${execution?.currentStep ?? ''}:${expectedEventType}`
   const waitAlreadySubmitted = submittedWaitKey === waitKey
   const isLibraryPatrol = workflow?.type?.toUpperCase() === 'LIBRARY_PATROL'
+  const isBookshelfInventory = workflow?.type?.toUpperCase() === 'BOOKSHELF_INVENTORY'
+  const poseForMap = isBookshelfInventory ? liveRobotPose : robotPose
+  const isAiScanning = isBookshelfInventory && jobInProgress && currentStep?.type.toUpperCase() === 'SCAN'
+  const latestInventoryScan = inventoryScans[inventoryScans.length - 1] ?? null
   const patrolResults = events.map((event) => asRecord(event.result)).filter((result): result is Record<string, unknown> => result !== null)
   const patrolReport = patrolResults
     .filter((result) => String(result.action ?? '').toUpperCase() === 'GENERATE_PATROL_REPORT')
@@ -257,46 +330,51 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     .map((result) => asRecord(result.data)?.coverage)
     .map(asRecord)
     .find((result) => result !== null) ?? null
+  const inventoryReport = patrolResults
+    .filter((result) => String(result.action ?? '').toUpperCase() === 'GENERATE_REPORT')
+    .map((result) => asRecord(result.data))
+    .find((result) => result !== null) ?? null
+  const inventoryReportDetails = asRecord(inventoryReport?.details)
 
-  const runMission = async () => {
+  const runJob = async () => {
     if (!isSimulation && !armLeaseId) {
-      setActionError('Arm the physical robot before starting this mission.')
+      setActionError('Hãy cấp quyền điều khiển cho robot thật trước khi bắt đầu nhiệm vụ.')
       return
     }
     setRunPending(true)
     setActionError(null)
     try {
-      await apiPost(`/api/missions/${missionId}/start`, { runtimeId: mission?.runtimeId ?? 'sim', armLeaseId })
+      await apiPost(`/api/jobs/${jobId}/start`, { runtimeId: job?.runtimeId ?? 'sim', armLeaseId })
     } catch (requestError) {
-      setActionError(requestError instanceof Error ? requestError.message : 'Unable to start the mission.')
+      setActionError(requestError instanceof Error ? requestError.message : 'Không thể khởi chạy nhiệm vụ.')
     } finally {
       setRunPending(false)
     }
   }
 
   const armPhysicalRobot = async () => {
-    const runtimeId = mission?.runtimeId || 'real'
+    const runtimeId = job?.runtimeId || 'real'
     setArmPending(true)
     setActionError(null)
     try {
       const lease = await armRuntime(runtimeId)
       setArmLeaseId(lease.leaseId)
     } catch (requestError) {
-      setActionError(requestError instanceof Error ? requestError.message : 'Unable to arm the physical robot.')
+      setActionError(requestError instanceof Error ? requestError.message : 'Không thể cấp quyền điều khiển robot.')
     } finally {
       setArmPending(false)
     }
   }
 
   const disarmPhysicalRobot = async () => {
-    const runtimeId = mission?.runtimeId || 'real'
+    const runtimeId = job?.runtimeId || 'real'
     setArmPending(true)
     setActionError(null)
     try {
       await disarmRuntime(runtimeId)
       setArmLeaseId(null)
     } catch (requestError) {
-      setActionError(requestError instanceof Error ? requestError.message : 'Unable to disarm the physical robot.')
+      setActionError(requestError instanceof Error ? requestError.message : 'Không thể thu hồi quyền điều khiển robot.')
     } finally {
       setArmPending(false)
     }
@@ -309,7 +387,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
       await apiPost('/api/robot-runtimes/sim/simulation-speed', { multiplier })
       setSimulationSpeed(multiplier)
     } catch (requestError) {
-      setActionError(requestError instanceof Error ? requestError.message : 'Unable to change Gazebo speed.')
+      setActionError(requestError instanceof Error ? requestError.message : 'Không thể đổi tốc độ mô phỏng Gazebo.')
     } finally {
       setSpeedPending(false)
     }
@@ -321,27 +399,28 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     setEventPending(true)
     setActionError(null)
     try {
-      await apiPost(`/api/missions/${missionId}/execution/events`, {
+      await apiPost(`/api/jobs/${jobId}/execution/events`, {
         eventType: expectedEventType,
         data: { value: selected },
       })
       setSubmittedWaitKey(waitKey)
       setWaitInput('')
     } catch (requestError) {
-      setActionError(requestError instanceof Error ? requestError.message : 'Unable to submit the workflow choice.')
+      setActionError(requestError instanceof Error ? requestError.message : 'Không thể gửi lựa chọn cho quy trình.')
     } finally {
       setEventPending(false)
     }
   }
 
   useEffect(() => {
-    if (mission?.runtimeId !== 'sim' || status !== 'WAITING' || !expectedEventType
+    if (job?.runtimeId !== 'sim' || status !== 'WAITING' || !expectedEventType
       || waitAlreadySubmitted || eventPending) return
 
     let automaticValue: string | undefined
-    if (expectedEventType === 'BOOK_SELECTED') {
-      if (execution?.expectedBookId) automaticValue = execution.expectedBookId
-      else {
+    if (expectedEventType === 'BOOK_SELECTED' || expectedEventType === 'FACILITY_SELECTED') {
+      if (expectedEventType === 'BOOK_SELECTED' && execution?.expectedBookId) {
+        automaticValue = execution.expectedBookId
+      } else {
         if (waitChoicesLoading) return
         automaticValue = waitChoices[0]?.value
       }
@@ -353,7 +432,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
 
     if (automaticValue) void submitWaitEvent(automaticValue)
   }, [
-    mission?.runtimeId,
+    job?.runtimeId,
     status,
     expectedEventType,
     waitAlreadySubmitted,
@@ -364,16 +443,10 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     execution?.expectedBookId,
   ])
 
-  if (!mission && error) {
+  if (!job && error) {
     return (
       <div className="min-h-screen bg-[#0c0d10] p-6 text-white">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-sm text-white/65 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" />Quay lại
-        </button>
+        <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-sm text-white/65 hover:text-white"><ArrowLeft className="h-4 w-4" />Quay lại</button>
         <section role="alert" className="mx-auto mt-10 max-w-2xl border border-rose-400/30 bg-rose-500/10 p-6">
           <h1 className="text-lg font-semibold">Không thể mở trình theo dõi nhiệm vụ</h1>
           <p className="mt-2 text-sm text-white/65">{error}. Hãy kiểm tra backend đang chạy và VITE_API_BASE_URL trỏ đúng địa chỉ.</p>
@@ -386,44 +459,36 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
     <div className="flex min-h-screen flex-col overflow-hidden bg-[#0c0d10] text-white xl:h-screen">
       <header className="flex min-h-14 shrink-0 items-center justify-between gap-4 border-b border-white/10 bg-[#121318] px-4 py-2">
         <div className="flex min-w-0 items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            aria-label="Quay lại"
-            title="Quay lại"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/55 hover:bg-white/10 hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
+          <button type="button" onClick={() => navigate(-1)} aria-label="Quay lại" title="Quay lại" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/55 hover:bg-white/10 hover:text-white"><ArrowLeft className="h-4 w-4" /></button>
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-white/40">Trình theo dõi quy trình robot</p>
-            <h1 className="truncate text-sm font-semibold">{mission?.workflowName ?? 'Đang tải nhiệm vụ…'}</h1>
+            <h1 className="truncate text-sm font-semibold">{job?.workflowName ?? 'Đang tải nhiệm vụ…'}</h1>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {canRun && !isSimulation && !armLeaseId && (
             <button type="button" onClick={() => void armPhysicalRobot()} disabled={armPending || !runtime?.connected || runtime.stale} className="rounded-md border border-amber-300/30 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-200 hover:bg-amber-400/15 disabled:cursor-not-allowed disabled:opacity-50">
-              {armPending ? 'Đang cấp quyền…' : 'Cho phép điều khiển robot'}
+              {armPending ? 'Đang cấp quyền…' : 'Cấp quyền điều khiển'}
             </button>
           )}
           {armLeaseId && !isSimulation && (
             <button type="button" onClick={() => void disarmPhysicalRobot()} disabled={armPending} className="rounded-md border border-white/15 px-3 py-1.5 text-xs font-semibold text-white/65 hover:bg-white/10 disabled:opacity-50">
-              {armPending ? 'Đang ngắt điều khiển…' : 'Ngắt điều khiển'}
+              {armPending ? 'Đang thu hồi quyền…' : 'Thu hồi quyền'}
             </button>
           )}
           {canRun && (
             <button
               type="button"
-              onClick={() => void runMission()}
+              onClick={() => void runJob()}
               disabled={runPending || (!isSimulation && !armLeaseId)}
               className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-[#07140d] hover:bg-emerald-400 disabled:cursor-wait disabled:opacity-60"
             >
-              <Play className="h-3.5 w-3.5" />{runPending ? 'Đang khởi chạy…' : missionIsComplete || missionHasFailed ? 'Chạy lại' : 'Chạy'}
+              <Play className="h-3.5 w-3.5" />{runPending ? 'Đang khởi chạy…' : jobIsComplete || jobHasFailed ? 'Chạy lại' : 'Chạy'}
             </button>
           )}
-          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${missionHasFailed ? 'bg-rose-400/15 text-rose-300' : missionIsComplete ? 'bg-emerald-400/15 text-emerald-300' : 'bg-amber-400/15 text-amber-200'}`}>{displayName(status)}</span>
+          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${jobHasFailed ? 'bg-rose-400/15 text-rose-300' : jobIsComplete ? 'bg-emerald-400/15 text-emerald-300' : 'bg-amber-400/15 text-amber-200'}`}>{displayName(status)}</span>
           <span className={`hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs sm:inline-flex ${runtime?.connected ? 'bg-emerald-400/10 text-emerald-300' : 'bg-white/8 text-white/50'}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${runtime?.connected ? 'bg-emerald-400' : 'bg-white/30'}`} />{runtime?.displayName ?? mission?.runtimeId ?? 'Robot'}{runtime?.stale ? ' · stale' : ''}
+            <span className={`h-1.5 w-1.5 rounded-full ${runtime?.connected ? 'bg-emerald-400' : 'bg-white/30'}`} />{runtime?.displayName ?? job?.runtimeId ?? 'Robot'}{runtime?.stale ? ' · stale' : ''}
           </span>
         </div>
       </header>
@@ -433,14 +498,18 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
           <div className="flex h-full min-h-[420px] flex-col">
             <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#121318] px-4 py-2.5">
               <div>
-                <h2 className="text-sm font-semibold">Mô phỏng thư viện</h2>
-                <p className="mt-0.5 text-xs text-white/45">50 × 60 m · vị trí robot được cập nhật trực tiếp</p>
+                <h2 className="text-sm font-semibold">{isBookshelfInventory ? inventoryMap?.map.name ?? 'LiBotmapV4' : 'Mô phỏng thư viện'}</h2>
+                <p className="mt-0.5 text-xs text-white/45">
+                  {isBookshelfInventory && inventoryMap
+                    ? `${(inventoryMap.grid.width * inventoryMap.grid.resolution).toFixed(1)} × ${(inventoryMap.grid.height * inventoryMap.grid.resolution).toFixed(1)} m · ${inventoryMapEndpoints.length} điểm điều hướng · vị trí robot cập nhật trực tiếp`
+                    : isBookshelfInventory ? 'Đang tải occupancy map LiBotmapV4…' : '50 × 60 m · vị trí robot được cập nhật trực tiếp'}
+                </p>
               </div>
               <div className="flex min-w-0 items-center gap-3">
                 <span className="hidden items-center gap-1.5 text-xs text-white/45 lg:inline-flex">
                   <Radio className="h-3.5 w-3.5" />
                   {runtime?.telemetry?.navigationState ?? 'Đang chờ dữ liệu'}
-                  {robotPose && ` · X ${robotPose.x.toFixed(1)} · Y ${robotPose.y.toFixed(1)} m`}
+                  {poseForMap && ` · X ${poseForMap.x.toFixed(1)} · Y ${poseForMap.y.toFixed(1)} m`}
                 </span>
                 <div className="flex shrink-0 items-center gap-1 rounded-md border border-white/10 bg-black/20 p-1">
                   <button
@@ -451,17 +520,19 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                   >
                     2D map
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setMapViewMode('gazebo3d')}
-                    aria-pressed={mapViewMode === 'gazebo3d'}
-                    className={`rounded px-2.5 py-1.5 text-[11px] font-medium transition ${mapViewMode === 'gazebo3d' ? 'bg-cyan-400/15 text-cyan-200' : 'text-white/50 hover:text-white'}`}
-                  >
-                    Gazebo 3D
-                  </button>
+                  {!isBookshelfInventory && (
+                    <button
+                      type="button"
+                      onClick={() => setMapViewMode('gazebo3d')}
+                      aria-pressed={mapViewMode === 'gazebo3d'}
+                      className={`rounded px-2.5 py-1.5 text-[11px] font-medium transition ${mapViewMode === 'gazebo3d' ? 'bg-cyan-400/15 text-cyan-200' : 'text-white/50 hover:text-white'}`}
+                    >
+                      Gazebo 3D
+                    </button>
+                  )}
                 </div>
-                {mission?.runtimeId === 'sim' && (
-                  <div                   aria-label="Tốc độ mô phỏng Gazebo" className="flex shrink-0 items-center gap-1 rounded-md border border-white/10 bg-black/20 p-1">
+                {job?.runtimeId === 'sim' && (
+                  <div aria-label="Gazebo simulation speed" className="flex shrink-0 items-center gap-1 rounded-md border border-white/10 bg-black/20 p-1">
                     <span className="px-1 text-[10px] font-medium text-white/40">Tốc độ</span>
                     {[1, 2, 3, 4].map((multiplier) => (
                       <button
@@ -480,7 +551,20 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
               </div>
             </div>
             <div className="min-h-[340px] flex-1">
-              {mapViewMode === '2d' ? (
+              {isBookshelfInventory ? inventoryMap ? (
+                <LiveOccupancyMap
+                  grid={inventoryMap.grid}
+                  robot={liveRobotPose ?? undefined}
+                  endpoints={inventoryMapEndpoints}
+                  zones={inventoryMapZones}
+                  showEndpoints
+                  showZones
+                />
+              ) : (
+                <div className="grid h-full min-h-[340px] place-items-center bg-[#101820] px-6 text-center text-sm text-white/65">
+                  {inventoryMapLoading ? 'Đang tải map LiBotmapV4 từ database…' : inventoryMapError ?? 'Không tải được map LiBotmapV4.'}
+                </div>
+              ) : mapViewMode === '2d' ? (
                 <MapViewer
                   yamlUrl="/maps/library_sim.yaml"
                   endpoints={[]}
@@ -511,12 +595,12 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
         <aside className="flex max-h-[72vh] min-h-[440px] w-full shrink-0 flex-col border-t border-white/10 bg-[#f7f8fa] text-[#252933] xl:max-h-none xl:min-h-0 xl:w-[430px] xl:border-r xl:border-t-0">
           <div className="shrink-0 border-b border-[#e0e3e9] bg-white px-5 py-4">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-[#79808d]">Tiến độ thực thi</p>
-            <h2 className="mt-1 break-words text-base font-semibold">{workflow?.name ?? mission?.workflowName ?? 'Quy trình'}</h2>
+            <h2 className="mt-1 break-words text-base font-semibold">{workflow?.name ?? job?.workflowName ?? 'Quy trình'}</h2>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#687386]">
               <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />Cập nhật {formatTime(execution?.updatedAt)}</span>
               {runtime?.telemetry?.battery !== null && runtime?.telemetry?.battery !== undefined && <span>Pin {Math.round(runtime.telemetry.battery)}%</span>}
             </div>
-            {currentStep && missionInProgress && (
+            {currentStep && jobInProgress && (
               <div className="mt-4 border-l-2 border-amber-500 bg-amber-50 px-3 py-2.5">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-800">Robot đang thực hiện</p>
                 <p className="mt-1 text-sm font-semibold text-[#252933]">{currentStep.sequence}. {currentStep.name}</p>
@@ -525,11 +609,11 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
             {status === 'WAITING' && expectedEventType && (
               <div className="mt-4 border border-cyan-200 bg-cyan-50 px-3 py-3">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-cyan-800">
-                  {mission?.runtimeId === 'sim' ? 'Bản demo sẽ tự động tiếp tục' : 'Quy trình đang chờ lựa chọn của bạn'}
+                  {job?.runtimeId === 'sim' ? 'Bản demo sẽ tự động tiếp tục' : 'Quy trình đang chờ lựa chọn của bạn'}
                 </p>
                 <p className="mt-1 text-xs text-[#465164]">{displayName(expectedEventType)} · chọn hoặc nhập để workflow tiếp tục.</p>
                 {waitAlreadySubmitted ? (
-                  <p className="mt-3 text-xs font-medium text-emerald-700">Đã nhận lựa chọn. Quy trình đang tiếp tục…</p>
+                  <p className="mt-3 text-xs font-medium text-emerald-700">Đã nhận lựa chọn. Workflow đang chạy tiếp…</p>
                 ) : (
                   <>
                     {(execution?.allowedValues?.length ?? 0) > 0 && (
@@ -560,7 +644,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                     {!execution?.allowedValues?.length && !waitChoicesLoading && waitChoices.length === 0 && (
                       <form className="mt-3 flex gap-2" onSubmit={(event) => { event.preventDefault(); void submitWaitEvent(waitInput) }}>
                         <input value={waitInput} onChange={(event) => setWaitInput(event.target.value)}
-                          aria-label="Lựa chọn cho quy trình" placeholder={expectedEventType === 'BOOK_SELECTED' ? 'Mã sách' : 'Giá trị lựa chọn'}
+                          aria-label="Workflow choice" placeholder={expectedEventType === 'BOOK_SELECTED' ? 'Book ID' : expectedEventType === 'FACILITY_SELECTED' ? 'Facility ID' : 'Giá trị lựa chọn'}
                           className="h-9 min-w-0 flex-1 border border-[#cbd2dc] bg-white px-2.5 text-xs text-[#252933] outline-none focus:border-cyan-700" />
                         <button type="submit" disabled={!waitInput.trim() || eventPending}
                           className="inline-flex h-9 items-center gap-1.5 bg-cyan-800 px-3 text-xs font-semibold text-white hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-50">
@@ -577,13 +661,76 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+            {isBookshelfInventory && (
+              <section className="mb-4 border border-[#d9dce5] bg-white p-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-sm font-semibold text-[#252933]">Kiểm kê kệ sách</h2>
+                  {inventoryReport && job && (
+                    <Link
+                      to={`/inventory-results?jobId=${encodeURIComponent(jobId)}&runtimeId=${encodeURIComponent(job.runtimeId ?? 'sim')}`}
+                      className="text-xs font-semibold text-primary hover:underline"
+                    >Xem báo cáo đầy đủ</Link>
+                  )}
+                </div>
+                {inventoryReport ? (
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                    <InventoryMetric label="Kệ" value={inventoryReport.totalShelves} />
+                    <InventoryMetric label="Mã QR" value={inventoryReport.totalBooksScanned} />
+                    <InventoryMetric label="Đúng vị trí" value={inventoryReport.totalAvailable} />
+                    <InventoryMetric label="Sai vị trí" value={inventoryReport.totalMisplaced} />
+                    <InventoryMetric label="Thiếu" value={inventoryReport.totalMissing} />
+                    <InventoryMetric label="Chưa xác định" value={inventoryReport.totalUnknown} />
+                    <InventoryMetric label="Trùng mã" value={Array.isArray(inventoryReportDetails?.ambiguous_qr_codes) ? inventoryReportDetails.ambiguous_qr_codes.length : 0} />
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-[#89909d]">Tóm tắt kệ và mã QR sẽ hiển thị khi báo cáo kiểm kê sẵn sàng.</p>
+                )}
+                <div className="mt-3">
+                  <RealtimeCamera
+                    runtimeId={job?.runtimeId || 'sim'}
+                    connected={Boolean(runtime?.connected && !runtime.stale)}
+                    mappingActive={false}
+                    scanActive={isAiScanning}
+                    latestScan={latestInventoryScan ? {
+                      barcode: latestInventoryScan.barcode,
+                      known: latestInventoryScan.known,
+                      misplaced: latestInventoryScan.misplaced,
+                      status: latestInventoryScan.status,
+                    } : null}
+                  />
+                </div>
+                <div className="mt-3 border border-[#e2e5eb] bg-[#fafbfc] p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-xs font-semibold">Kết quả AI đọc barcode</h3>
+                    <span className="text-[10px] text-[#687386]">{inventoryScans.length} mã</span>
+                  </div>
+                  {inventoryScans.length > 0 ? (
+                    <ul className="mt-2 space-y-1.5">
+                      {[...inventoryScans].slice(-5).reverse().map((scan) => (
+                        <li key={`${scan.barcode}-${scan.scannedAt}`} className="flex items-center justify-between gap-2 border-t border-[#e7e9ee] pt-1.5 text-[10px]">
+                          <span className="min-w-0 truncate font-mono font-semibold">{scan.barcode}</span>
+                          <span className="shrink-0 text-[#687386]">
+                            {inventoryScanLabel(scan)}
+                            {scan.levelNumber ? ` · Tầng ${scan.levelNumber}` : ''}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2 text-[10px] text-[#687386]">
+                      {isAiScanning ? 'Camera IMX500 đang quét QR/barcode trên kệ…' : 'Chưa có barcode nào được camera ghi nhận.'}
+                    </p>
+                  )}
+                </div>
+              </section>
+            )}
             {isLibraryPatrol && (
               <section className="mb-4 border border-[#d9dce5] bg-white p-3.5">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-sm font-semibold text-[#252933]">Phạm vi tuần tra</h2>
+                    <h2 className="text-sm font-semibold text-[#252933]">Độ bao phủ tuần tra</h2>
                   <span className="text-xs font-semibold text-primary">
                     {latestCoverage
-                      ? `${numericValue(latestCoverage.covered_paths) ?? 0} / ${numericValue(latestCoverage.total_paths) ?? 0} paths`
+                      ? `${numericValue(latestCoverage.covered_paths) ?? 0} / ${numericValue(latestCoverage.total_paths) ?? 0} đoạn đường`
                       : 'Chưa bắt đầu'}
                   </span>
                 </div>
@@ -595,18 +742,18 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                 {patrolReport ? (
                   <div className="mt-3 space-y-2 border-t border-[#edf0f3] pt-3 text-xs text-[#596174]">
                     <p className="font-semibold text-[#252933]">Báo cáo {String(patrolReport.report_id ?? '')}</p>
-                    <p>{numericValue(patrolReport.observation_count) ?? 0} ghi nhận · {numericValue(asRecord(patrolReport.path_coverage)?.covered_paths) ?? 0} tuyến đã tuần tra</p>
-                    <p>Sách bị rơi: {numericValue(patrolReport.fallen_book_count) ?? 0} · Chướng ngại vật: {numericValue(patrolReport.obstacle_count) ?? 0} · Cảnh báo: {numericValue(patrolReport.warning_count) ?? 0}</p>
+                    <p>{numericValue(patrolReport.observation_count) ?? 0} quan sát · {numericValue(asRecord(patrolReport.path_coverage)?.covered_paths) ?? 0} đoạn đường đã đi</p>
+                    <p>Sách đổ: {numericValue(patrolReport.fallen_book_count) ?? 0} · Vật cản: {numericValue(patrolReport.obstacle_count) ?? 0} · Cảnh báo khác: {numericValue(patrolReport.warning_count) ?? 0}</p>
                     {Array.isArray(patrolReport.observations) && patrolReport.observations.length > 0 && (
                       <ul className="mt-2 space-y-1.5">
                         {patrolReport.observations.map((item, index) => {
                           const observation = asRecord(item)
-                          return <li key={String(observation?.event_id ?? index)} className="border-l-2 border-amber-400 pl-2">{String(observation?.category ?? 'Observation')} · {String(observation?.path_id ?? '')}</li>
+                          return <li key={String(observation?.event_id ?? index)} className="border-l-2 border-amber-400 pl-2">{String(observation?.category ?? 'Quan sát')} · {String(observation?.path_id ?? '')}</li>
                         })}
                       </ul>
                     )}
                   </div>
-                ) : <p className="mt-2 text-xs text-[#89909d]">Báo cáo và các ghi nhận sẽ hiển thị tại đây sau khi hoàn tất tuần tra.</p>}
+                ) : <p className="mt-2 text-xs text-[#89909d]">Báo cáo và các quan sát sẽ hiển thị khi robot tuần tra xong.</p>}
               </section>
             )}
             {orderedSteps.length ? (
@@ -622,7 +769,7 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                         : currentStatus === 'STEP_FAILED' || currentStatus === 'FAILED' ? 'failed'
                           : 'running'
                   }
-                  const isCurrent = currentStep?.id === step.id && missionInProgress
+                  const isCurrent = currentStep?.id === step.id && jobInProgress
                   const style = progress === 'running' || progress === 'waiting'
                     ? 'border-amber-300 bg-amber-50 shadow-[0_0_0_2px_rgba(245,158,11,0.11)]'
                     : progress === 'completed'
@@ -640,11 +787,11 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-[#79808d]">Bước {step.sequence} · {displayName(step.type)}</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-[#79808d]">Step {step.sequence} · {displayName(step.type)}</p>
                           {isCurrent && <span className="shrink-0 text-[9px] font-bold uppercase tracking-wide text-amber-800">Hiện tại</span>}
                         </div>
                         <h3 className="mt-1 break-words text-sm font-semibold text-[#252933]">{step.name}</h3>
-                        {progress === 'waiting' && <p className="mt-1 text-[11px] text-amber-800">Đang chờ dữ liệu đầu vào</p>}
+                        {progress === 'waiting' && <p className="mt-1 text-[11px] text-amber-800">Đang chờ dữ liệu</p>}
                       </div>
                     </li>
                   )
@@ -652,11 +799,11 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
               </ol>
             ) : (
               <div className="border border-dashed border-[#cfd3dd] bg-white px-4 py-8 text-center text-sm text-[#687386]">
-                {mission ? 'Đang tải các bước quy trình…' : 'Đang kết nối với nhiệm vụ…'}
+                {job ? 'Đang tải các bước quy trình…' : 'Đang kết nối với nhiệm vụ…'}
               </div>
             )}
             {execution?.error && <div className="mt-4 border border-rose-200 bg-rose-50 px-3 py-3 text-xs text-rose-800">{execution.error}</div>}
-            <p className="mt-4 text-center text-[10px] text-[#89909d]">Tiến độ được tự động cập nhật trong khi nhiệm vụ chạy.</p>
+            <p className="mt-4 text-center text-[10px] text-[#89909d]">Tiến độ được tự động cập nhật khi nhiệm vụ đang chạy.</p>
           </div>
         </aside>
       </div>
@@ -664,4 +811,13 @@ function LiveMissionDetail({ missionId }: { missionId: string }) {
   )
 }
 
-export default LiveMissionDetail
+function InventoryMetric({ label, value }: { label: string; value: unknown }) {
+  return (
+    <div className="border border-[#edf0f3] bg-[#fafbfc] px-2.5 py-2">
+      <span className="block text-[10px] font-medium uppercase tracking-wide text-[#79808d]">{label}</span>
+      <span className="mt-1 block text-sm font-semibold text-[#252933]">{numericValue(value) ?? 0}</span>
+    </div>
+  )
+}
+
+export default LiveJobDetail

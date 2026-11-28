@@ -3,14 +3,14 @@ import { ArrowDown, ArrowLeft, ArrowUp, Check, MapPinned } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { apiClient, getRobotRuntimes, getSavedMapEndpoints, type SavedMapEndpoint } from '@/features/maps/api/runtimeApi'
 import type { RobotRuntime } from '@/features/maps/types/runtime'
-import { apiErrorMessage, createMission, getDispatchWorkflows } from '@/features/dispatch/api'
+import { apiErrorMessage, createJob, getDispatchWorkflows } from '@/features/dispatch/api'
 import type { DispatchWorkflow } from '@/features/dispatch/types'
 
 type MapDetails = { id: string; name: string; floorId: string | null; status: string }
 
 const fieldClass = 'h-10 w-full border border-[#d7d9e2] bg-white px-3 text-sm text-[#252933] outline-none focus:border-primary'
 
-function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
+function LibraryPatrolJobCreate({ onBack }: { onBack: () => void }) {
   const navigate = useNavigate()
   const [workflow, setWorkflow] = useState<DispatchWorkflow | null>(null)
   const [runtimes, setRuntimes] = useState<RobotRuntime[]>([])
@@ -130,7 +130,7 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
       if (!latestRuntime?.connected || latestRuntime.stale || latestMapId !== activeMapId) {
         throw new Error('Runtime is offline, telemetry is stale, or its active map changed. Refresh the page and try again.')
       }
-      const mission = await createMission({
+      const job = await createJob({
         workflowId: workflow.id,
         priority: 'NORMAL',
         runtimeId: runtimeId as 'sim' | 'real',
@@ -143,9 +143,9 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
           target_endpoints: selectedIds,
         },
       })
-      navigate(`/tasks/${mission.id}`)
+      navigate(`/tasks/${job.id}`)
     } catch (cause) {
-      setError(apiErrorMessage(cause, 'Unable to create the patrol mission.'))
+      setError(apiErrorMessage(cause, 'Unable to create the patrol job.'))
     } finally {
       setSubmitting(false)
     }
@@ -173,7 +173,7 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
               <label className="space-y-1.5 text-sm font-medium text-[#3f4654]">
                 Robot runtime
                 <select required value={runtimeId} onChange={(event) => setRuntimeId(event.target.value)} className={fieldClass}>
-                  <option value="">Chọn môi trường chạy</option>
+                  <option value="">Choose runtime</option>
                   {runtimes.map((runtime) => <option key={runtime.id} value={runtime.id}>{runtime.displayName} · {runtime.id.toUpperCase()}</option>)}
                 </select>
                 <span className="block text-xs font-normal text-[#687386]">Nhiệm vụ trên robot thực cần được cấp quyền điều khiển hợp lệ trước khi bắt đầu.</span>
@@ -186,7 +186,7 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
                 <span className="block truncate text-xs font-normal text-[#89909d]">{activeMapId ?? 'The runtime must report its active map.'}</span>
               </div>
               <label className="space-y-1.5 text-sm font-medium text-[#3f4654] sm:col-span-2">
-                Patrol mission name
+                Tên nhiệm vụ tuần tra
                 <input required maxLength={150} value={name} onChange={(event) => setName(event.target.value)} className={fieldClass} />
               </label>
               <label className="space-y-1.5 text-sm font-medium text-[#3f4654] sm:col-span-2">
@@ -240,4 +240,4 @@ function LibraryPatrolMissionCreate({ onBack }: { onBack: () => void }) {
   )
 }
 
-export default LibraryPatrolMissionCreate
+export default LibraryPatrolJobCreate

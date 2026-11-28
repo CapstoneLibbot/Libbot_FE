@@ -32,21 +32,21 @@ import type {
 import { occupancyGridToMapMetadata, simulationMapToMetadata } from '../maps/utils/occupancyGrid'
 import {
   apiErrorMessage,
-  cancelMission,
-  createMission,
+  cancelJob,
+  createJob,
   getDispatchWorkflows,
-  getMissionExecution,
-  startMission,
-  submitMissionEvent,
+  getJobExecution,
+  startJob,
+  submitJobEvent,
 } from './api'
 import type {
   AutoChargeStartedEvent,
   DispatchRuntimeId,
   DispatchWorkflow,
   LibrarianNotificationEvent,
-  MissionExecution,
+  JobExecution,
 } from './types'
-import { isTerminalMissionStatus, parseInitialContext } from './utils'
+import { isTerminalJobStatus, parseInitialContext } from './utils'
 
 type SelectionMode = 'INITIAL_POSE' | 'GOAL'
 type ViewMode = 'SPLIT' | '2D' | '3D'
@@ -76,7 +76,7 @@ const workflowStepTypeLabels: Record<string, string> = {
   WAIT: 'Chờ',
   NOTIFY: 'Thông báo',
 }
-const missionStatusLabels: Record<string, string> = {
+const jobStatusLabels: Record<string, string> = {
   ACCEPTED: 'Đã tiếp nhận',
   QUEUED: 'Đang xếp hàng',
   RUNNING: 'Đang chạy',
@@ -107,8 +107,8 @@ export default function DispatchWorkflowPage() {
   const [busyAction, setBusyAction] = useState('')
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
-  const [missionId, setMissionId] = useState('')
-  const [execution, setExecution] = useState<MissionExecution | null>(null)
+  const [jobId, setJobId] = useState('')
+  const [execution, setExecution] = useState<JobExecution | null>(null)
   const [eventText, setEventText] = useState('{\n  "value": ""\n}')
 
   const selectedWorkflow = workflows.find((workflow) => workflow.id === workflowId) ?? null
@@ -118,7 +118,7 @@ export default function DispatchWorkflowPage() {
   const localized = telemetry?.localizationState === 'LOCALIZED'
   const navigationReady = Boolean(telemetry?.navigationReady)
   const isNavigating = ['SENDING', 'NAVIGATING', 'CANCELING'].includes(telemetry?.navigationState ?? '')
-  const terminalMission = isTerminalMissionStatus(execution?.status)
+  const terminalJob = isTerminalJobStatus(execution?.status)
   const canDispatch = Boolean(
     selectedWorkflow && online && localized && navigationReady && (!isReal || (runtime?.armed && leaseId)),
   )
@@ -208,11 +208,11 @@ export default function DispatchWorkflowPage() {
     const unsubscribeTelemetry = signalRClient.subscribe<RobotRuntime>('RobotTelemetryUpdated', (payload) => {
       if (payload.id.toLowerCase() === runtimeId) setRuntime(payload)
     })
-    const unsubscribeStep = signalRClient.subscribe<MissionExecution>('MissionStepChanged', (payload) => {
-      if (payload.missionId === missionId) setExecution(payload)
+    const unsubscribeStep = signalRClient.subscribe<JobExecution>('JobStepChanged', (payload) => {
+      if (payload.jobId === jobId) setExecution(payload)
     })
-    const unsubscribeStatus = signalRClient.subscribe<{ missionId: string; status: string }>('MissionStatusChanged', (payload) => {
-      if (payload.missionId === missionId) {
+    const unsubscribeStatus = signalRClient.subscribe<{ jobId: string; status: string }>('JobStatusChanged', (payload) => {
+      if (payload.jobId === jobId) {
         setExecution((current) => current ? { ...current, status: payload.status } : current)
       }
     })
@@ -222,16 +222,16 @@ export default function DispatchWorkflowPage() {
       unsubscribeStatus()
       void signalRClient.unsubscribeRuntime(runtimeId)
     }
-  }, [runtimeId, missionId])
+  }, [runtimeId, jobId])
 
   useEffect(() => {
     void signalRClient.subscribeLibrarian()
     const unsubscribeAutoCharge = signalRClient.subscribe<AutoChargeStartedEvent>('AutoChargeStarted', (payload) => {
       if (payload.runtimeId.toLowerCase() !== 'real') return
       setRuntimeId('real')
-      setMissionId(payload.missionId)
+      setJobId(payload.jobId)
       setExecution({
-        missionId: payload.missionId,
+        jobId: payload.jobId,
         executionId: payload.executionId ?? undefined,
         runtimeId: 'real',
         status: payload.status ?? (payload.queued ? 'QUEUED' : 'ACCEPTED'),
@@ -255,14 +255,14 @@ export default function DispatchWorkflowPage() {
   }, [])
 
   useEffect(() => {
-    if (!missionId || terminalMission) return
+    if (!jobId || terminalJob) return
     let active = true
     const poll = async () => {
       try {
-        const next = await getMissionExecution(missionId)
+        const next = await getJobExecution(jobId)
         if (active) setExecution(next)
       } catch (cause) {
-        if (active) setError(apiErrorMessage(cause, 'Could not read mission execution state.'))
+        if (active) setError(apiErrorMessage(cause, 'Could not read job execution state.'))
       }
     }
     void poll()
@@ -271,7 +271,7 @@ export default function DispatchWorkflowPage() {
       active = false
       window.clearInterval(timer)
     }
-  }, [missionId, terminalMission])
+  }, [jobId, terminalJob])
 
   useEffect(() => {
     leaseRef.current = leaseId
@@ -297,7 +297,7 @@ export default function DispatchWorkflowPage() {
     setRuntimeId(next)
     setLeaseId(null)
     setDraft(null)
-    setMissionId('')
+    setJobId('')
     setExecution(null)
     setError('')
     setNotice('')
@@ -352,34 +352,34 @@ export default function DispatchWorkflowPage() {
   const handleDispatch = () => runAction('dispatch', async () => {
     if (!selectedWorkflow) return
     const initialContext = parseInitialContext(contextText)
-    const mission = await createMission({
+    const job = await createJob({
       workflowId: selectedWorkflow.id,
       priority,
       runtimeId,
       initialContext,
     })
-    setMissionId(mission.id)
+    setJobId(job.id)
     try {
-      await startMission(mission.id, runtimeId, leaseId)
-      setExecution({ missionId: mission.id, runtimeId, status: 'ACCEPTED' })
-      setNotice(`Đã điều phối nhiệm vụ ${mission.id.slice(0, 8)} đến ${runtimeId.toUpperCase()}.`)
+      await startJob(job.id, runtimeId, leaseId)
+      setExecution({ jobId: job.id, runtimeId, status: 'ACCEPTED' })
+      setNotice(`Đã điều phối nhiệm vụ ${job.id.slice(0, 8)} đến ${runtimeId.toUpperCase()}.`)
     } catch (cause) {
-      setExecution({ missionId: mission.id, runtimeId, status: 'QUEUED', error: apiErrorMessage(cause, 'Không thể khởi chạy nhiệm vụ.') })
+      setExecution({ jobId: job.id, runtimeId, status: 'QUEUED', error: apiErrorMessage(cause, 'Không thể khởi chạy nhiệm vụ.') })
       throw cause
     }
   })
 
-  const handleCancelMission = () => runAction('cancel-mission', async () => {
-    if (!missionId) return
-    await cancelMission(missionId)
+  const handleCancelJob = () => runAction('cancel-job', async () => {
+    if (!jobId) return
+    await cancelJob(jobId)
     setExecution((current) => current ? { ...current, status: 'CANCELLED' } : current)
     setNotice('Đã gửi yêu cầu hủy nhiệm vụ.')
   })
 
   const sendEvent = (data?: unknown) => runAction('event', async () => {
-    if (!missionId || !execution?.expectedEventType) return
+    if (!jobId || !execution?.expectedEventType) return
     const payload = data ?? parseInitialContext(eventText)
-    await submitMissionEvent(missionId, execution.expectedEventType, payload)
+    await submitJobEvent(jobId, execution.expectedEventType, payload)
     setNotice(`Đã gửi sự kiện ${execution.expectedEventType}.`)
   })
 
@@ -483,7 +483,7 @@ export default function DispatchWorkflowPage() {
         <section className="col-start-3 row-start-3 flex min-h-0 flex-col gap-3 overflow-hidden rounded-xl border border-[#d9dce5] bg-white p-3 text-[#252933]">
           <div className="flex min-h-0 flex-[0.8] flex-col border-b border-[#e4e5ea] pb-3">
             <h2 className="flex items-center gap-2 font-semibold"><Activity className="h-4 w-4 text-primary" /> Quy trình</h2>
-            <select value={workflowId} onChange={(event) => { setWorkflowId(event.target.value); setMissionId(''); setExecution(null) }} className={`${fieldClass} mt-3`}>
+            <select value={workflowId} onChange={(event) => { setWorkflowId(event.target.value); setJobId(''); setExecution(null) }} className={`${fieldClass} mt-3`}>
               {workflows.length === 0 && <option value="">Không có quy trình đang hoạt động</option>}
               {workflows.map((workflow) => <option key={workflow.id} value={workflow.id}>{workflow.name}</option>)}
             </select>
@@ -508,7 +508,7 @@ export default function DispatchWorkflowPage() {
             <label className="mt-2 block text-xs font-medium text-[#596174]">Ngữ cảnh ban đầu (JSON)
               <textarea value={contextText} onChange={(event) => setContextText(event.target.value)} rows={3} spellCheck={false} className={`${fieldClass} mt-1 resize-none font-mono text-xs`} />
             </label>
-            <button type="button" onClick={() => void handleDispatch()} disabled={!canDispatch || Boolean(busyAction) || (Boolean(missionId) && !terminalMission)} className={`${buttonClass} mt-3 w-full bg-emerald-600 py-2.5 text-white`}>
+            <button type="button" onClick={() => void handleDispatch()} disabled={!canDispatch || Boolean(busyAction) || (Boolean(jobId) && !terminalJob)} className={`${buttonClass} mt-3 w-full bg-emerald-600 py-2.5 text-white`}>
               {busyAction === 'dispatch' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />} Điều phối đến {runtimeId.toUpperCase()}
             </button>
             {!canDispatch && <p className="mt-2 text-xs text-amber-700">Môi trường chạy cần trực tuyến, đã định vị và sẵn sàng Nav2{isReal ? ', đồng thời phải được cấp quyền điều khiển' : ''}.</p>}
@@ -522,7 +522,7 @@ export default function DispatchWorkflowPage() {
             {execution ? (
               <div className="mt-3 space-y-3 text-sm">
                 <div className="grid grid-cols-2 gap-2 rounded-md bg-[#f5f6f8] p-3 text-xs">
-                  <span className="text-[#687386]">Mã nhiệm vụ</span><span className="truncate font-mono">{execution.missionId}</span>
+                  <span className="text-[#687386]">Mã nhiệm vụ</span><span className="truncate font-mono">{execution.jobId}</span>
                   <span className="text-[#687386]">Bước hiện tại</span><span>{execution.currentStepName ?? execution.currentStep ?? 'Đang chờ robot'}</span>
                   <span className="text-[#687386]">Loại bước</span><span>{workflowStepTypeLabels[execution.currentStepType ?? ''] ?? execution.currentStepType ?? '—'}</span>
                   <span className="text-[#687386]">Cập nhật lúc</span><span>{execution.updatedAt ? new Date(execution.updatedAt).toLocaleTimeString('vi-VN') : '—'}</span>
@@ -542,7 +542,7 @@ export default function DispatchWorkflowPage() {
                     )}
                   </div>
                 )}
-                {!terminalMission && <button type="button" onClick={() => void handleCancelMission()} disabled={Boolean(busyAction)} className={`${buttonClass} border border-rose-300 text-rose-700`}><CircleStop className="h-4 w-4" /> Hủy nhiệm vụ</button>}
+                {!terminalJob && <button type="button" onClick={() => void handleCancelJob()} disabled={Boolean(busyAction)} className={`${buttonClass} border border-rose-300 text-rose-700`}><CircleStop className="h-4 w-4" /> Hủy nhiệm vụ</button>}
               </div>
             ) : <p className="mt-3 text-sm text-[#687386]">Điều phối quy trình để xem trạng thái thực thi trực tiếp.</p>}
           </div>
@@ -577,7 +577,7 @@ function MapPlaceholder({ loading, error }: { loading: boolean; error: string })
 }
 
 function StatusPill({ status }: { status: string }) {
-  const terminal = isTerminalMissionStatus(status)
+  const terminal = isTerminalJobStatus(status)
   const failed = ['FAILED', 'CANCELLED'].includes(status.toUpperCase())
-  return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${failed ? 'bg-rose-100 text-rose-700' : terminal ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>{missionStatusLabels[status.toUpperCase()] || status}</span>
+  return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${failed ? 'bg-rose-100 text-rose-700' : terminal ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>{jobStatusLabels[status.toUpperCase()] || status}</span>
 }

@@ -8,6 +8,29 @@ export interface ShelfRecord {
   updatedAtUtc: string | null
 }
 
+export interface InventoryShelfRecord {
+  id: string
+  aisleId: string
+  startEndpointId: string
+  endEndpointId: string
+  name: string
+  status: string
+}
+
+export interface InventoryAisleRecord {
+  id: string
+  floorId: string
+  name: string
+  status: string
+}
+
+export interface InventoryShelfLevelRecord {
+  id: string
+  shelfId: string
+  levelNumber: number
+  status: string
+}
+
 export interface AisleRecord {
   id: string
   floorId: string
@@ -62,6 +85,40 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const shelfApi = {
   list: () => request<ShelfRecord[]>('/api/shelves'),
   listAisles: () => request<AisleRecord[]>('/api/aisles'),
+  listInventoryShelves: () => request<InventoryShelfRecord[]>('/api/shelves'),
+  listInventoryShelfLevels: async () => {
+    const allItems: InventoryShelfLevelRecord[] = []
+    const pageSize = 100
+    let page = 1
+    let totalPages = 1
+    do {
+      const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
+      const response = await request<{ data?: { items?: InventoryShelfLevelRecord[]; totalPages?: number } }>(
+        `/api/shelf-levels?${query}`,
+      )
+      const result = response.data
+      allItems.push(...(result?.items ?? []))
+      totalPages = result?.totalPages ?? page
+      page += 1
+    } while (page <= totalPages)
+    return allItems
+  },
+  listInventoryAisles: async (floorId?: string | null) => {
+    const allItems: InventoryAisleRecord[] = []
+    const pageSize = 100
+    let page = 1
+    let totalPages = 1
+    do {
+      const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
+      if (floorId) query.set('floorId', floorId)
+      const response = await request<{ data?: { items?: InventoryAisleRecord[]; totalPages?: number } }>(`/api/aisles?${query}`)
+      const result = response.data
+      allItems.push(...(result?.items ?? []))
+      totalPages = result?.totalPages ?? page
+      page += 1
+    } while (page <= totalPages)
+    return allItems
+  },
   listEndpoints: () => request<EndpointRecord[]>('/api/endpoints'),
   create: (shelf: ShelfWriteRequest) => request<ShelfRecord>('/api/shelves', {
     method: 'POST',
